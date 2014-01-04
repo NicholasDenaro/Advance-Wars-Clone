@@ -4,10 +4,12 @@ import java.awt.Color;
 
 public class Team
 {
-	public Team(String name, Color color)
+	public Team(String name, int color, Commander commander)
 	{
 		this.name=name;
 		this.color=color;
+		this.commander=commander;
+		funds=0;
 	}
 	
 	public String name()
@@ -15,11 +17,24 @@ public class Team
 		return(name);
 	}
 	
-	public Color color()
+	public int color()
 	{
 		return(color);
 	}
 	
+	public int funds()
+	{
+		return(funds);
+	}
+	
+	public Commander commander()
+	{
+		return(commander);
+	}
+	
 	private String name;
-	private Color color;
+	private int color;
+	private Commander commander;
+	
+	private int funds;
 }

@@ -34,7 +34,7 @@ public class ActionMenu extends Menu
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
-			cursor=--cursor%actions.length;
+			cursor=(--cursor+actions.length)%actions.length;
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 			cursor=++cursor%actions.length;
 		
@@ -44,6 +44,21 @@ public class ActionMenu extends Menu
 			{
 				Main.battle.map().moveUnit();
 				Main.closeMenu();
+			}
+			else if(actions[cursor].equals("Capture"))
+			{
+				Main.battle.map().captureUnit(Main.battle.map().selectedUnit(),Main.battle.map().path().last());
+				Main.closeMenu();
+			}
+			else if(actions[cursor].equals("Unite"))
+			{
+				Main.battle.map().moveUnit();
+				Main.closeMenu();
+			}
+			if(actions[cursor].equals("Attack"))
+			{
+				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.map().attackableUnits());
+				Main.openMenu(menu);
 			}
 			else if(actions[cursor].equals("Cancel"))
 			{
@@ -60,9 +75,12 @@ public class ActionMenu extends Menu
 	@Override
 	public Image image()
 	{
+		
 		Sprite sprite=Sprite.sprite("Action Menu");
 		
 		BufferedImage image=new BufferedImage(sprite.width()+1,sprite.height()*actions.length+1,BufferedImage.TYPE_INT_ARGB);
+		if(child()!=null)
+			return(image);
 		Graphics2D g=image.createGraphics();
 		g.setFont(new Font(g.getFont().getName(),Font.BOLD,sprite.height()-2));
 		

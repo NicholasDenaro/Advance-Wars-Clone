@@ -2,11 +2,10 @@ package denaro.nick.wars;
 
 public class Battle
 {
-	public Battle(Map map, Team[] teams, Commander[] commanders)
+	public Battle(Map map, Team[] teams)
 	{
 		this.map=map;
 		this.teams=teams;
-		this.commanders=commanders;
 		turn=-1;
 		nextTurn();
 	}
@@ -34,5 +33,4 @@ public class Battle
 	private int turn;
 	
 	private Team[] teams;
-	private Commander[] commanders;
 }

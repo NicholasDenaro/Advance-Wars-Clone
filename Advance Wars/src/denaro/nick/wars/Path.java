@@ -43,6 +43,11 @@ public class Path
 		return(points);
 	}
 	
+	public Point first()
+	{
+		return(points.get(0));
+	}
+	
 	public Point last()
 	{
 		return(points.get(points.size()-1));

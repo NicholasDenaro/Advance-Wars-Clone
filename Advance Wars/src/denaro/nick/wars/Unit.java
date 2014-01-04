@@ -3,8 +3,10 @@ package denaro.nick.wars;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
 
@@ -19,11 +21,13 @@ public class Unit extends Entity
 		super(sprite, point);
 		this.team=team;
 		enabled=false;
-		fuel=999;
+		fuel=99;
 		health=100;
 		movement=1;
 		vision=1;
-		movementType=MovementType.DEFAULT;
+		movementType=null;
+		canCapture=false;
+		attackRange=new Point(1,1);
 	}
 	
 	public Team team()
@@ -46,6 +50,16 @@ public class Unit extends Entity
 		this.enabled=enabled;
 	}
 	
+	public boolean canCapture()
+	{
+		return(canCapture);
+	}
+	
+	public void canCapture(boolean canCapture)
+	{
+		this.canCapture=canCapture;
+	}
+	
 	public int fuel()
 	{
 		return(fuel);
@@ -54,6 +68,16 @@ public class Unit extends Entity
 	public void fuel(int fuel)
 	{
 		this.fuel=fuel;
+	}
+	
+	public int ammo()
+	{
+		return(ammo);
+	}
+	
+	public void ammo(int ammo)
+	{
+		this.ammo=ammo;
 	}
 	
 	public int health()
@@ -66,8 +90,15 @@ public class Unit extends Entity
 		this.health=health;
 	}
 	
-	public void vision(int vision)
+	public void damage(int damage)
 	{
+		health-=damage;
+	}
+	
+	public void vision(int vision) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
 		this.vision=vision;
 	}
 	
@@ -81,8 +112,10 @@ public class Unit extends Entity
 		return(movement);
 	}
 	
-	public void movement(int movement)
+	public void movement(int movement) throws UnitFinalizedException
 	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
 		this.movement=movement;
 	}
 	
@@ -91,29 +124,58 @@ public class Unit extends Entity
 		return(movementType);
 	}
 	
-	public void movementType(MovementType movementType)
+	public Point attackRange()
 	{
+		return(attackRange);
+	}
+	
+	public void attackRange(Point attackRange) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		this.attackRange=attackRange;
+	}
+	
+	public void movementType(MovementType movementType) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
 		this.movementType=movementType;
+	}
+	
+	public void uniteWith(Unit other)
+	{
+		health+=other.health;
+		if(health>100)
+			health=100;
+		
+		fuel+=other.fuel;
+		if(fuel>maxFuel)
+			fuel=maxFuel;
+		
+		enabled=false;
 	}
 	
 	public static Unit copy(Unit other)
 	{
 		Unit unit=new Unit(other.sprite(),other.point(),other.team());
+		unit.canCapture=other.canCapture;
 		unit.fuel=other.fuel;
+		unit.maxFuel=other.maxFuel;
+		unit.ammo=other.ammo;
+		unit.maxAmmo=other.maxAmmo;
 		unit.health=other.health;
 		unit.movement=other.movement;
 		unit.movementType=other.movementType;
+		unit.vision=other.vision;
+		unit.attackRange=other.attackRange;
+		unit.imageIndex(other.imageIndex());
 		return(unit);
 	}
 
 	public static Unit copy(Unit other, Team team)
 	{
-		Unit unit=new Unit(other.sprite(),other.point(),other.team());
-		unit.fuel=other.fuel;
-		unit.health=other.health;
-		unit.movement=other.movement;
-		unit.movementType=other.movementType;
-		unit.vision=other.vision;
+		Unit unit=copy(other);
 		unit.team=team;
 		return(unit);
 	}
@@ -124,12 +186,10 @@ public class Unit extends Entity
 		BufferedImage image=new BufferedImage(sprite().width(),sprite().height(),BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g=image.createGraphics();
 		g.drawImage(super.image(), 0, 0, null);
+		Composite oldComposite=g.getComposite();
 		if(team!=null)
 		{
-			g.setColor(team.color());
-			//Composite oldComposite=g.getComposite();
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
-			g.fillRect(0, 0, sprite().width(), sprite().height());
+			Main.swapPalette(image,team,1);
 		}
 		
 		if(!enabled)
@@ -138,6 +198,21 @@ public class Unit extends Entity
 			//Composite oldComposite=g.getComposite();
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
 			g.fillRect(0, 0, sprite().width(), sprite().height());
+		}
+		
+		g.setComposite(oldComposite);
+		
+		if(health!=100)
+		{
+			int hp=(health+5)/10;
+			if(hp==0)
+				hp=1;
+			/*g.setFont(new Font("Courier New",Font.BOLD,10));
+			g.setColor(Color.black);
+			g.fillRect(sprite().width()-8, sprite().height()-8,8,8);
+			g.setColor(Color.white);
+			g.drawString(""+hp, sprite().width()-7, sprite().height()-1);*/
+			g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), sprite().width()-8, sprite().height()-8, null);
 		}
 		
 		return(image);
@@ -149,14 +224,27 @@ public class Unit extends Entity
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public void finalize()
+	{
+		finalized=true;
+		maxFuel=fuel;
+	}
 
+	private boolean finalized;
+	
+	private boolean canCapture;
 	private boolean enabled;
 	private Team team;
-	private int fuel;
+	private int fuel, maxFuel;
+	private int ammo, maxAmmo;
 	private int health;
 	private int movement;
 	private int vision;
 	private MovementType movementType;
+	
+	private Point attackRange;
+	
 }
 
-enum MovementType{DEFAULT,FOOT,MECH,WHEEL,TREAD,HELE,PLANE,BOAT,SUB};
+enum MovementType{FOOT,MECH,TREAD,TIRES,SHIP,TRANS,AIR};

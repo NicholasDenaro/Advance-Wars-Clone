@@ -5,9 +5,21 @@ public class Commander
 	public Commander(String name)
 	{
 		this.name=name;
-		funds=0;
+		attackPower=100;
+		defencePower=100;
 	}
 	
-	private int funds;
+	public int attackPower()
+	{
+		return(attackPower);
+	}
+	
+	public int defencePower()
+	{
+		return(defencePower);
+	}
+	
 	private String name;
+	private int attackPower;
+	private int defencePower;
 }

@@ -3,11 +3,15 @@ package denaro.nick.wars;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
+import denaro.nick.core.Entity;
 import denaro.nick.core.Identifiable;
+import denaro.nick.core.Sprite;
 
-public class Terrain extends Identifiable
+public class Terrain extends Entity
 {
 	public Terrain(String name, int[] movementCosts)
 	{
@@ -17,10 +21,12 @@ public class Terrain extends Identifiable
 	
 	public Terrain(String name)
 	{
+		super(Sprite.sprite("Terrain"),null);
 		this.name=name;
 		this.movementCosts=defaultMovementCosts;
 		hiding=false;
 		visionBoost=0;
+		defence=0;
 	}
 	
 	public String name()
@@ -53,6 +59,21 @@ public class Terrain extends Identifiable
 		this.movementCosts=movementCosts;
 	}
 	
+	public int[] movementCosts()
+	{
+		return(movementCosts);
+	}
+	
+	public int defence()
+	{
+		return(defence);
+	}
+	
+	public void defence(int defence)
+	{
+		this.defence=defence;
+	}
+	
 	public int movementCost(MovementType type)
 	{
 		switch(type)
@@ -61,46 +82,37 @@ public class Terrain extends Identifiable
 				return(movementCosts[0]);
 			case MECH:
 				return(movementCosts[1]);
-			case WHEEL:
-				return(movementCosts[2]);
 			case TREAD:
+				return(movementCosts[2]);
+			case TIRES:
 				return(movementCosts[3]);
-			case HELE:
+			case SHIP:
 				return(movementCosts[4]);
-			case PLANE:
+			case TRANS:
 				return(movementCosts[5]);
-			case BOAT:
+			case AIR:
 				return(movementCosts[6]);
-			case SUB:
-				return(movementCosts[7]);
-			case DEFAULT:
-				return(movementCosts[8]);
 			default:
 				return(1);
 		}
-	}
-	
-	public Image image()
-	{
-		BufferedImage image=new BufferedImage(Main.TILESIZE,Main.TILESIZE,BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g=image.createGraphics();
-		
-		if(name.equals("Plain"))
-			g.setColor(new Color(0,150,0));
-		if(name.equals("Mountain"))
-			g.setColor(new Color(120,75,0));
-		g.fillRect(0, 0, image.getWidth(), image.getHeight());
-		
-		return(image);
 	}
 	
 	private String name;
 	
 	private int[] movementCosts;
 	
+	private int defence;
+	
 	private boolean hiding;
 	
 	private int visionBoost;
 	
-	private static final int[] defaultMovementCosts=new int[]{1,1,1,1,1,1,1,1,1};
+	public static final int[] defaultMovementCosts=new int[]{1,1,1,1,1,1,1};
+
+	@Override
+	public void tick()
+	{
+		// TODO Auto-generated method stub
+		
+	}
 }
