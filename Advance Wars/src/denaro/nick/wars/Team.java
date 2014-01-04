@@ -27,6 +27,11 @@ public class Team
 		return(funds);
 	}
 	
+	public void addFunds(int funds)
+	{
+		this.funds+=funds;
+	}
+	
 	public Commander commander()
 	{
 		return(commander);

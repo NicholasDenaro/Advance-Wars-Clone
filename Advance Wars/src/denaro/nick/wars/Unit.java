@@ -25,9 +25,17 @@ public class Unit extends Entity
 		health=100;
 		movement=1;
 		vision=1;
+		ammo=0;
+		maxAmmo=0;
+		usesAmmo=false;
 		movementType=null;
 		canCapture=false;
 		attackRange=new Point(1,1);
+	}
+	
+	public void attackType(int attackType)
+	{
+		this.attackType=attackType;
 	}
 	
 	public Team team()
@@ -162,6 +170,7 @@ public class Unit extends Entity
 		unit.canCapture=other.canCapture;
 		unit.fuel=other.fuel;
 		unit.maxFuel=other.maxFuel;
+		unit.usesAmmo=other.usesAmmo;
 		unit.ammo=other.ammo;
 		unit.maxAmmo=other.maxAmmo;
 		unit.health=other.health;
@@ -169,6 +178,7 @@ public class Unit extends Entity
 		unit.movementType=other.movementType;
 		unit.vision=other.vision;
 		unit.attackRange=other.attackRange;
+		unit.attackType=other.attackType;
 		unit.imageIndex(other.imageIndex());
 		return(unit);
 	}
@@ -202,16 +212,11 @@ public class Unit extends Entity
 		
 		g.setComposite(oldComposite);
 		
-		if(health!=100)
+		int hp=(health+5)/10;
+		if(hp!=10)
 		{
-			int hp=(health+5)/10;
 			if(hp==0)
 				hp=1;
-			/*g.setFont(new Font("Courier New",Font.BOLD,10));
-			g.setColor(Color.black);
-			g.fillRect(sprite().width()-8, sprite().height()-8,8,8);
-			g.setColor(Color.white);
-			g.drawString(""+hp, sprite().width()-7, sprite().height()-1);*/
 			g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), sprite().width()-8, sprite().height()-8, null);
 		}
 		
@@ -237,13 +242,38 @@ public class Unit extends Entity
 	private boolean enabled;
 	private Team team;
 	private int fuel, maxFuel;
+	private boolean usesAmmo;
 	private int ammo, maxAmmo;
 	private int health;
 	private int movement;
 	private int vision;
 	private MovementType movementType;
+	private int attackType;
 	
 	private Point attackRange;
+	
+	
+	public static int baseDamage(Unit attacker, Unit defender)
+	{
+		return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.attackType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
+	}
+	
+	public static final int[][] baseAttackChart=new int[][]
+		{
+			new int[]{55,45,5,1,12,5,25,15,25,14},//infantry
+			new int[]{65,55,55,15,85,65,85,70,85,75},//mech
+			new int[]{65,55,6,1,18,6,35,32,35,20},//mech no ammo
+			new int[]{75,70,55,15,85,65,85,70,85,75},//tank
+			new int[]{75,70,6,1,40,6,30,45,55,45},//tank no ammo
+			new int[]{},//md tank
+			new int[]{},//md tank no ammo
+			new int[]{70,65,6,1,35,4,28,45,55,45},//recon
+			new int[]{},//anti-air
+			new int[]{},//missiles
+			new int[]{90,85,70,45,80,75,80,75,80,70},//artillery
+			new int[]{},//rockets
+			new int[]{}//apc
+		};
 	
 }
 

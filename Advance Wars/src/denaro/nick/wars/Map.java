@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import denaro.nick.core.Focusable;
 import denaro.nick.core.Location;
+import denaro.nick.core.Sprite;
 
 public class Map extends Location implements KeyListener, Focusable
 {
@@ -92,6 +93,24 @@ public class Map extends Location implements KeyListener, Focusable
 		if(x>=0&&y>=0&&x<width&&y<height)
 			return(terrain[x][y]);
 		return(null);
+	}
+	
+	public int buildingCount(Team team)
+	{
+		int count=0;
+		for(int y=0;y<height;y++)
+		{
+			for(int x=0;x<width;x++)
+			{
+				if(terrain[x][y] instanceof Building)
+				{
+					Building building=(Building)terrain[x][y];
+					if(building.team()==team)
+						count++;
+				}
+			}
+		}
+		return(count);
 	}
 	
 	public Point cursor()
@@ -386,7 +405,7 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	public double calculateDamage(Unit attacker, Unit defender, Point defenderLocation)
 	{
-		int base=55;//attacker.getBaseDamage(other);
+		double base=Unit.baseDamage(attacker,defender);
 		int aco=attacker.team().commander().attackPower();
 		int r=((int)(Math.random()*10));
 		
@@ -396,7 +415,7 @@ public class Map extends Location implements KeyListener, Focusable
 		int tdf=terrain[defenderLocation.x][defenderLocation.y].defence();
 		int dhp=defender.health()/10;
 		
-		double damage=(base*aco/100.0+r)*ahp/10.0*((200.0-(dco+tdf*dhp))/100.0);
+		double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
 		
 		return(damage);
 	}
@@ -414,13 +433,15 @@ public class Map extends Location implements KeyListener, Focusable
 		Unit defender=units[defenderPoint.x][defenderPoint.y];
 		if(moveUnit())
 		{
-			defender.damage((int)calculateDamage(attacker,defender,defenderPoint));
+			double damage=calculateDamage(attacker,defender,defenderPoint);
+			defender.damage((int)damage);
 			
 			if(defender.health()>0)
 			{
-				if(attacker.attackRange().y==1)
+				if(attacker.attackRange().y==1&&defender.attackRange().y==1)
 				{
-					attacker.damage((int)calculateDamage(defender,attacker,attackerPoint));
+					damage=calculateDamage(defender,attacker,attackerPoint);
+					attacker.damage((int)damage);
 					if(attacker.health()<=0)
 					{
 						destroyUnit(attackerPoint);
@@ -437,7 +458,7 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	public boolean unitCanMove()
 	{
-		if(units[cursor.x][cursor.y]!=null&&units[cursor.x][cursor.y]!=selectedUnit)
+		if(unitIfVisible(cursor.x,cursor.y)!=null&&units[cursor.x][cursor.y]!=selectedUnit)
 			return(false);
 		return(true);
 	}
@@ -597,6 +618,12 @@ public class Map extends Location implements KeyListener, Focusable
 				{
 					moveableArea=new boolean[width][height];
 					createMoveableArea(cursor.x,cursor.y,units[cursor.x][cursor.y],units[cursor.x][cursor.y].movement());
+				}
+				else if(terrain[cursor.x][cursor.y] instanceof Building)
+				{
+					Building building=(Building)terrain[cursor.x][cursor.y];
+					Main.menu=new BuyMenu(null,new Point(0,Main.engine().view().getHeight()-Sprite.sprite("Buy Menu").height()),building);
+					Main.engine().requestFocus(Main.menu);
 				}
 			}
 			else if(cursor.equals(path.last()))

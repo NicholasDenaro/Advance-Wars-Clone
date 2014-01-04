@@ -26,6 +26,9 @@ public class Battle
 		map.resetFog();
 		map.clearFogForTeam(whosTurn());
 		map.enableUnitsForTeam(whosTurn());
+		
+		int count=map.buildingCount(whosTurn());
+		whosTurn().addFunds(count*1000);
 	}
 	
 	private Map map;

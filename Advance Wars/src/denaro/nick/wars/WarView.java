@@ -1,15 +1,11 @@
 package denaro.nick.wars;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 
 import denaro.nick.core.GameView2D;
@@ -53,23 +49,6 @@ public class WarView extends GameView2D
 			}
 		}
 	}
-	
-	/*public void drawFog(Map map, Graphics2D g)
-	{
-		g.setColor(new Color(10,20,40));
-		Composite oldComposite=g.getComposite();
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
-		for(int a=0;a<map.height();a++)
-		{
-			for(int i=0;i<map.width();i++)
-			{
-				if(map.weather().fog())
-					if(map.fog(i, a))
-						g.fillRect(i*Main.TILESIZE, a*Main.TILESIZE, Main.TILESIZE, Main.TILESIZE);
-			}
-		}
-		g.setComposite(oldComposite);
-	}*/
 	
 	public void drawUnits(Map map, Graphics2D g)
 	{
@@ -235,8 +214,6 @@ public class WarView extends GameView2D
 			drawAttackSpaces(map,g);
 			
 			drawUnits(map,g);
-			
-			//drawFog(map,g);
 
 			drawMoveableArea(map,g);
 			drawPath(map,g);

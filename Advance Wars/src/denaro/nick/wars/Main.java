@@ -61,6 +61,9 @@ public class Main
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Action Menu.png"));
 			new Sprite("Action Menu",image,80,16,new Point(0,0));
 			
+			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buy Menu.png"));
+			new Sprite("Buy Menu",image,-1,-1,new Point(0,0));
+			
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Terrain.png"));
 			new Sprite("Terrain",image,16,16,new Point(0,0));
 			
@@ -91,6 +94,7 @@ public class Main
 		try
 		{
 			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),null);
+			infantry.attackType(0);
 			infantry.canCapture(true);
 			infantry.imageIndex(0);
 			infantry.movement(4);
@@ -99,6 +103,7 @@ public class Main
 			infantry.finalize();
 			
 			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),null);
+			recon.attackType(7);
 			recon.imageIndex(8);
 			recon.movement(6);
 			recon.vision(5);
@@ -106,9 +111,11 @@ public class Main
 			recon.finalize();
 			
 			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),null);
+			artillery.attackType(10);
 			artillery.imageIndex(24);
 			artillery.movement(4);
 			artillery.vision(3);
+			artillery.ammo(9);
 			artillery.movementType(MovementType.TIRES);
 			artillery.attackRange(new Point(2,3));
 			artillery.finalize();
@@ -138,6 +145,13 @@ public class Main
 		city=new Building("City",null,new int[]{1,1,1,1,999,999,1});
 		city.defence(4);
 		city.imageIndex(0);
+		
+		base=new Building("Base",null,new int[]{1,1,1,1,999,999,1});
+		base.addSelling("Infantry", infantry, 1000);
+		base.addSelling("Recon", recon, 4000);
+		base.addSelling("Artillery", artillery, 6000);
+		base.defence(4);
+		base.imageIndex(1);
 	}
 	
 	public static void createTeams()
@@ -174,6 +188,7 @@ public class Main
 		}
 		testMap.setTerrain(Building.copy(city, teamOrangeStar), 3, 2);
 		testMap.setTerrain(Building.copy(city, null), 4, 2);
+		testMap.setTerrain(Building.copy(base,teamOrangeStar), 5, 2);
 		engine.addKeyListener(testMap);
 		engine.requestFocus(testMap);
 	}
@@ -245,6 +260,7 @@ public class Main
 	public static Terrain forest;
 	
 	public static Building city;
+	public static Building base;
 	
 	public static Team teamOrangeStar;
 	public static Team teamBlueMoon;
