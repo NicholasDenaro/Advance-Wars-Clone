@@ -16,10 +16,10 @@ import denaro.nick.core.Sprite;
 public class Unit extends Entity
 {
 
-	public Unit(Sprite sprite, Double point, Team team)
+	public Unit(Sprite sprite, Double point, int unitID)
 	{
 		super(sprite, point);
-		this.team=team;
+		this.unitID=unitID;
 		enabled=false;
 		fuel=99;
 		health=100;
@@ -33,9 +33,24 @@ public class Unit extends Entity
 		attackRange=new Point(1,1);
 	}
 	
-	public void attackType(int attackType)
+	public void weapon1(UnitWeapon weapon)
 	{
-		this.attackType=attackType;
+		this.weapon1=weapon;
+	}
+	
+	public void weapon2(UnitWeapon weapon)
+	{
+		this.weapon2=weapon;
+	}
+	
+	public UnitWeapon weapon1()
+	{
+		return(weapon1);
+	}
+	
+	public UnitWeapon weapon2()
+	{
+		return(weapon2);
 	}
 	
 	public Team team()
@@ -85,6 +100,8 @@ public class Unit extends Entity
 	
 	public void ammo(int ammo)
 	{
+		if(!finalized)
+			this.usesAmmo=true;
 		this.ammo=ammo;
 	}
 	
@@ -164,21 +181,29 @@ public class Unit extends Entity
 		enabled=false;
 	}
 	
+	public int unitID()
+	{
+		return(unitID);
+	}
+	
 	public static Unit copy(Unit other)
 	{
-		Unit unit=new Unit(other.sprite(),other.point(),other.team());
+		Unit unit=new Unit(other.sprite(),other.point(),other.unitID);
+		unit.team=other.team;
 		unit.canCapture=other.canCapture;
 		unit.fuel=other.fuel;
 		unit.maxFuel=other.maxFuel;
 		unit.usesAmmo=other.usesAmmo;
 		unit.ammo=other.ammo;
 		unit.maxAmmo=other.maxAmmo;
+		unit.usesAmmo=other.usesAmmo;
 		unit.health=other.health;
 		unit.movement=other.movement;
 		unit.movementType=other.movementType;
 		unit.vision=other.vision;
 		unit.attackRange=other.attackRange;
-		unit.attackType=other.attackType;
+		unit.weapon1=other.weapon1;
+		unit.weapon2=other.weapon2;
 		unit.imageIndex(other.imageIndex());
 		return(unit);
 	}
@@ -193,33 +218,36 @@ public class Unit extends Entity
 	@Override
 	public Image image()
 	{
-		BufferedImage image=new BufferedImage(sprite().width(),sprite().height(),BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g=image.createGraphics();
-		g.drawImage(super.image(), 0, 0, null);
-		Composite oldComposite=g.getComposite();
-		if(team!=null)
+		if(image==null)
 		{
-			Main.swapPalette(image,team,1);
+			image=new BufferedImage(sprite().width(),sprite().height(),BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g=image.createGraphics();
+			g.drawImage(super.image(), 0, 0, null);
+			Composite oldComposite=g.getComposite();
+			if(team!=null)
+			{
+				Main.swapPalette(image,team,1);
+			}
+			
+			/*if(!enabled)
+			{
+				g.setColor(Color.black);
+				//Composite oldComposite=g.getComposite();
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
+				g.fillRect(0, 0, sprite().width(), sprite().height());
+			}
+			g.setComposite(oldComposite);*/
+			
+			/*int hp=(health+5)/10;
+			if(hp!=10)
+			{
+				if(hp==0)
+					hp=1;
+				g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), sprite().width()-8, sprite().height()-8, null);
+			}*/
+			
+			g.dispose();
 		}
-		
-		if(!enabled)
-		{
-			g.setColor(Color.black);
-			//Composite oldComposite=g.getComposite();
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
-			g.fillRect(0, 0, sprite().width(), sprite().height());
-		}
-		
-		g.setComposite(oldComposite);
-		
-		int hp=(health+5)/10;
-		if(hp!=10)
-		{
-			if(hp==0)
-				hp=1;
-			g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), sprite().width()-8, sprite().height()-8, null);
-		}
-		
 		return(image);
 	}
 	
@@ -237,6 +265,7 @@ public class Unit extends Entity
 	}
 
 	private boolean finalized;
+	private int unitID;
 	
 	private boolean canCapture;
 	private boolean enabled;
@@ -248,14 +277,34 @@ public class Unit extends Entity
 	private int movement;
 	private int vision;
 	private MovementType movementType;
-	private int attackType;
+	
+	private UnitWeapon weapon1;
+	private UnitWeapon weapon2;
 	
 	private Point attackRange;
+	
+	private BufferedImage image;
 	
 	
 	public static int baseDamage(Unit attacker, Unit defender)
 	{
-		return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.attackType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
+		if(attacker.weapon2!=null&&attacker.ammo>0&&attacker.weapon2.isEffectiveAggainst(defender.unitID))
+		{
+			//use weapon2
+			attacker.ammo--;
+			return(baseAttackChart[attacker.weapon2.weaponID()][defender.unitID]);
+		}
+		else if(attacker.weapon1!=null)
+		{
+			//use weapon1
+			return(baseAttackChart[attacker.weapon1.weaponID()][defender.unitID]);
+		}
+		else
+		{
+			System.out.println("ERROR: Unit should not have attacked!");
+			return(0);//this shouldn't happen, but if it does, ok....?
+		}
+		//return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.defenceType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
 	}
 	
 	public static final int[][] baseAttackChart=new int[][]

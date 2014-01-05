@@ -26,7 +26,7 @@ public class Map extends Location implements KeyListener, Focusable
 		moveableArea=null;
 		weather=Weather.sunny;
 		attackableArea=null;
-		attackableUnits=null;
+		//attackableUnits=null;
 	}
 	
 	public String name()
@@ -59,17 +59,17 @@ public class Map extends Location implements KeyListener, Focusable
 		if(weather.fog())
 		{
 			if(!fog(x,y))
-				return(units[x][y]);
+				return(unit(x,y));
 			else
 				return(null);
 		}
 		else
-			return(units[x][y]);
+			return(unit(x,y));
 	}
 	
 	public void addUnit(Unit unit, int x, int y)
 	{
-		if(units[x][y]==null)
+		if(unit(x,y)==null)
 			units[x][y]=unit;
 	}
 	
@@ -77,6 +77,7 @@ public class Map extends Location implements KeyListener, Focusable
 	{
 		this.terrain[x][y]=terrain;
 	}
+	
 	
 	public int width()
 	{
@@ -102,9 +103,9 @@ public class Map extends Location implements KeyListener, Focusable
 		{
 			for(int x=0;x<width;x++)
 			{
-				if(terrain[x][y] instanceof Building)
+				if(terrain(x,y) instanceof Building)
 				{
-					Building building=(Building)terrain[x][y];
+					Building building=(Building)terrain(x,y);
 					if(building.team()==team)
 						count++;
 				}
@@ -203,13 +204,13 @@ public class Map extends Location implements KeyListener, Focusable
 			{
 				moveableArea[x][y]=true;
 				if(x>0)
-					createMoveableArea(x-1,y,unit,count-terrain[x-1][y].movementCost(unit.movementType()));
+					createMoveableArea(x-1,y,unit,count-terrain(x-1,y).movementCost(unit.movementType()));
 				if(x+1<width)
-					createMoveableArea(x+1,y,unit,count-terrain[x+1][y].movementCost(unit.movementType()));
+					createMoveableArea(x+1,y,unit,count-terrain(x+1,y).movementCost(unit.movementType()));
 				if(y>0)
-					createMoveableArea(x,y-1,unit,count-terrain[x][y-1].movementCost(unit.movementType()));
+					createMoveableArea(x,y-1,unit,count-terrain(x,y-1).movementCost(unit.movementType()));
 				if(y+1<height)
-					createMoveableArea(x,y+1,unit,count-terrain[x][y+1].movementCost(unit.movementType()));
+					createMoveableArea(x,y+1,unit,count-terrain(x,y+1).movementCost(unit.movementType()));
 			}
 		}
 	}
@@ -230,17 +231,17 @@ public class Map extends Location implements KeyListener, Focusable
 		{
 			for(int i=0;i<width;i++)
 			{
-				if(terrain[i][a] instanceof Building)
+				if(terrain(i,a) instanceof Building)
 				{
-					Building building=(Building)terrain[i][a];
+					Building building=(Building)terrain(i,a);
 					if(building.team()==team)
 						fog[i][a]=true;
 				}
-				if(units[i][a]!=null)
+				if(unit(i,a)!=null)
 				{
-					if(units[i][a].team()==team)
+					if(unit(i,a).team()==team)
 					{
-						clearFog(i,a,units[i][a]);
+						clearFog(i,a,unit(i,a));
 					}
 				}
 			}
@@ -250,7 +251,7 @@ public class Map extends Location implements KeyListener, Focusable
 	public void clearFog(int x, int y, Unit unit)
 	{
 		if(weather.fog())
-			clearFog(x,y,unit,unit.vision()+terrain[x][y].visionBoost()-weather.visionLoss(),true);
+			clearFog(x,y,unit,unit.vision()+terrain(x,y).visionBoost()-weather.visionLoss(),true);
 	}
 	
 	public void enableUnitsForTeam(Team team)
@@ -259,11 +260,11 @@ public class Map extends Location implements KeyListener, Focusable
 		{
 			for(int i=0;i<width;i++)
 			{
-				if(units[i][a]!=null)
+				if(unit(i,a)!=null)
 				{
-					if(units[i][a].team()==team)
+					if(unit(i,a).team()==team)
 					{
-						units[i][a].enabled(true);
+						unit(i,a).enabled(true);
 					}
 				}
 			}
@@ -277,22 +278,22 @@ public class Map extends Location implements KeyListener, Focusable
 		if(points.size()>1)
 		{
 			//reset the capture for a building
-			if(terrain[points.get(0).x][points.get(0).y] instanceof Building)
+			if(terrain(points.get(0).x,points.get(0).y) instanceof Building)
 			{
-				Building building=(Building)terrain[points.get(0).x][points.get(0).y];
+				Building building=(Building)terrain(points.get(0).x,points.get(0).y);
 				building.health(20);
 			}
 		}
 		int i=1;
 		for(;i<points.size();i++)
 		{
-			if(units[points.get(i).x][points.get(i).y]==null)
+			if(unit(points.get(i).x,points.get(i).y)==null)
 			{
 				clearFog(points.get(i).x,points.get(i).y,unit);
 			}
 			else
 			{
-				if(unit.team()!=units[points.get(i).x][points.get(i).y].team())
+				if(unit.team()!=unit(points.get(i).x,points.get(i).y).team())
 				{
 					//TODO Display message "Trap!"
 					trap=true;
@@ -303,9 +304,9 @@ public class Map extends Location implements KeyListener, Focusable
 		i--;
 		if(!points.get(0).equals(points.get(i)))
 		{
-			if(units[points.get(i).x][points.get(i).y]==null)
+			if(unit(points.get(i).x,points.get(i).y)==null)
 			{
-				units[points.get(i).x][points.get(i).y]=units[points.get(0).x][points.get(0).y];
+				units[points.get(i).x][points.get(i).y]=unit(points.get(0).x,points.get(0).y);
 				units[points.get(0).x][points.get(0).y]=null;
 			}
 			else
@@ -328,13 +329,13 @@ public class Map extends Location implements KeyListener, Focusable
 				fog[x+1][y]=true;
 			if(y>0)
 				fog[x][y-1]=true;
-			if(x+1<height)
+			if(y+1<height)
 				fog[x][y+1]=true;
 		}
 		if(count>=0)
 		{
 			if(terrain(x,y)!=null)
-				if(!terrain[x][y].hiding())
+				if(!terrain(x,y).hiding())
 					fog[x][y]=true;
 			if(x>0)
 				clearFog(x-1,y,unit,count-1,false);
@@ -396,9 +397,9 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	public void uniteUnit(Point start, Point end)
 	{
-		if((units[start.x][start.y]!=null)&&(units[end.x][end.y]!=null))
+		if((unit(start.x,start.y)!=null)&&(unit(end.x,end.y)!=null))
 		{
-			units[end.x][end.y].uniteWith(units[start.x][start.y]);
+			unit(end.x,end.y).uniteWith(unit(start.x,start.y));
 			units[start.x][start.y]=null;
 		}
 	}
@@ -412,7 +413,7 @@ public class Map extends Location implements KeyListener, Focusable
 		int ahp=attacker.health()/10;
 		
 		int dco=defender.team().commander().defencePower();
-		int tdf=terrain[defenderLocation.x][defenderLocation.y].defence();
+		int tdf=terrain(defenderLocation.x,defenderLocation.y).defence();
 		int dhp=defender.health()/10;
 		
 		double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
@@ -429,8 +430,8 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	public void attackUnit(Point attackerPoint, Point defenderPoint)
 	{
-		Unit attacker=units[attackerPoint.x][attackerPoint.y];
-		Unit defender=units[defenderPoint.x][defenderPoint.y];
+		Unit attacker=unit(attackerPoint.x,attackerPoint.y);
+		Unit defender=unit(defenderPoint.x,defenderPoint.y);
 		if(moveUnit())
 		{
 			double damage=calculateDamage(attacker,defender,defenderPoint);
@@ -458,7 +459,7 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	public boolean unitCanMove()
 	{
-		if(unitIfVisible(cursor.x,cursor.y)!=null&&units[cursor.x][cursor.y]!=selectedUnit)
+		if(unitIfVisible(cursor.x,cursor.y)!=null&&unit(cursor.x,cursor.y)!=selectedUnit)
 			return(false);
 		return(true);
 	}
@@ -467,11 +468,11 @@ public class Map extends Location implements KeyListener, Focusable
 	{
 		if(path.first().equals(path.last()))
 			return(false);
-		if(units[cursor.x][cursor.y]==null)
+		if(unit(cursor.x,cursor.y)==null)
 			return(false);
-		else if(units[cursor.x][cursor.y].team()!=selectedUnit.team())
+		else if(unit(cursor.x,cursor.y).team()!=selectedUnit.team())
 			return(false);
-		else if(units[cursor.x][cursor.y].health()==100)
+		else if(unit(cursor.x,cursor.y).health()==100)
 			return(false);
 		return(true);
 	}
@@ -490,9 +491,12 @@ public class Map extends Location implements KeyListener, Focusable
 				{
 					for(int i=0;i<width;i++)
 					{
-						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&units[i][a].team()!=selectedUnit.team())
+						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&unit(i,a).team()!=selectedUnit.team())
 						{
-							points.add(new Point(i,a));
+							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(unit(i,a).unitID()))
+								points.add(new Point(i,a));
+							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(unit(i,a).unitID()))
+								points.add(new Point(i,a));
 						}
 					}
 				}
@@ -515,16 +519,16 @@ public class Map extends Location implements KeyListener, Focusable
 	{
 		ArrayList<Point> points=new ArrayList<Point>();
 		if(path.last().x-1>=0)
-			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&units[path.last().x-1][path.last().y].team()!=unit.team())
+			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&unit(path.last().x-1,path.last().y).team()!=unit.team())
 				points.add(new Point(path.last().x-1,path.last().y));
 		if(path.last().x+1<width)
-			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&units[path.last().x+1][path.last().y].team()!=unit.team())
+			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&unit(path.last().x+1,path.last().y).team()!=unit.team())
 				points.add(new Point(path.last().x+1,path.last().y));
 		if(path.last().y-1>=0)
-			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&units[path.last().x][path.last().y-1].team()!=unit.team())
+			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&unit(path.last().x,path.last().y-1).team()!=unit.team())
 				points.add(new Point(path.last().x,path.last().y-1));
-		if(path.last().y-1<height)
-			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&units[path.last().x][path.last().y+1].team()!=unit.team())
+		if(path.last().y+1<height)
+			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&unit(path.last().x,path.last().y+1).team()!=unit.team())
 				points.add(new Point(path.last().x,path.last().y+1));
 		return(points);
 	}
@@ -542,7 +546,7 @@ public class Map extends Location implements KeyListener, Focusable
 				{
 					for(int i=0;i<width;i++)
 					{
-						if(attackableArea[i][a]&&units[i][a]!=null&&units[i][a].team()!=selectedUnit.team())
+						if(attackableArea[i][a]&&unit(i,a)!=null&&unit(i,a).team()!=selectedUnit.team())
 						{
 							attackableArea=null;
 							return(true);
@@ -563,7 +567,7 @@ public class Map extends Location implements KeyListener, Focusable
 	{
 		if(moveUnit())
 		{
-			Building building=(Building)terrain[destination.x][destination.y];
+			Building building=(Building)terrain(destination.x,destination.y);
 			building.damage((unit.health()+5)/10);
 			if(building.health()<=0)
 			{
@@ -580,9 +584,9 @@ public class Map extends Location implements KeyListener, Focusable
 			return(false);
 		if(unitCanMove())
 		{
-			if(terrain[path.last().x][path.last().y] instanceof Building==false)
+			if(terrain(path.last().x,path.last().y) instanceof Building==false)
 				return(false);
-			else if(((Building)terrain[path.last().x][path.last().y]).team()==selectedUnit.team())
+			else if(((Building)terrain(path.last().x,path.last().y)).team()==selectedUnit.team())
 				return(false);
 			else
 				return(true);
@@ -606,24 +610,27 @@ public class Map extends Location implements KeyListener, Focusable
 		{
 			if(selectedUnit==null)
 			{
-				if((units[cursor.x][cursor.y]!=null)&&(units[cursor.x][cursor.y].enabled())&&(units[cursor.x][cursor.y].team()==Main.battle.whosTurn()))
+				if((unit(cursor.x,cursor.y)!=null)&&(unit(cursor.x,cursor.y).enabled())&&(unit(cursor.x,cursor.y).team()==Main.battle.whosTurn()))
 				{
-					selectedUnit=units[cursor.x][cursor.y];
+					selectedUnit=unit(cursor.x,cursor.y);
 					moveableArea=new boolean[width][height];
-					createMoveableArea(cursor.x,cursor.y,units[cursor.x][cursor.y],units[cursor.x][cursor.y].movement());
-					path=new Path(units[cursor.x][cursor.y].movementType(),units[cursor.x][cursor.y].movement());
+					createMoveableArea(cursor.x,cursor.y,unit(cursor.x,cursor.y),unit(cursor.x,cursor.y).movement());
+					path=new Path(unit(cursor.x,cursor.y).movementType(),unit(cursor.x,cursor.y).movement());
 					path.start(cursor.x,cursor.y);
 				}
 				else if(units[cursor.x][cursor.y]!=null)
 				{
 					moveableArea=new boolean[width][height];
-					createMoveableArea(cursor.x,cursor.y,units[cursor.x][cursor.y],units[cursor.x][cursor.y].movement());
+					createMoveableArea(cursor.x,cursor.y,unit(cursor.x,cursor.y),unit(cursor.x,cursor.y).movement());
 				}
-				else if(terrain[cursor.x][cursor.y] instanceof Building)
+				else if(terrain(cursor.x,cursor.y) instanceof Building)
 				{
-					Building building=(Building)terrain[cursor.x][cursor.y];
-					Main.menu=new BuyMenu(null,new Point(0,Main.engine().view().getHeight()-Sprite.sprite("Buy Menu").height()),building);
-					Main.engine().requestFocus(Main.menu);
+					Building building=(Building)terrain(cursor.x,cursor.y);
+					if(building.team()==Main.battle.whosTurn())
+					{
+						Main.menu=new BuyMenu(null,new Point(0,Main.engine().view().getHeight()-Sprite.sprite("Buy Menu").height()),building);
+						Main.engine().requestFocus(Main.menu);
+					}
 				}
 			}
 			else if(cursor.equals(path.last()))
@@ -654,7 +661,7 @@ public class Map extends Location implements KeyListener, Focusable
 				if((unitIfVisible(cursor.x,cursor.y)!=null))
 				{
 					if(attackableArea==null)
-						createAttackableArea(cursor.x,cursor.y,units[cursor.x][cursor.y]);
+						createAttackableArea(cursor.x,cursor.y,unit(cursor.x,cursor.y));
 				}
 			}
 			else
@@ -697,13 +704,13 @@ public class Map extends Location implements KeyListener, Focusable
 	
 	private Unit[][] units;
 	
-	private Terrain terrain[][];
+	private Terrain[][] terrain;
 	
 	private boolean[][] moveableArea;
 	
 	private boolean[][] attackableArea;
 	
-	private ArrayList<Point> attackableUnits;
+	//private ArrayList<Point> attackableUnits;
 	
 	private Weather weather;
 	

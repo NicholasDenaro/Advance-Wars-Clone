@@ -54,6 +54,7 @@ public class Building extends Terrain
 	public void team(Team team)
 	{
 		this.team=team;
+		image=null;
 	}
 	
 	public void addSelling(String name, Unit unit, int price)
@@ -81,15 +82,18 @@ public class Building extends Terrain
 	@Override
 	public Image image()
 	{
-		BufferedImage image=new BufferedImage(sprite().width(),sprite().height(),BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g=image.createGraphics();
-		g.drawImage(super.image(), 0, 0, null);
-		if(team!=null)
+		if(image==null)
 		{
-			Main.swapPalette(image,team,0);
-			g.drawImage(sprite().subimage(imageIndex(),1),0,0,null);
+			image=new BufferedImage(sprite().width(),sprite().height(),BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g=image.createGraphics();
+			g.drawImage(super.image(), 0, 0, null);
+			if(team!=null)
+			{
+				Main.swapPalette(image,team,0);
+				g.drawImage(sprite().subimage(imageIndex(),1),0,0,null);
+			}
+			g.dispose();
 		}
-		
 		return(image);
 	}
 	
@@ -104,12 +108,14 @@ public class Building extends Terrain
 		building.spawnListNames=other.spawnListNames;
 		building.spawnListPrices=other.spawnListPrices;
 		building.spawnListUnits=other.spawnListUnits;
+		building.image=null;
 		return(building);
 	}
 	
 	private int health;
 	private Team team;
 	
+	private BufferedImage image;
 	private ArrayList<String> spawnListNames;
 	private ArrayList<Unit> spawnListUnits;
 	private ArrayList<Integer> spawnListPrices;

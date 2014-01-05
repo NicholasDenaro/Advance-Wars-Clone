@@ -58,12 +58,35 @@ public class WarView extends GameView2D
 			{
 				if(((!map.weather().fog())||(!map.fog(i,a)))&&(map.unit(i,a)!=null))
 				{
-					g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
+					if(!map.unit(i,a).enabled())
+					{
+						Image unitImg=map.unit(i, a).image();
+						BufferedImage image=new BufferedImage(unitImg.getWidth(null),unitImg.getHeight(null),BufferedImage.TYPE_INT_ARGB);
+						Graphics2D gimg=image.createGraphics();
+						gimg.drawImage(unitImg, 0, 0, null);
+						gimg.setColor(Color.black);
+						gimg.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
+						gimg.fillRect(0, 0, image.getWidth(), image.getHeight());
+						g.drawImage(image,i*Main.TILESIZE,a*Main.TILESIZE,null);
+					}
+					else
+					{
+						g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
+					}
 					if(map.terrain(i, a) instanceof Building)
 					{
 						Building building=(Building)map.terrain(i, a);
 						if(building.health()!=20)
+						{
 							g.drawImage(GameFont.fonts.get("Map Font").stringToImage("*"), i*Main.TILESIZE, a*Main.TILESIZE+8, null);
+						}
+					}
+					int hp=(map.unit(i,a).health()+5)/10;
+					if(hp!=10)
+					{
+						if(hp==0)
+							hp=1;
+						g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), i*Main.TILESIZE+8, a*Main.TILESIZE+8, null);
 					}
 				}
 			}
@@ -218,13 +241,12 @@ public class WarView extends GameView2D
 			drawMoveableArea(map,g);
 			drawPath(map,g);
 
-			//drawGrid(map,g);
+			drawGrid(map,g);
 			
 			//draw cursor
 			Sprite cursor=Sprite.sprite("Cursor");
 			g.drawImage(cursor.subimage(0),map.cursor().x*Main.TILESIZE-cursor.anchor().x, map.cursor().y*Main.TILESIZE-cursor.anchor().y,null);
 			
-			//draw menus
 			drawMenus(g);
 			
 			drawInfo(map,g);

@@ -81,14 +81,17 @@ public class BuyMenu extends Menu
 
 		for(int i=0;i<actions.length;i++)
 		{
+			g.drawImage(units[i].image(), 4, 10+i*18, null);
+			
 			if(Main.battle.whosTurn().funds()<prices[i])
-				g.drawImage(units[i].image(), 4, 10+i*18, null);
+			{
+				Main.swapPalette(image, null, 1);
+			}
 			else
 			{
-				units[i].enabled(true);
-				g.drawImage(units[i].image(), 4, 10+i*18, null);
-				units[i].enabled(false);
+				Main.swapPalette(image, Main.battle.whosTurn(), 1);
 			}
+			
 			if(Main.battle.whosTurn().funds()<prices[i])
 				g.setColor(Color.gray);
 			else
