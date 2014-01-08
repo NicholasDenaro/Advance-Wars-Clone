@@ -20,7 +20,7 @@ public class AttackMenu extends Menu
 		super(child, point);
 		this.enemies=enemies;
 		cursor=0;
-		Main.battle.map().cursor(enemies.get(cursor));
+		Main.battle.cursor(enemies.get(cursor));
 	}
 	
 	public ArrayList<Point> enemies()
@@ -34,17 +34,17 @@ public class AttackMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
 		{
 			cursor=(--cursor+enemies.size())%enemies.size();
-			Main.battle.map().cursor(enemies.get(cursor));
+			Main.battle.cursor(enemies.get(cursor));
 		}
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 		{
 			cursor=++cursor%enemies.size();
-			Main.battle.map().cursor(enemies.get(cursor));
+			Main.battle.cursor(enemies.get(cursor));
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			Main.battle.map().attackUnit(Main.battle.map().path().first(),enemies.get(cursor));
+			Main.battle.attackUnit(Main.battle.path().first(),enemies.get(cursor));
 			Main.closeMenu();
 			Main.closeMenu();
 		}

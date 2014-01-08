@@ -32,35 +32,35 @@ public class BattleView extends GameView2D
 		return(image);
 	}
 	
-	public void drawTerrain(Map map, Graphics2D g)
+	public void drawTerrain(Battle battle, Graphics2D g)
 	{
-		for(int a=0;a<map.height();a++)
+		for(int a=0;a<battle.map().height();a++)
 		{
-			for(int i=0;i<map.width();i++)
+			for(int i=0;i<battle.map().width();i++)
 			{
-				Sprite sprite=map.terrain(i, a).sprite();
-				if(map.weather().fog())
-					if(map.fog(i, a))
-						g.drawImage(addFog((BufferedImage)map.terrain(i,a).image()),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
+				Sprite sprite=battle.map().terrain(i, a).sprite();
+				if(battle.weather().fog())
+					if(battle.fog(i, a))
+						g.drawImage(addFog((BufferedImage)battle.map().terrain(i,a).image()),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
 					else
-						g.drawImage((BufferedImage)map.terrain(i,a).image(),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
+						g.drawImage((BufferedImage)battle.map().terrain(i,a).image(),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
 				else
-					g.drawImage((BufferedImage)map.terrain(i,a).image(),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
+					g.drawImage((BufferedImage)battle.map().terrain(i,a).image(),i*Main.TILESIZE-sprite.anchor().x,a*Main.TILESIZE-sprite.anchor().y,null);
 			}
 		}
 	}
 	
-	public void drawUnits(Map map, Graphics2D g)
+	public void drawUnits(Battle battle, Graphics2D g)
 	{
-		for(int a=0;a<map.height();a++)
+		for(int a=0;a<battle.map().height();a++)
 		{
-			for(int i=0;i<map.width();i++)
+			for(int i=0;i<battle.map().width();i++)
 			{
-				if(((!map.weather().fog())||(!map.fog(i,a)))&&(map.unit(i,a)!=null))
+				if(((!battle.weather().fog())||(!battle.fog(i,a)))&&(battle.map().unit(i,a)!=null))
 				{
-					if(!map.unit(i,a).enabled())
+					if(!battle.map().unit(i,a).enabled())
 					{
-						Image unitImg=map.unit(i, a).image();
+						Image unitImg=battle.map().unit(i, a).image();
 						BufferedImage image=new BufferedImage(unitImg.getWidth(null),unitImg.getHeight(null),BufferedImage.TYPE_INT_ARGB);
 						Graphics2D gimg=image.createGraphics();
 						gimg.drawImage(unitImg, 0, 0, null);
@@ -71,17 +71,17 @@ public class BattleView extends GameView2D
 					}
 					else
 					{
-						g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
+						g.drawImage(battle.map().unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
 					}
-					if(map.terrain(i, a) instanceof Building)
+					if(battle.map().terrain(i, a) instanceof Building)
 					{
-						Building building=(Building)map.terrain(i, a);
+						Building building=(Building)battle.map().terrain(i, a);
 						if(building.health()!=20)
 						{
 							g.drawImage(GameFont.fonts.get("Map Font").stringToImage("*"), i*Main.TILESIZE, a*Main.TILESIZE+8, null);
 						}
 					}
-					int hp=(map.unit(i,a).health()+5)/10;
+					int hp=(battle.map().unit(i,a).health()+5)/10;
 					if(hp>=0&&hp!=10)
 					{
 						if(hp==0)
@@ -93,46 +93,46 @@ public class BattleView extends GameView2D
 		}
 	}
 	
-	public void drawMoveableArea(Map map, Graphics2D g)
+	public void drawMoveableArea(Battle battle, Graphics2D g)
 	{
-		if(map.moveableArea()==null)
+		if(battle.moveableArea()==null)
 			return;
 		g.setColor(Color.cyan);
 		Composite oldComposite=g.getComposite();
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-		for(int a=0;a<map.height();a++)
+		for(int a=0;a<battle.map().height();a++)
 		{
-			for(int i=0;i<map.width();i++)
+			for(int i=0;i<battle.map().width();i++)
 			{
-				if(map.moveableArea(i,a))
+				if(battle.moveableArea(i,a))
 					g.fillRect(i*Main.TILESIZE, a*Main.TILESIZE, Main.TILESIZE, Main.TILESIZE);
 			}
 		}
 		g.setComposite(oldComposite);
 	}
 	
-	public void drawPath(Map map, Graphics2D g)
+	public void drawPath(Battle battle, Graphics2D g)
 	{
 		Path path;
-		if((path=map.path())!=null)
+		if((path=battle.path())!=null)
 		{
-			g.drawImage(path.image(map.width(),map.height()),0,0,null);
+			g.drawImage(path.image(battle.map().width(),battle.map().height()),0,0,null);
 		}
 	}
 	
-	public void drawAttackSpaces(Map map, Graphics2D g)
+	public void drawAttackSpaces(Battle battle, Graphics2D g)
 	{
-		if(map.attackableArea()!=null)
+		if(battle.attackableArea()!=null)
 		{
 			g.setColor(Color.red);
 			Composite oldComposite=g.getComposite();
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f));
 			
-			for(int a=0;a<map.height();a++)
+			for(int a=0;a<battle.map().height();a++)
 			{
-				for(int i=0;i<map.width();i++)
+				for(int i=0;i<battle.map().width();i++)
 				{
-					if(map.attackableArea(i,a))
+					if(battle.attackableArea(i,a))
 						g.fillRect(i*Main.TILESIZE, a*Main.TILESIZE, Main.TILESIZE, Main.TILESIZE);
 				}
 			}
@@ -141,19 +141,19 @@ public class BattleView extends GameView2D
 		}
 	}
 	
-	public void drawGrid(Map map, Graphics2D g)
+	public void drawGrid(Battle battle, Graphics2D g)
 	{
 		Composite oldComposite=g.getComposite();
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
 		g.setColor(Color.gray);
-		for(int i=0;i<map.width();i++)
+		for(int i=0;i<battle.map().width();i++)
 		{
-			g.drawLine(i*Main.TILESIZE, 0, i*Main.TILESIZE, map.height()*Main.TILESIZE);
+			g.drawLine(i*Main.TILESIZE, 0, i*Main.TILESIZE, battle.map().height()*Main.TILESIZE);
 		}
 		
-		for(int a=0;a<map.height();a++)
+		for(int a=0;a<battle.map().height();a++)
 		{
-			g.drawLine(0,a*Main.TILESIZE,map.width()*Main.TILESIZE,a*Main.TILESIZE);
+			g.drawLine(0,a*Main.TILESIZE,battle.map().width()*Main.TILESIZE,a*Main.TILESIZE);
 		}
 		g.setComposite(oldComposite);
 	}
@@ -169,12 +169,12 @@ public class BattleView extends GameView2D
 		}
 	}
 	
-	public void drawInfo(Map map, Graphics2D g)
+	public void drawInfo(Battle battle, Graphics2D g)
 	{
-		Point cursor=map.cursor();
+		Point cursor=battle.cursor();
 		
 		//terrain info
-		Terrain terrain=map.terrain(cursor.x, cursor.y);
+		Terrain terrain=battle.map().terrain(cursor.x, cursor.y);
 		
 		Composite oldComposite=g.getComposite();
 		g.setColor(Color.black);
@@ -202,7 +202,7 @@ public class BattleView extends GameView2D
 		}
 		
 		//unit info
-		Unit unit=map.unitIfVisible(cursor.x, cursor.y);
+		Unit unit=battle.unitIfVisible(cursor.x, cursor.y);
 		if(unit!=null)
 		{
 			oldComposite=g.getComposite();
@@ -233,7 +233,7 @@ public class BattleView extends GameView2D
 	{
 		if(currentLocation instanceof Map)
 		{
-			Map map=(Map)currentLocation;
+			Battle map=Main.battle;
 
 			drawTerrain(map,g);
 			

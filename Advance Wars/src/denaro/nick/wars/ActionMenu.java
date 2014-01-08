@@ -42,22 +42,22 @@ public class ActionMenu extends Menu
 		{
 			if(actions[cursor].equals("Move"))
 			{
-				Main.battle.map().moveUnit();
+				Main.battle.moveUnit();
 				Main.closeMenu();
 			}
 			else if(actions[cursor].equals("Capture"))
 			{
-				Main.battle.map().captureUnit(Main.battle.map().selectedUnit(),Main.battle.map().path().last());
+				Main.battle.captureUnit(Main.battle.selectedUnit(),Main.battle.path().last());
 				Main.closeMenu();
 			}
 			else if(actions[cursor].equals("Unite"))
 			{
-				Main.battle.map().moveUnit();
+				Main.battle.moveUnit();
 				Main.closeMenu();
 			}
 			if(actions[cursor].equals("Attack"))
 			{
-				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.map().attackableUnits());
+				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.attackableUnits());
 				Main.openMenu(menu);
 			}
 			else if(actions[cursor].equals("Cancel"))

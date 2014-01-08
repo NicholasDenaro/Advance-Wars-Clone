@@ -50,7 +50,7 @@ public class BuyMenu extends Menu
 			if(Main.battle.whosTurn().funds()>=prices[cursor])
 			{
 				Main.battle.whosTurn().addFunds(-prices[cursor]);
-				Main.battle.map().addUnit(Unit.copy(units[cursor],Main.battle.whosTurn()), Main.battle.map().cursor().x, Main.battle.map().cursor().y);
+				Main.battle.map().addUnit(Unit.copy(units[cursor],Main.battle.whosTurn()), Main.battle.cursor().x, Main.battle.cursor().y);
 				Main.closeMenu();
 			}
 		}

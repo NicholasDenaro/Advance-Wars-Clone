@@ -50,6 +50,8 @@ public class Main
 		
 		battle=new Battle(testMap, new Team[]{teamOrangeStar,teamBlueMoon,teamGreenEarth});
 		
+		setBattleOptions();
+		
 		menu=null;
 		
 		engine.start();
@@ -231,7 +233,6 @@ public class Main
 		if(!new File("Test Map.mp").exists())
 		{
 			testMap=new Map("Test Room",8,8);
-			testMap.weather(Weather.foggy);
 			testMap.addUnit(Unit.copy(infantry,teamOrangeStar),3,4);
 			Unit damagedUnit=Unit.copy(infantry,teamOrangeStar);
 			damagedUnit.health(67);
@@ -298,8 +299,14 @@ public class Main
 			System.out.println("Done reading!");
 		}
 		engine.location(testMap);
-		engine.addKeyListener(testMap);
-		engine.requestFocus(testMap);
+	}
+	
+	public static void setBattleOptions()
+	{
+		battle.weather(Weather.foggy);
+		
+		engine.addKeyListener(battle);
+		engine.requestFocus(battle);
 	}
 	
 	public static void openMenu(Menu menu)
@@ -329,7 +336,7 @@ public class Main
 		else
 		{
 			menu=null;
-			engine.requestFocus(testMap);
+			engine.requestFocus(battle);
 		}
 	}
 	
@@ -353,7 +360,6 @@ public class Main
 	{
 		int id=in.readInt();
 		Map map=new Map((String)in.readObject(),in.readInt(),in.readInt());
-		map.weather((Weather)weatherMap.get(in.readInt()));
 		
 		
 		for(int a=0;a<map.height();a++)
@@ -414,8 +420,6 @@ public class Main
 		out.writeObject(map.name());
 		out.writeInt(map.width());
 		out.writeInt(map.height());
-		
-		out.writeInt(map.weather().id());
 		
 		for(int a=0;a<map.height();a++)
 		{
