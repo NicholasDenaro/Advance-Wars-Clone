@@ -189,6 +189,7 @@ public class Unit extends Entity
 	public static Unit copy(Unit other)
 	{
 		Unit unit=new Unit(other.sprite(),other.point(),other.unitID);
+		unit.id(other.id());
 		unit.team=other.team;
 		unit.canCapture=other.canCapture;
 		unit.fuel=other.fuel;

@@ -100,6 +100,7 @@ public class Building extends Terrain
 	public static Building copy(Building other, Team team)
 	{
 		Building building=new Building(other.name(),team);
+		building.id(other.id());
 		building.imageIndex(other.imageIndex());
 		building.defence(other.defence());
 		building.movementCosts(other.movementCosts());

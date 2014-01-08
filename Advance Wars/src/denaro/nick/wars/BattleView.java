@@ -12,10 +12,10 @@ import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 
-public class WarView extends GameView2D
+public class BattleView extends GameView2D
 {
 
-	public WarView(int width, int height, double hscale, double vscale)
+	public BattleView(int width, int height, double hscale, double vscale)
 	{
 		super(width, height, hscale, vscale);
 		// TODO Auto-generated constructor stub
@@ -82,7 +82,7 @@ public class WarView extends GameView2D
 						}
 					}
 					int hp=(map.unit(i,a).health()+5)/10;
-					if(hp!=10)
+					if(hp>=0&&hp!=10)
 					{
 						if(hp==0)
 							hp=1;
@@ -143,6 +143,8 @@ public class WarView extends GameView2D
 	
 	public void drawGrid(Map map, Graphics2D g)
 	{
+		Composite oldComposite=g.getComposite();
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
 		g.setColor(Color.gray);
 		for(int i=0;i<map.width();i++)
 		{
@@ -153,6 +155,7 @@ public class WarView extends GameView2D
 		{
 			g.drawLine(0,a*Main.TILESIZE,map.width()*Main.TILESIZE,a*Main.TILESIZE);
 		}
+		g.setComposite(oldComposite);
 	}
 	
 	public void drawMenus(Graphics2D g)

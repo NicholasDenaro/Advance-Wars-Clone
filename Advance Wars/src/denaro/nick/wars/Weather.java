@@ -25,6 +25,6 @@ public class Weather extends Identifiable
 	
 	public static Weather sunny=new Weather("Sunny",false,0);
 	public static Weather foggy=new Weather("Foggy",true,0);
-	public static Weather rain=new Weather("Rain",true,1);
-	public static Weather snow=new Weather("Snow",true,2);
+	public static Weather rainy=new Weather("Rainy",true,1);
+	public static Weather snowy=new Weather("Snowy",true,0);
 }

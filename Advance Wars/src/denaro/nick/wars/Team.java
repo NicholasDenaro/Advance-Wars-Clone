@@ -2,7 +2,9 @@ package denaro.nick.wars;
 
 import java.awt.Color;
 
-public class Team
+import denaro.nick.core.Identifiable;
+
+public class Team extends Identifiable
 {
 	public Team(String name, int color, Commander commander)
 	{
