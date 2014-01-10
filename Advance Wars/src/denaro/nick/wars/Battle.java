@@ -8,17 +8,39 @@ import java.util.ArrayList;
 import denaro.nick.core.Focusable;
 import denaro.nick.core.Sprite;
 
-public class Battle implements KeyListener, Focusable
+public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
 {
-	public Battle(Map map, Team[] teams)
+	public Battle(Map map, ArrayList<Team> teams)
 	{
 		this.map=map;
+		createListeners();
 		this.teams=teams;
+		
 		turn=-1;
-		cursor=new Point(0,0);
+		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
 		weather=Weather.sunny;
+		this.addCursorListener(this);
 		nextTurn();
+	}
+	
+	private void createListeners()
+	{
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				if(map.terrain(i, a) instanceof Building)
+				{
+					Building building=(Building)map.terrain(i,a);
+					building.addBuildingListener(this);
+				}
+				if(map.unit(i,a)!=null)
+				{
+					map.unit(i,a).addUnitListener(this);
+				}
+			}
+		}
 	}
 	
 	public Map map()
@@ -28,12 +50,12 @@ public class Battle implements KeyListener, Focusable
 	
 	public Team whosTurn()
 	{
-		return(teams[turn]);
+		return(teams.get(turn));
 	}
 	
 	public void nextTurn()
 	{
-		turn=++turn%teams.length;
+		turn=++turn%teams.size();
 		resetFog();
 		clearFogForTeam(whosTurn());
 		enableUnitsForTeam(whosTurn());
@@ -43,53 +65,6 @@ public class Battle implements KeyListener, Focusable
 	}
 	
 	//-------------------------------------------------------------------------------
-	
-	public void enableUnitsForTeam(Team team)
-	{
-		for(int a=0;a<map.height();a++)
-		{
-			for(int i=0;i<map.width();i++)
-			{
-				if(map.unit(i,a)!=null)
-				{
-					if(map.unit(i,a).team()==team)
-					{
-						map.unit(i,a).enabled(true);
-					}
-				}
-			}
-		}
-	}
-	
-	public Path path()
-	{
-		return(path);
-	}
-	
-	public Unit selectedUnit()
-	{
-		return(selectedUnit);
-	}
-	
-	public Point cursor()
-	{
-		return(cursor);
-	}
-	
-	public void cursor(Point point)
-	{
-		cursor=point;
-	}
-	
-	public boolean moveableArea(int x, int y)
-	{
-		return(moveableArea[x][y]);
-	}
-	
-	public boolean[][] moveableArea()
-	{
-		return(moveableArea);
-	}
 	
 	public boolean[][] attackableArea()
 	{
@@ -101,24 +76,190 @@ public class Battle implements KeyListener, Focusable
 		return(attackableArea[x][y]);
 	}
 	
-	public void weather(Weather weather)
+	public ArrayList<Point> attackableUnits()
 	{
-		this.weather=weather;
+		if(selectedUnit.attackRange().y!=1)
+		{
+			if(path.points().size()>1)
+				return(null);
+			else
+			{
+				ArrayList<Point> points=new ArrayList<Point>();
+				createAttackableArea(path.last().x,path.last().y,selectedUnit);
+				for(int a=0;a<map.height();a++)
+				{
+					for(int i=0;i<map.width();i++)
+					{
+						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
+						{
+							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(map.unit(i,a).unitID()))
+								points.add(new Point(i,a));
+							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(map.unit(i,a).unitID()))
+								points.add(new Point(i,a));
+						}
+					}
+				}
+				attackableArea=null;
+				return(points);
+			}
+		}
+		else
+		{
+			return(enemiesNextToUnit(selectedUnit));
+		}
 	}
 	
-	public Weather weather()
+	public void attackUnit(Point attackerPoint, Point defenderPoint)
 	{
-		return(weather);
+		Unit attacker=map.unit(attackerPoint.x,attackerPoint.y);
+		Unit defender=map.unit(defenderPoint.x,defenderPoint.y);
+		if(moveUnit())
+		{
+			double damage=calculateDamage(attacker,defender,defenderPoint);
+			defender.damage((int)damage);
+			
+			if(defender.health()>0)
+			{
+				if(attacker.attackRange().y==1&&defender.attackRange().y==1)
+				{
+					damage=calculateDamage(defender,attacker,attackerPoint);
+					attacker.damage((int)damage);
+					if(attacker.health()<=0)
+					{
+						destroyUnit(attackerPoint);
+					}
+				}
+			}
+			else
+			{
+				destroyUnit(defenderPoint);
+			}
+		}
+		//else was trapped
 	}
 	
-	public boolean fog(int x, int y)
+	@Override
+	public void buildingCaptured(Building building, Team oldTeam, Team newTeam)
 	{
-		return(!fog[x][y]);
+		if(building.hq())
+		{
+			teamLoses(oldTeam);
+			
+			//check if newTeam has won;
+			if(map.teams().size()==1)
+			{
+				System.out.println("The "+newTeam.name()+" army is victorious!");
+			}
+		}
+		else
+		{
+			building.team(newTeam);
+			if(oldTeam!=null&&checkLoseConditions(oldTeam))
+			{
+				teamLoses(oldTeam);
+			}
+		}
 	}
 	
-	public void resetFog()
+	public double calculateDamage(Unit attacker, Unit defender, Point defenderLocation)
 	{
-		fog=new boolean[map.width()][map.height()];
+		double base=Unit.baseDamage(attacker,defender);
+		int aco=attacker.team().commander().attackPower();
+		int r=((int)(Math.random()*10));
+		
+		int ahp=attacker.health()/10;
+		
+		int dco=defender.team().commander().defencePower();
+		int tdf=map.terrain(defenderLocation.x,defenderLocation.y).defence();
+		int dhp=defender.health()/10;
+		
+		double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
+		
+		return(damage);
+	}
+	
+	public boolean canUnitAttack()
+	{
+		if(selectedUnit.attackRange().x!=1)
+		{
+			if(path.points().size()>1)
+				return(false);
+			else
+			{
+				createAttackableArea(path.last().x,path.last().y,selectedUnit);
+				for(int a=0;a<map.height();a++)
+				{
+					for(int i=0;i<map.width();i++)
+					{
+						if(attackableArea[i][a]&&map.unit(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
+						{
+							attackableArea=null;
+							return(true);
+						}
+					}
+				}
+				attackableArea=null;
+				return(false);
+			}
+		}
+		else
+		{
+			return(isEnemyNextToUnit(selectedUnit));
+		}
+	}
+	
+	public boolean canUnitCapture()
+	{
+		if(!selectedUnit.canCapture())
+			return(false);
+		if(canUnitMove())
+		{
+			if(map.terrain(path.last().x,path.last().y) instanceof Building==false)
+				return(false);
+			else if(((Building)map.terrain(path.last().x,path.last().y)).team()==selectedUnit.team())
+				return(false);
+			else
+				return(true);
+		}
+		return(false);
+	}
+	
+	public boolean canUnitMove()
+	{
+		if(unitIfVisible(cursor().x,cursor().y)!=null&&map.unit(cursor().x,cursor().y)!=selectedUnit)
+			return(false);
+		return(true);
+	}
+	
+	public boolean canUnitUnite()
+	{
+		if(path.first().equals(path.last()))
+			return(false);
+		if(map.unit(cursor().x,cursor().y)==null)
+			return(false);
+		else if(map.unit(cursor().x,cursor().y).team()!=selectedUnit.team())
+			return(false);
+		else if(map.unit(cursor().x,cursor().y).health()==100)
+			return(false);
+		return(true);
+	}
+	
+	public boolean checkLoseConditions(Team team)
+	{
+		boolean hasHQ=map.teamHasHQ(team);
+		boolean hasUnits=map.teamHasUnits(team);
+		boolean hasBases=map.teamHasBuilding(team,Main.base.id());
+		//System.out.println("hq: "+hasHQ+" - units: "+hasUnits);
+		if(!hasHQ&&!(hasUnits||hasBases))
+		{
+			return(true);
+		}
+		return(false);
+	}
+	
+	public void clearFog(int x, int y, Unit unit)
+	{
+		clearFog(x,y,unit,unit.vision()+map.terrain(x,y).visionBoost()-weather.visionLoss(),true);
 	}
 	
 	public void clearFog(int x, int y, Unit unit, int count, boolean nextTo)
@@ -146,7 +287,7 @@ public class Battle implements KeyListener, Focusable
 				clearFog(x+1,y,unit,count-1,false);
 			if(y>0)
 				clearFog(x,y-1,unit,count-1,false);
-			if(x+1<map.height())
+			if(y+1<map.height())
 				clearFog(x,y+1,unit,count-1,false);
 		}
 	}
@@ -174,22 +315,50 @@ public class Battle implements KeyListener, Focusable
 		}
 	}
 	
-	public Unit unitIfVisible(int x, int y)
+	public void createAttackableArea(int x, int y, Unit unit)
 	{
-		if(weather.fog())
+		if(unit.attackRange().x==1)
 		{
-			if(!fog(x,y))
-				return(map.unit(x,y));
-			else
-				return(null);
+			attackableArea=new boolean[map.width()][map.height()];
+			moveableArea=new boolean[map.width()][map.height()];
+			createMoveableArea(x,y,unit,unit.movement());
+			for(int a=0;a<map.height();a++)
+			{
+				for(int i=0;i<map.width();i++)
+				{
+					if(moveableArea[i][a])
+					{
+						if(i>0)
+							attackableArea[i-1][a]=true;
+						if(i+1<map.width())
+							attackableArea[i+1][a]=true;
+						if(a>0)
+							attackableArea[i][a-1]=true;
+						if(a+1<map.height())
+							attackableArea[i][a+1]=true;
+					}
+				}
+			}
+			moveableArea=null;
 		}
 		else
-			return(map.unit(x,y));
-	}
-	
-	public void clearFog(int x, int y, Unit unit)
-	{
-		clearFog(x,y,unit,unit.vision()+map.terrain(x,y).visionBoost()-weather.visionLoss(),true);
+		{
+			attackableArea=new boolean[map.width()][map.height()];
+			//int minRange=unit.attackRange().x;
+			int maxRange=unit.attackRange().y;
+			for(int a=-maxRange;a<maxRange*2;a++)
+			{
+				for(int i=-maxRange;i<maxRange*2;i++)
+				{
+					int dist=Math.abs(i)+Math.abs(a);
+					if(dist>=unit.attackRange().x&&dist<=unit.attackRange().y)
+					{
+						if((cursor().x+i>=0)&&(cursor().x+i<map.width())&&(cursor().y+a>=0)&&(cursor().y+a<map.height()))
+							attackableArea[cursor().x+i][cursor().y+a]=true;
+					}
+				}
+			}
+		}
 	}
 	
 	public void createMoveableArea(int x, int y, Unit unit, int count)
@@ -210,6 +379,90 @@ public class Battle implements KeyListener, Focusable
 					createMoveableArea(x,y+1,unit,count-map.terrain(x,y+1).movementCost(unit.movementType()));
 			}
 		}
+	}
+	
+	public int columns()
+	{
+		return(map.width());
+	}
+	
+	public void cursorMoved(Point cursor)
+	{
+		if(path!=null&&moveableArea[cursor.x][cursor.y])
+			path.addPoint(cursor.x, cursor.y);
+	}
+	
+	public void destroyUnit(Point point)
+	{
+		Unit unit=map.unit(point.x,point.y);
+		map.setUnit(null,point.x,point.y);
+		unit.destroyUnit();
+		
+		//TODO dead particle effect;
+	}
+	
+	public void enableUnitsForTeam(Team team)
+	{
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				if(map.unit(i,a)!=null)
+				{
+					if(map.unit(i,a).team()==team)
+					{
+						map.unit(i,a).enabled(true);
+					}
+				}
+			}
+		}
+	}
+	
+	public ArrayList<Point> enemiesNextToUnit(Unit unit)
+	{
+		ArrayList<Point> points=new ArrayList<Point>();
+		if(path.last().x-1>=0)
+			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&map.unit(path.last().x-1,path.last().y).team()!=unit.team())
+				points.add(new Point(path.last().x-1,path.last().y));
+		if(path.last().x+1<map.width())
+			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&map.unit(path.last().x+1,path.last().y).team()!=unit.team())
+				points.add(new Point(path.last().x+1,path.last().y));
+		if(path.last().y-1>=0)
+			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&map.unit(path.last().x,path.last().y-1).team()!=unit.team())
+				points.add(new Point(path.last().x,path.last().y-1));
+		if(path.last().y+1<map.height())
+			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&map.unit(path.last().x,path.last().y+1).team()!=unit.team())
+				points.add(new Point(path.last().x,path.last().y+1));
+		return(points);
+	}
+	
+	public boolean fog(int x, int y)
+	{
+		return(!fog[x][y]);
+	}
+	
+	public boolean isEnemyNextToUnit(Unit unit)
+	{
+		return(!enemiesNextToUnit(unit).isEmpty());
+	}
+	
+	public boolean[][] moveableArea()
+	{
+		return(moveableArea);
+	}
+	
+	public boolean moveableArea(int x, int y)
+	{
+		return(moveableArea[x][y]);
+	}
+	
+	public boolean moveUnit()
+	{
+		boolean notTrap=this.moveUnitAlongPath(selectedUnit, path);
+		selectedUnit=null;
+		path=null;
+		moveableArea=new boolean[map.width()][map.height()];
+		return(notTrap);
 	}
 	
 	public boolean moveUnitAlongPath(Unit unit, Path path)
@@ -260,237 +513,63 @@ public class Battle implements KeyListener, Focusable
 		return(!trap);
 	}
 	
+	public Path path()
+	{
+		return(path);
+	}
+	
+	public void replaceTeam(Team oldTeam, Team newTeam)
+	{
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				if(map.terrain(i, a) instanceof Building)
+				{
+					Building building=(Building)map.terrain(i,a);
+					if(building.team()==oldTeam)
+						building.team(newTeam);
+				}
+			}
+		}
+	}
+	
+	public void resetFog()
+	{
+		fog=new boolean[map.width()][map.height()];
+	}
+	
+	public int rows()
+	{
+		return(map.height());
+	}
+	
+	public Unit selectedUnit()
+	{
+		return(selectedUnit);
+	}
+	
+	public void spawnUnit(Unit unit, Point spawnLocation)
+	{
+		unit.addUnitListener(this);
+		map.addUnit(unit,cursor().x,cursor().y);
+		clearFog(Main.battle.cursor().x, Main.battle.cursor().y, unit);
+	}
+	
+	public void teamLoses(Team team)
+	{
+		System.out.println("The "+team.name()+" army has been defeated!");
+		replaceTeam(team,null);
+	}
+	
 	@Override
-	public void keyTyped(KeyEvent ke)
+	public void unitAttacked(Unit unit, int damage)
 	{
-		//empty
-	}
-	
-	public boolean moveUnit()
-	{
-		boolean notTrap=this.moveUnitAlongPath(selectedUnit, path);
-		selectedUnit=null;
-		path=null;
-		moveableArea=new boolean[map.width()][map.height()];
-		return(notTrap);
-	}
-	
-	public void uniteUnit(Point start, Point end)
-	{
-		if((map.unit(start.x,start.y)!=null)&&(map.unit(end.x,end.y)!=null))
-		{
-			map.unit(end.x,end.y).uniteWith(map.unit(start.x,start.y));
-			map.addUnit(null,start.x,start.y);
-		}
-	}
-	
-	public double calculateDamage(Unit attacker, Unit defender, Point defenderLocation)
-	{
-		double base=Unit.baseDamage(attacker,defender);
-		int aco=attacker.team().commander().attackPower();
-		int r=((int)(Math.random()*10));
+		// TODO Auto-generated method stub
 		
-		int ahp=attacker.health()/10;
-		
-		int dco=defender.team().commander().defencePower();
-		int tdf=map.terrain(defenderLocation.x,defenderLocation.y).defence();
-		int dhp=defender.health()/10;
-		
-		double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
-		
-		return(damage);
 	}
 	
-	public void destroyUnit(Point point)
-	{
-		//units[point.x][point.y]=null;
-		map.addUnit(null,point.x,point.y);
-		//TODO dead particle effect;
-		//TODO determine if team loses;
-	}
-	
-	public void createAttackableArea(int x, int y, Unit unit)
-	{
-		if(unit.attackRange().x==1)
-		{
-			attackableArea=new boolean[map.width()][map.height()];
-			moveableArea=new boolean[map.width()][map.height()];
-			createMoveableArea(x,y,unit,unit.movement());
-			for(int a=0;a<map.height();a++)
-			{
-				for(int i=0;i<map.width();i++)
-				{
-					if(moveableArea[i][a])
-					{
-						if(i>0)
-							attackableArea[i-1][a]=true;
-						if(i+1<map.width())
-							attackableArea[i+1][a]=true;
-						if(a>0)
-							attackableArea[i][a-1]=true;
-						if(a+1<map.height())
-							attackableArea[i][a+1]=true;
-					}
-				}
-			}
-			moveableArea=null;
-		}
-		else
-		{
-			attackableArea=new boolean[map.width()][map.height()];
-			int minRange=unit.attackRange().x;
-			int maxRange=unit.attackRange().y;
-			for(int a=-maxRange;a<maxRange*2;a++)
-			{
-				for(int i=-maxRange;i<maxRange*2;i++)
-				{
-					int dist=Math.abs(i)+Math.abs(a);
-					if(dist>=unit.attackRange().x&&dist<=unit.attackRange().y)
-					{
-						if((cursor.x+i>=0)&&(cursor.x+i<map.width())&&(cursor.y+a>=0)&&(cursor.y+a<map.height()))
-							attackableArea[cursor.x+i][cursor.y+a]=true;
-					}
-				}
-			}
-		}
-	}
-	
-	public void attackUnit(Point attackerPoint, Point defenderPoint)
-	{
-		Unit attacker=map.unit(attackerPoint.x,attackerPoint.y);
-		Unit defender=map.unit(defenderPoint.x,defenderPoint.y);
-		if(moveUnit())
-		{
-			double damage=calculateDamage(attacker,defender,defenderPoint);
-			defender.damage((int)damage);
-			
-			if(defender.health()>0)
-			{
-				if(attacker.attackRange().y==1&&defender.attackRange().y==1)
-				{
-					damage=calculateDamage(defender,attacker,attackerPoint);
-					attacker.damage((int)damage);
-					if(attacker.health()<=0)
-					{
-						destroyUnit(attackerPoint);
-					}
-				}
-			}
-			else
-			{
-				destroyUnit(defenderPoint);
-			}
-		}
-		//else was trapped
-	}
-	
-	public boolean unitCanMove()
-	{
-		if(unitIfVisible(cursor.x,cursor.y)!=null&&map.unit(cursor.x,cursor.y)!=selectedUnit)
-			return(false);
-		return(true);
-	}
-	
-	public boolean unitCanUnite()
-	{
-		if(path.first().equals(path.last()))
-			return(false);
-		if(map.unit(cursor.x,cursor.y)==null)
-			return(false);
-		else if(map.unit(cursor.x,cursor.y).team()!=selectedUnit.team())
-			return(false);
-		else if(map.unit(cursor.x,cursor.y).health()==100)
-			return(false);
-		return(true);
-	}
-	
-	public ArrayList<Point> attackableUnits()
-	{
-		if(selectedUnit.attackRange().y!=1)
-		{
-			if(path.points().size()>1)
-				return(null);
-			else
-			{
-				ArrayList<Point> points=new ArrayList<Point>();
-				createAttackableArea(path.last().x,path.last().y,selectedUnit);
-				for(int a=0;a<map.height();a++)
-				{
-					for(int i=0;i<map.width();i++)
-					{
-						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
-						{
-							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(map.unit(i,a).unitID()))
-								points.add(new Point(i,a));
-							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(map.unit(i,a).unitID()))
-								points.add(new Point(i,a));
-						}
-					}
-				}
-				attackableArea=null;
-				return(points);
-			}
-		}
-		else
-		{
-			return(enemiesNextToUnit(selectedUnit));
-		}
-	}
-	
-	public boolean isEnemyNextToUnit(Unit unit)
-	{
-		return(!enemiesNextToUnit(unit).isEmpty());
-	}
-	
-	public ArrayList<Point> enemiesNextToUnit(Unit unit)
-	{
-		ArrayList<Point> points=new ArrayList<Point>();
-		if(path.last().x-1>=0)
-			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&map.unit(path.last().x-1,path.last().y).team()!=unit.team())
-				points.add(new Point(path.last().x-1,path.last().y));
-		if(path.last().x+1<map.width())
-			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&map.unit(path.last().x+1,path.last().y).team()!=unit.team())
-				points.add(new Point(path.last().x+1,path.last().y));
-		if(path.last().y-1>=0)
-			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&map.unit(path.last().x,path.last().y-1).team()!=unit.team())
-				points.add(new Point(path.last().x,path.last().y-1));
-		if(path.last().y+1<map.height())
-			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&map.unit(path.last().x,path.last().y+1).team()!=unit.team())
-				points.add(new Point(path.last().x,path.last().y+1));
-		return(points);
-	}
-	
-	public boolean unitCanAttack()
-	{
-		if(selectedUnit.attackRange().x!=1)
-		{
-			if(path.points().size()>1)
-				return(false);
-			else
-			{
-				createAttackableArea(path.last().x,path.last().y,selectedUnit);
-				for(int a=0;a<map.height();a++)
-				{
-					for(int i=0;i<map.width();i++)
-					{
-						if(attackableArea[i][a]&&map.unit(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
-						{
-							attackableArea=null;
-							return(true);
-						}
-					}
-				}
-				attackableArea=null;
-				return(false);
-			}
-		}
-		else
-		{
-			return(isEnemyNextToUnit(selectedUnit));
-		}
-	}
-	
-	public void captureUnit(Unit unit, Point destination)
+	public void unitCaptureBuilding(Unit unit, Point destination)
 	{
 		if(moveUnit())
 		{
@@ -499,64 +578,71 @@ public class Battle implements KeyListener, Focusable
 			if(building.health()<=0)
 			{
 				building.health(20);
-				building.team(unit.team());
+				building.buildingCaptured(unit.team());
 			}
 		}
 		//else was trapped
 	}
 	
-	public boolean unitCanCapture()
+	@Override
+	public void unitCreated(Unit unit, Point location)
 	{
-		if(!selectedUnit.canCapture())
-			return(false);
-		if(unitCanMove())
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void unitDestroyed(Unit unit)
+	{
+		System.out.println("unit destroyed!");
+		//check if team can still fight;
+		if(checkLoseConditions(unit.team()))
 		{
-			if(map.terrain(path.last().x,path.last().y) instanceof Building==false)
-				return(false);
-			else if(((Building)map.terrain(path.last().x,path.last().y)).team()==selectedUnit.team())
-				return(false);
-			else
-				return(true);
+			teamLoses(unit.team());
 		}
-		return(false);
-	}
-	
-	public void moveCursorLeft()
-	{
-		if(cursor.x>0)
-			cursor.x--;
-		if(path!=null&&moveableArea[cursor.x][cursor.y])
-			path.addPoint(cursor.x, cursor.y);
-	}
-	
-	public void moveCursorRight()
-	{
-		if(cursor.x<map.width()-1)
-			cursor.x++;
-		if(path!=null&&moveableArea[cursor.x][cursor.y])
-			path.addPoint(cursor.x, cursor.y);
-	}
-	
-	public void moveCursorUp()
-	{
-		if(cursor.y>0)
-			cursor.y--;
-		if(path!=null&&moveableArea[cursor.x][cursor.y])
-			path.addPoint(cursor.x, cursor.y);
-	}
-	
-	public void moveCursorDown()
-	{
-		if(cursor.y<map.height()-1)
-			cursor.y++;
-		if(path!=null&&moveableArea[cursor.x][cursor.y])
-			path.addPoint(cursor.x, cursor.y);
 	}
 
+	public void uniteUnit(Point start, Point end)
+	{
+		if((map.unit(start.x,start.y)!=null)&&(map.unit(end.x,end.y)!=null))
+		{
+			map.unit(end.x,end.y).uniteWith(map.unit(start.x,start.y));
+			map.setUnit(null,start.x,start.y);
+		}
+	}
+	
+	public Unit unitIfVisible(int x, int y)
+	{
+		if(weather.fog())
+		{
+			if(!fog(x,y))
+				return(map.unit(x,y));
+			else
+				return(null);
+		}
+		else
+			return(map.unit(x,y));
+	}
+	
+	public void weather(Weather weather)
+	{
+		this.weather=weather;
+	}
+	
+	public Weather weather()
+	{
+		return(weather);
+	}
+	
+	@Override
+	public void keyTyped(KeyEvent ke)
+	{
+		//empty
+	}
+	
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
-		
 		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
 			moveCursorLeft();
 		if(ke.getKeyCode()==KeyEvent.VK_RIGHT)
@@ -565,6 +651,8 @@ public class Battle implements KeyListener, Focusable
 			moveCursorUp();
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 			moveCursorDown();
+		
+		Point cursor=cursor();
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
@@ -596,13 +684,13 @@ public class Battle implements KeyListener, Focusable
 			else if(cursor.equals(path.last()))
 			{
 				ArrayList<String> options=new ArrayList<String>();
-				if(unitCanMove())
+				if(canUnitMove())
 					options.add("Move");
-				if(unitCanUnite())
+				if(canUnitUnite())
 					options.add("Unite");
-				if(unitCanAttack())
+				if(canUnitAttack())
 					options.add("Attack");
-				if(unitCanCapture())
+				if(canUnitCapture())
 					options.add("Capture");
 				options.add("Cancel");
 				//show menu
@@ -661,8 +749,6 @@ public class Battle implements KeyListener, Focusable
 	
 	private Path path;
 	
-	private Point cursor;
-	
 	private boolean[][] moveableArea;
 	
 	private boolean[][] attackableArea;
@@ -673,5 +759,5 @@ public class Battle implements KeyListener, Focusable
 	
 	private int turn;
 	
-	private Team[] teams;
+	private ArrayList<Team> teams;
 }

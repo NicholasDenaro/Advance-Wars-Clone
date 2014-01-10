@@ -18,7 +18,17 @@ public class ActionMenu extends Menu
 	{
 		super(child,point);
 		this.actions=actions;
-		cursor=0;
+		cursor(new Point(0,0));
+	}
+	
+	public int rows()
+	{
+		return(actions.length);
+	}
+	
+	public int columns()
+	{
+		return(0);
 	}
 	
 	public ActionMenu(Menu child, Point point, ArrayList<String> actions)
@@ -27,40 +37,40 @@ public class ActionMenu extends Menu
 		this.actions=new String[actions.size()];
 		for(int i=0;i<actions.size();i++)
 			this.actions[i]=actions.get(i);
-		cursor=0;
+		cursor(new Point(0,0));
 	}
 
 	@Override
 	public void keyPressed(KeyEvent ke)
-	{
+	{	
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
-			cursor=(--cursor+actions.length)%actions.length;
+			moveCursorUp();
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
-			cursor=++cursor%actions.length;
+			moveCursorDown();
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			if(actions[cursor].equals("Move"))
+			if(actions[cursor().y].equals("Move"))
 			{
 				Main.battle.moveUnit();
 				Main.closeMenu();
 			}
-			else if(actions[cursor].equals("Capture"))
+			else if(actions[cursor().y].equals("Capture"))
 			{
-				Main.battle.captureUnit(Main.battle.selectedUnit(),Main.battle.path().last());
+				Main.battle.unitCaptureBuilding(Main.battle.selectedUnit(),Main.battle.path().last());
 				Main.closeMenu();
 			}
-			else if(actions[cursor].equals("Unite"))
+			else if(actions[cursor().y].equals("Unite"))
 			{
 				Main.battle.moveUnit();
 				Main.closeMenu();
 			}
-			if(actions[cursor].equals("Attack"))
+			if(actions[cursor().y].equals("Attack"))
 			{
 				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.attackableUnits());
 				Main.openMenu(menu);
 			}
-			else if(actions[cursor].equals("Cancel"))
+			else if(actions[cursor().y].equals("Cancel"))
 			{
 				Main.closeMenu();
 			}
@@ -101,12 +111,10 @@ public class ActionMenu extends Menu
 		g.drawString(actions[i], 2, (i+1)*sprite.height()-2);
 		
 		g.setColor(Color.pink);
-		g.drawRect(0, cursor*sprite.height(), sprite.width(), sprite.height());
+		g.drawRect(0, cursor().y*sprite.height(), sprite.width(), sprite.height());
 		
 		return(image);
 	}
-	
-	private int cursor;
 	
 	private String[] actions;
 }

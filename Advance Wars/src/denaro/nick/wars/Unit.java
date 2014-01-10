@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import denaro.nick.core.Entity;
 import denaro.nick.core.Sprite;
@@ -31,6 +32,32 @@ public class Unit extends Entity
 		movementType=null;
 		canCapture=false;
 		attackRange=new Point(1,1);
+	}
+	
+	public void addUnitListener(UnitListener listener)
+	{
+		if(unitListeners==null)
+			unitListeners=new ArrayList<UnitListener>();
+		
+		if(!unitListeners.contains(listener))
+			unitListeners.add(listener);
+	}
+	
+	public void removeUnitListener(UnitListener listener)
+	{
+		if(unitListeners==null)
+			unitListeners=new ArrayList<UnitListener>();
+		
+		unitListeners.remove(listener);
+	}
+	
+	public void destroyUnit()
+	{
+		if(unitListeners==null)
+			unitListeners=new ArrayList<UnitListener>();
+		
+		for(UnitListener listener:unitListeners)
+			listener.unitDestroyed(this);
 	}
 	
 	public void weapon1(UnitWeapon weapon)
@@ -216,6 +243,13 @@ public class Unit extends Entity
 		return(unit);
 	}
 	
+	public static Unit copy(Unit other, Team team, boolean enabled)
+	{
+		Unit unit=copy(other,team);
+		unit.enabled=enabled;
+		return(unit);
+	}
+	
 	@Override
 	public Image image()
 	{
@@ -228,6 +262,10 @@ public class Unit extends Entity
 			if(team!=null)
 			{
 				Main.swapPalette(image,team,1);
+			}
+			else
+			{
+				Main.swapPalette(image,null,1);
 			}
 			
 			/*if(!enabled)
@@ -286,6 +324,7 @@ public class Unit extends Entity
 	
 	private BufferedImage image;
 	
+	private ArrayList<UnitListener> unitListeners;
 	
 	public static int baseDamage(Unit attacker, Unit defender)
 	{

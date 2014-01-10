@@ -31,6 +31,46 @@ public class Building extends Terrain
 		spawnListPrices=new ArrayList<Integer>();
 	}
 	
+	public Building addBuildingListener(BuildingListener listener)
+	{
+		if(buildingListeners==null)
+			buildingListeners=new ArrayList<BuildingListener>();
+		
+		if(!buildingListeners.contains(listener))
+			buildingListeners.add(listener);
+		
+		return(this);
+	}
+	
+	public Building removeBuildingListener(BuildingListener listener)
+	{
+		if(buildingListeners==null)
+			buildingListeners=new ArrayList<BuildingListener>();
+
+		buildingListeners.remove(listener);
+		
+		return(this);
+	}
+	
+	public void buildingCaptured(Team newTeam)
+	{
+		if(buildingListeners==null)
+			buildingListeners=new ArrayList<BuildingListener>();
+		
+		for(BuildingListener listener:buildingListeners)
+			listener.buildingCaptured(this, team, newTeam);
+	}
+	
+	public void hq(boolean hq)
+	{
+		this.hq=hq;
+	}
+	
+	public boolean hq()
+	{
+		return(hq);
+	}
+	
 	public void health(int health)
 	{
 		this.health=health;
@@ -101,6 +141,7 @@ public class Building extends Terrain
 	{
 		Building building=new Building(other.name(),team);
 		building.id(other.id());
+		building.hq=other.hq;
 		building.imageIndex(other.imageIndex());
 		building.defence(other.defence());
 		building.movementCosts(other.movementCosts());
@@ -115,9 +156,12 @@ public class Building extends Terrain
 	
 	private int health;
 	private Team team;
+	private boolean hq;
 	
 	private BufferedImage image;
 	private ArrayList<String> spawnListNames;
 	private ArrayList<Unit> spawnListUnits;
 	private ArrayList<Integer> spawnListPrices;
+	
+	private ArrayList<BuildingListener> buildingListeners;
 }

@@ -29,28 +29,36 @@ public class BuyMenu extends Menu
 			prices[i]=building.spawnListPrices().get(i);
 		}
 		
-		cursor=0;
+		cursor(new Point(0,0));
 	}
 	
-	public int cursor()
+	public int rows()
 	{
-		return(cursor);
+		return(actions.length);
+	}
+	
+	public int columns()
+	{
+		return(0);
 	}
 	
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
-			cursor=(--cursor+actions.length)%actions.length;
+			moveCursorUp();
+			//cursor=(--cursor+actions.length)%actions.length;
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
-			cursor=++cursor%actions.length;
+			moveCursorDown();
+			//cursor=++cursor%actions.length;
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			if(Main.battle.whosTurn().funds()>=prices[cursor])
+			if(Main.battle.whosTurn().funds()>=prices[cursor().y])
 			{
-				Main.battle.whosTurn().addFunds(-prices[cursor]);
-				Main.battle.map().addUnit(Unit.copy(units[cursor],Main.battle.whosTurn()), Main.battle.cursor().x, Main.battle.cursor().y);
+				Main.battle.whosTurn().addFunds(-prices[cursor().y]);
+				Unit adding=Unit.copy(units[cursor().y],Main.battle.whosTurn());
+				Main.battle.spawnUnit(adding, Main.battle.cursor());
 				Main.closeMenu();
 			}
 		}
@@ -102,7 +110,7 @@ public class BuyMenu extends Menu
 		}
 		
 		g.setColor(Color.black);
-		g.drawRect(0, 10+cursor*18-1, sprite.width()-1, 18);
+		g.drawRect(0, 10+cursor().y*18-1, sprite.width()-1, 18);
 		
 		return(image);
 	}
@@ -110,5 +118,4 @@ public class BuyMenu extends Menu
 	private String[] actions;
 	private Unit[] units;
 	private int[] prices;
-	private int cursor;
 }

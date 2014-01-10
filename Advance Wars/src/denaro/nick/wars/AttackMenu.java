@@ -19,8 +19,8 @@ public class AttackMenu extends Menu
 	{
 		super(child, point);
 		this.enemies=enemies;
-		cursor=0;
-		Main.battle.cursor(enemies.get(cursor));
+		cursor(new Point(0,0));
+		Main.battle.cursor(enemies.get(cursor().y));
 	}
 	
 	public ArrayList<Point> enemies()
@@ -28,23 +28,35 @@ public class AttackMenu extends Menu
 		return(enemies);
 	}
 	
+	public int rows()
+	{
+		return(enemies.size());
+	}
+	
+	public int columns()
+	{
+		return(0);
+	}
+	
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
 		{
-			cursor=(--cursor+enemies.size())%enemies.size();
-			Main.battle.cursor(enemies.get(cursor));
+			//cursor=(--cursor+enemies.size())%enemies.size();
+			moveCursorUp();
+			Main.battle.cursor(enemies.get(cursor().y));
 		}
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 		{
-			cursor=++cursor%enemies.size();
-			Main.battle.cursor(enemies.get(cursor));
+			//cursor=++cursor%enemies.size();
+			moveCursorDown();
+			Main.battle.cursor(enemies.get(cursor().y));
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			Main.battle.attackUnit(Main.battle.path().first(),enemies.get(cursor));
+			Main.battle.attackUnit(Main.battle.path().first(),enemies.get(cursor().y));
 			Main.closeMenu();
 			Main.closeMenu();
 		}
@@ -78,7 +90,6 @@ public class AttackMenu extends Menu
 		
 		return(image);
 	}
-	
-	private int cursor;
+
 	private ArrayList<Point> enemies;
 }

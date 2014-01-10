@@ -5,13 +5,18 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -30,11 +35,6 @@ public class Main
 		engine=(GameEngineByTick)GameEngineByTick.instance();
 		engine.setTicksPerSecond(60);
 		engine.setFramesPerSecond(60);
-		BattleView view=new BattleView(240,160,1,1);
-		engine.view(view);
-		
-		GameFrame frame=new GameFrame("Game",engine);
-		frame.setVisible(true);
 		
 		createSprites();
 		
@@ -46,15 +46,42 @@ public class Main
 		
 		createWeather();
 		
-		createMap();
+		System.out.print("Play map? ");
 		
-		battle=new Battle(testMap, new Team[]{teamOrangeStar,teamBlueMoon,teamGreenEarth});
+		String command=getInput();
 		
-		setBattleOptions();
+		if(command==null||command.isEmpty())
+		{
+			createEditor();
+		}
+		else
+		{
+			Map map=loadMap(command);
+			createBattle(map);
+		}
 		
 		menu=null;
 		
+		GameFrame frame=new GameFrame("Game",engine);
+		frame.setVisible(true);
+		
 		engine.start();
+	}
+	
+	public static String getInput()
+	{
+		BufferedReader in=new BufferedReader(new InputStreamReader(System.in));
+		String command;
+		try
+		{
+			command=in.readLine();
+			return(command);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return(null);
 	}
 	
 	public static void createSprites()
@@ -79,7 +106,7 @@ public class Main
 			new Sprite("Terrain",image,16,16,new Point(0,0));
 			
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buildings.png"));
-			new Sprite("Buildings",image,16,24,new Point(0,8));
+			new Sprite("Buildings",image,16,32,new Point(0,16));
 			
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Units.png"));
 			new Sprite("Units",image,16,16,new Point(0,0));
@@ -203,6 +230,12 @@ public class Main
 		base.defence(4);
 		base.imageIndex(1);
 		terrainMap.add(base);
+		
+		hq=new Building("HQ",null,new int[]{1,1,1,1,999,999,1});
+		hq.hq(true);
+		hq.defence(5);
+		hq.imageIndex(4);
+		terrainMap.add(hq);
 	}
 	
 	public static void createTeams()
@@ -256,67 +289,78 @@ public class Main
 			testMap.setTerrain(Building.copy(city,null),4,2);
 			testMap.setTerrain(Building.copy(base,teamOrangeStar),5,2);
 			testMap.setTerrain(Building.copy(base,teamBlueMoon),6,2);
-			try
-			{
-				ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("Test Map.mp")));
-				writeMap(oos,testMap);
-				oos.close();
-				System.out.println("map saved?!");
-			}
-			catch(FileNotFoundException ex)
-			{
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
-			catch(IOException ex)
-			{
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
+			
+			saveMap(testMap);
 		}
 		else
 		{
-			System.out.println("trying to read!");
-			try
-			{
-				testMap=Main.readMap(new ObjectInputStream(new FileInputStream("Test Map.mp")));
-			}
-			catch(ClassNotFoundException ex)
-			{
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
-			catch(FileNotFoundException ex)
-			{
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
-			catch(IOException ex)
-			{
-				// TODO Auto-generated catch block
-				ex.printStackTrace();
-			}
-			System.out.println("Done reading!");
+			loadMap("Test Map");
 		}
 		engine.location(testMap);
 	}
 	
-	public static void setBattleOptions()
+	public static void createBattle(Map map)
 	{
+		engine.location(map);
+		
+		ArrayList<Integer> teamsId=map.teams();
+		ArrayList<Team> teams=new ArrayList<Team>();
+		
+		for(Integer id:teamsId)
+			teams.add(teamMap.get(id));
+		
+		
+		battle=new Battle(map, teams);
+		Main.currentMode=battle;
+		
 		battle.weather(Weather.foggy);
 		
 		engine.addKeyListener(battle);
 		engine.requestFocus(battle);
+		
+		BattleView view=new BattleView(240,160,1,1);
+		engine.view(view);
+	}
+	
+	public static void createEditor()
+	{
+		editor=new MapEditor();
+		
+		System.out.print("Map name: ");
+		String name=getInput();
+		System.out.print("Map width: ");
+		Integer width=new Integer(getInput());
+		System.out.print("Map height: ");
+		Integer height=new Integer(getInput());
+		
+		editor.createNewMap(name, width, height);
+		engine.location(editor.map());
+		currentMode=editor;
+		
+		engine.addKeyListener(editor);
+		engine.requestFocus(editor);
+		
+		EditorView view=new EditorView(240,160,1,1);
+		editor.addCursorListener(view);
+		engine.view(view);
 	}
 	
 	public static void openMenu(Menu menu)
 	{
-		Menu child=Main.menu;
-		while(child.child()!=null)
-			child=child.child();
-		
-		child.child(menu);
-		engine.requestFocus(menu);
+		if(Main.menu!=null)
+		{
+			Menu child=Main.menu;
+			while(child.child()!=null)
+				child=child.child();
+			
+			child.child(menu);
+			engine.requestFocus(menu);
+		}
+		else
+		{
+			Main.menu=menu;
+			engine.requestFocus(menu);
+		}
 	}
 	
 	public static void closeMenu()
@@ -336,7 +380,7 @@ public class Main
 		else
 		{
 			menu=null;
-			engine.requestFocus(battle);
+			engine.requestFocus(currentMode);
 		}
 	}
 	
@@ -354,6 +398,31 @@ public class Main
 			}
 		}
 		g.dispose();
+	}
+	
+	public static Map loadMap(String mapName)
+	{
+		try
+		{
+			Map map=Main.readMap(new ObjectInputStream(new FileInputStream(mapName+".mp")));
+			return(map);
+		}
+		catch(ClassNotFoundException ex)
+		{
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+		catch(FileNotFoundException ex)
+		{
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+		catch(IOException ex)
+		{
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+		return(null);
 	}
 	
 	public static Map readMap(ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -411,6 +480,27 @@ public class Main
 			unit.ammo(ammo);
 			unit.fuel(fuel);
 			return(unit);
+		}
+	}
+	
+	public static void saveMap(Map map)
+	{
+		try
+		{
+			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File(map.name()+".mp")));
+			writeMap(oos,map);
+			oos.close();
+			System.out.println("map saved?!");
+		}
+		catch(FileNotFoundException ex)
+		{
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+		catch(IOException ex)
+		{
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
 		}
 	}
 	
@@ -474,6 +564,8 @@ public class Main
 	public static Menu menu;
 	
 	public static Battle battle;
+	public static MapEditor editor;
+	public static GameMode currentMode;
 	
 	public static TeamColorPalette colorPalette;
 	
@@ -481,10 +573,10 @@ public class Main
 	public static final int TILESIZE=16;
 	
 	
-	public static GameMap unitMap;
-	public static GameMap terrainMap;
-	public static GameMap teamMap;
-	public static GameMap weatherMap;
+	public static GameMap<Unit> unitMap;
+	public static GameMap<Terrain> terrainMap;
+	public static GameMap<Team> teamMap;
+	public static GameMap<Weather> weatherMap;
 	
 	
 	public static Unit infantry;
@@ -497,6 +589,7 @@ public class Main
 	public static Terrain mountain;
 	public static Terrain forest;
 	
+	public static Building hq;
 	public static Building city;
 	public static Building base;
 	

@@ -4,15 +4,51 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import denaro.nick.core.Focusable;
 
-public class Menu implements Focusable, KeyListener
+public abstract class Menu extends CursorUser implements Focusable, KeyListener
 {
 	public Menu(Menu child, Point point)
 	{
 		this.child=child;
 		this.point=point;
+	}
+	
+	public void addMenuListener(MenuListener listener)
+	{
+		if(menuListeners==null)
+			menuListeners=new ArrayList<MenuListener>();
+		
+		if(!menuListeners.contains(listener))
+			menuListeners.add(listener);
+	}
+	
+	public void removeMenuListener(MenuListener listener)
+	{
+		if(menuListeners==null)
+			menuListeners=new ArrayList<MenuListener>();
+		
+		menuListeners.remove(listener);
+	}
+	
+	public void buttonPressed(Menu menu)
+	{
+		if(menuListeners==null)
+			menuListeners=new ArrayList<MenuListener>();
+		
+		for(MenuListener listener:menuListeners)
+			listener.buttonPressed(menu);
+	}
+	
+	public void menuClosed(Menu menu)
+	{
+		if(menuListeners==null)
+			menuListeners=new ArrayList<MenuListener>();
+		
+		for(MenuListener listener:menuListeners)
+			listener.menuClosed(menu);
 	}
 	
 	public Point point()
@@ -60,4 +96,5 @@ public class Menu implements Focusable, KeyListener
 	
 	private Menu child;
 	
+	private ArrayList<MenuListener> menuListeners;
 }
