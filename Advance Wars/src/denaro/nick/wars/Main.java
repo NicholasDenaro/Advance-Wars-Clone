@@ -122,20 +122,20 @@ public class Main
 		}
 		catch(IOException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 	}
 	
 	public static void createUnits()
 	{
-		unitMap=new GameMap();
+		unitMap=new GameMap<Unit>();
 		
 		try
 		{
-			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),0);
+			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			infantry.weapon1(new UnitWeapon(0,0,1,2,3,4,5,6));
 			infantry.weapon2(null);
+			infantry.defenceID(0);
 			infantry.canCapture(true);
 			infantry.imageIndex(0);
 			infantry.movement(3);
@@ -144,9 +144,10 @@ public class Main
 			infantry.finalize();
 			unitMap.add(infantry);
 			
-			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),1);
+			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			mech.weapon1(new UnitWeapon(1,0,1));
 			mech.weapon2(new UnitWeapon(2,2,3,4,5,6));
+			mech.defenceID(1);
 			mech.canCapture(true);
 			mech.imageIndex(4);
 			mech.movement(2);
@@ -156,9 +157,10 @@ public class Main
 			mech.finalize();
 			unitMap.add(mech);
 			
-			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),2);
+			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			recon.weapon1(new UnitWeapon(7,0,1,2,3,4,5,6));
 			recon.weapon2(null);
+			recon.defenceID(4);
 			recon.imageIndex(8);
 			recon.movement(8);
 			recon.vision(5);
@@ -166,9 +168,10 @@ public class Main
 			recon.finalize();
 			unitMap.add(recon);
 			
-			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),3);
-			tank.weapon1(new UnitWeapon(3,0,1));
-			tank.weapon2(new UnitWeapon(4,2,3,4,5,6));
+			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			tank.weapon1(new UnitWeapon(4,0,1));
+			tank.weapon2(new UnitWeapon(3,2,3,4,5,6));
+			tank.defenceID(2);
 			tank.imageIndex(12);
 			tank.movement(6);
 			tank.vision(3);
@@ -177,9 +180,22 @@ public class Main
 			tank.finalize();
 			unitMap.add(tank);
 			
-			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0),6);
+			mdTank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			mdTank.weapon1(new UnitWeapon(6,0,1));//TODO
+			mdTank.weapon2(new UnitWeapon(5,2,3,4,5,6));//TODO
+			mdTank.defenceID(3);
+			mdTank.imageIndex(16);
+			mdTank.movement(5);
+			mdTank.vision(3);
+			mdTank.ammo(9);
+			mdTank.movementType(MovementType.TREAD);
+			mdTank.finalize();
+			unitMap.add(mdTank);
+			
+			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			artillery.weapon1(null);
 			artillery.weapon2(new UnitWeapon(10,0,1,2,3,4,5,6));
+			artillery.defenceID(7);
 			artillery.imageIndex(24);
 			artillery.movement(5);
 			artillery.vision(1);
@@ -197,7 +213,7 @@ public class Main
 	
 	public static void createTerrain()
 	{
-		terrainMap=new GameMap();
+		terrainMap=new GameMap<Terrain>();
 		
 		plain=new Terrain("Plain",new int[]{1,1,1,1,999,999,1});
 		plain.defence(1);
@@ -226,7 +242,8 @@ public class Main
 		base.addSelling("Mech", (Unit)unitMap.get(1), 3000);
 		base.addSelling("Recon", (Unit)unitMap.get(2), 4000);
 		base.addSelling("Tank", (Unit)unitMap.get(3), 7000);
-		base.addSelling("Artillery", (Unit)unitMap.get(4), 6000);
+		base.addSelling("Md. Tank", (Unit)unitMap.get(4), 16000);
+		base.addSelling("Artillery", (Unit)unitMap.get(5), 6000);
 		base.defence(4);
 		base.imageIndex(1);
 		terrainMap.add(base);
@@ -240,7 +257,7 @@ public class Main
 	
 	public static void createTeams()
 	{
-		teamMap=new GameMap();
+		teamMap=new GameMap<Team>();
 		
 		colorPalette=new TeamColorPalette((BufferedImage)Sprite.sprite("Color Palette").subimage(0));
 		teamOrangeStar=new Team("Orange Star",1,new Commander("None"));
@@ -253,7 +270,7 @@ public class Main
 	
 	public static void createWeather()
 	{
-		weatherMap=new GameMap();
+		weatherMap=new GameMap<Weather>();
 		
 		weatherMap.add(Weather.sunny);
 		weatherMap.add(Weather.foggy);
@@ -409,17 +426,14 @@ public class Main
 		}
 		catch(ClassNotFoundException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 		catch(FileNotFoundException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 		catch(IOException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 		return(null);
@@ -494,12 +508,10 @@ public class Main
 		}
 		catch(FileNotFoundException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 		catch(IOException ex)
 		{
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		}
 	}
@@ -591,8 +603,8 @@ public class Main
 	public static Unit missiles;
 	public static Unit fighter;
 	public static Unit bomber;
-	public static Unit hele;
-	public static Unit trans;
+	public static Unit bcopter;
+	public static Unit tcopter;
 	public static Unit bship;
 	public static Unit cruiser;
 	public static Unit lander;
@@ -609,8 +621,6 @@ public class Main
 	public static Team teamOrangeStar;
 	public static Team teamBlueMoon;
 	public static Team teamGreenEarth;
-	
-	//public static HashMap<Integer,Terrain> terrainMap;
 	
 	public static Map testMap;
 }

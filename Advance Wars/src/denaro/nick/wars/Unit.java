@@ -9,6 +9,13 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import denaro.nick.core.Entity;
@@ -17,10 +24,9 @@ import denaro.nick.core.Sprite;
 public class Unit extends Entity
 {
 
-	public Unit(Sprite sprite, Double point, int unitID)
+	public Unit(Sprite sprite, Double point)
 	{
 		super(sprite, point);
-		this.unitID=unitID;
 		enabled=false;
 		fuel=99;
 		health=100;
@@ -171,6 +177,18 @@ public class Unit extends Entity
 		this.movement=movement;
 	}
 	
+	public void defenceID(int defenceID) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		this.defenceID=defenceID;
+	}
+	
+	public int defenceID()
+	{
+		return(defenceID);
+	}
+	
 	public MovementType movementType()
 	{
 		return(movementType);
@@ -208,14 +226,9 @@ public class Unit extends Entity
 		enabled=false;
 	}
 	
-	public int unitID()
-	{
-		return(unitID);
-	}
-	
 	public static Unit copy(Unit other)
 	{
-		Unit unit=new Unit(other.sprite(),other.point(),other.unitID);
+		Unit unit=new Unit(other.sprite(),other.point());
 		unit.id(other.id());
 		unit.team=other.team;
 		unit.canCapture=other.canCapture;
@@ -313,7 +326,6 @@ public class Unit extends Entity
 	}
 
 	private boolean finalized;
-	private int unitID;
 	
 	private boolean canCapture;
 	private boolean enabled;
@@ -332,6 +344,7 @@ public class Unit extends Entity
 	
 	private UnitWeapon weapon1;
 	private UnitWeapon weapon2;
+	private int defenceID;
 	
 	private Point attackRange;
 	
@@ -341,16 +354,65 @@ public class Unit extends Entity
 	
 	public static int baseDamage(Unit attacker, Unit defender)
 	{
-		if(attacker.weapon2!=null&&attacker.ammo>0&&attacker.weapon2.isEffectiveAggainst(defender.unitID))
+		if(baseAttackChart==null)
+		{
+			baseAttackChart=new ArrayList<ArrayList<Integer>>();
+			//TODO load from file
+			try
+			{
+				BufferedReader in=new BufferedReader(new InputStreamReader(new FileInputStream("Damage Chart.txt")));
+				String line;
+				int count=0;
+				while((line=in.readLine())!=null)
+				{
+					baseAttackChart.add(new ArrayList<Integer>());
+					String tag=line.substring(0,line.indexOf(']')+1);
+					line=line.substring(line.indexOf(']')+1);
+					while(line.length()>0)
+					{
+						int value;
+						int index=line.indexOf(',');
+						if(line.indexOf('|')!=-1&&line.indexOf('|')<index)
+							index=line.indexOf('|');
+						if(index==-1)
+						{
+							value=new Integer(line);
+							line="";
+						}
+						else
+						{
+							value=new Integer(line.substring(0,index));
+							line=line.substring(index+1);
+						}
+						
+						baseAttackChart.get(count).add(value);
+						
+					}
+					count++;
+				}
+			}
+			catch(FileNotFoundException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch(IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if(attacker.weapon2!=null&&attacker.ammo>0&&attacker.weapon2.isEffectiveAggainst(defender.defenceID()))
 		{
 			//use weapon2
 			attacker.ammo--;
-			return(baseAttackChart[attacker.weapon2.weaponID()][defender.unitID]);
+			return(baseAttackChart.get(attacker.weapon2.weaponID()).get(defender.defenceID()));
 		}
 		else if(attacker.weapon1!=null)
 		{
 			//use weapon1
-			return(baseAttackChart[attacker.weapon1.weaponID()][defender.unitID]);
+			return(baseAttackChart.get(attacker.weapon1.weaponID()).get(defender.defenceID()));
 		}
 		else
 		{
@@ -360,7 +422,9 @@ public class Unit extends Entity
 		//return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.defenceType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
 	}
 	
-	public static final int[][] baseAttackChart=new int[][]
+	public static ArrayList<ArrayList<Integer>> baseAttackChart;
+	
+	/*public static final int[][] baseAttackChart=new int[][]
 		{
 			new int[]{55,45,5,1,12,5,25,15,25,14},//infantry
 			new int[]{65,55,55,15,85,65,85,70,85,75},//mech
@@ -375,7 +439,7 @@ public class Unit extends Entity
 			new int[]{90,85,70,45,80,75,80,75,80,70},//artillery
 			new int[]{},//rockets
 			new int[]{}//apc
-		};
+		};*/
 	
 }
 

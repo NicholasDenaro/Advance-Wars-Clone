@@ -92,9 +92,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					{
 						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
 						{
-							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(map.unit(i,a).unitID()))
+							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(map.unit(i,a).defenceID()))
 								points.add(new Point(i,a));
-							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(map.unit(i,a).unitID()))
+							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(map.unit(i,a).defenceID()))
 								points.add(new Point(i,a));
 						}
 					}
@@ -173,7 +173,14 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		int tdf=map.terrain(defenderLocation.x,defenderLocation.y).defence();
 		int dhp=defender.health()/10;
 		
-		double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
+		//old damage calculation
+		//double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
+		
+		//System.out.print("base: "+base+"-");
+		
+		double damage=100*(base/100.0*aco/100.0*(100+r)/100.0*ahp/10.0*(200-dco)/100.0*(10-tdf)/10.0);
+		
+		//System.out.println("damage: "+damage);
 		
 		return(damage);
 	}
