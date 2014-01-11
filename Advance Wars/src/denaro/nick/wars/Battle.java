@@ -204,7 +204,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 		else
 		{
-			return(isEnemyNextToUnit(selectedUnit));
+			Point end=path.points().get(path.points().size()-1);
+			if(map.unit(end.x,end.y)!=null)
+				return(false);
+			else
+				return(isEnemyNextToUnit(selectedUnit));
 		}
 	}
 	
@@ -240,6 +244,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		else if(map.unit(cursor().x,cursor().y).team()!=selectedUnit.team())
 			return(false);
 		else if(map.unit(cursor().x,cursor().y).health()==100)
+			return(false);
+		else if(map.unit(cursor().x, cursor().y).id()!=selectedUnit.id())
 			return(false);
 		return(true);
 	}
@@ -560,6 +566,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	{
 		System.out.println("The "+team.name()+" army has been defeated!");
 		replaceTeam(team,null);
+		teams.remove(team);
 	}
 	
 	@Override
@@ -684,14 +691,14 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			else if(cursor.equals(path.last()))
 			{
 				ArrayList<String> options=new ArrayList<String>();
+				if(canUnitCapture())
+					options.add("Capture");
 				if(canUnitMove())
 					options.add("Move");
 				if(canUnitUnite())
 					options.add("Unite");
 				if(canUnitAttack())
 					options.add("Attack");
-				if(canUnitCapture())
-					options.add("Capture");
 				options.add("Cancel");
 				//show menu
 				if(options.size()>1)

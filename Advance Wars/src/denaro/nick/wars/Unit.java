@@ -232,6 +232,11 @@ public class Unit extends Entity
 		unit.attackRange=other.attackRange;
 		unit.weapon1=other.weapon1;
 		unit.weapon2=other.weapon2;
+		unit.cargoCount=other.cargoCount;
+		if(unit.cargo1!=null)
+			unit.cargo1=copy(other.cargo1);
+		if(unit.cargo2!=null)
+			unit.cargo2=copy(other.cargo2);
 		unit.imageIndex(other.imageIndex());
 		return(unit);
 	}
@@ -240,6 +245,10 @@ public class Unit extends Entity
 	{
 		Unit unit=copy(other);
 		unit.team=team;
+		if(unit.cargo1!=null)
+			unit.cargo1.team(unit.team);
+		if(unit.cargo2!=null)
+			unit.cargo2.team(unit.team);
 		return(unit);
 	}
 	
@@ -316,6 +325,10 @@ public class Unit extends Entity
 	private int movement;
 	private int vision;
 	private MovementType movementType;
+	
+	private int cargoCount;
+	private Unit cargo1;
+	private Unit cargo2;
 	
 	private UnitWeapon weapon1;
 	private UnitWeapon weapon2;

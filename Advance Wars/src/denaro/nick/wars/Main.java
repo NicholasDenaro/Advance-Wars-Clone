@@ -583,7 +583,20 @@ public class Main
 	public static Unit mech;
 	public static Unit recon;
 	public static Unit tank;
+	public static Unit mdTank;
+	public static Unit apc;
 	public static Unit artillery;
+	public static Unit rockets;
+	public static Unit aa;
+	public static Unit missiles;
+	public static Unit fighter;
+	public static Unit bomber;
+	public static Unit hele;
+	public static Unit trans;
+	public static Unit bship;
+	public static Unit cruiser;
+	public static Unit lander;
+	public static Unit sub;
 	
 	public static Terrain plain;
 	public static Terrain mountain;
