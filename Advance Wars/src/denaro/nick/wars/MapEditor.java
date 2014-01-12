@@ -95,7 +95,7 @@ public class MapEditor extends GameMode implements MenuListener
 		
 		if(ke.getKeyCode()==KeyEvent.VK_A)
 		{
-			SelectionMenu<Unit> menu=new SelectionMenu<Unit>(null,new Point(0,0));
+			SelectionMenu<Unit> menu=new SelectionMenu<Unit>(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE));
 			menu.addSelections(Main.unitMap);
 			menu.addMenuListener(this);
 			Main.openMenu(menu);
@@ -103,7 +103,7 @@ public class MapEditor extends GameMode implements MenuListener
 		
 		if(ke.getKeyCode()==KeyEvent.VK_S)
 		{
-			SelectionMenu<Terrain> menu=new SelectionMenu<Terrain>(null,new Point(0,0));
+			SelectionMenu<Terrain> menu=new SelectionMenu<Terrain>(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE));
 			menu.addSelections(Main.terrainMap);
 			menu.addMenuListener(this);
 			Main.openMenu(menu);

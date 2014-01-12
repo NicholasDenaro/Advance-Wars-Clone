@@ -111,7 +111,7 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 			for(int i=0;i<selectionWidth;i++)
 			{
 				if(selectionMap.get(i+a*selectionWidth) instanceof Entity)
-					g.drawImage(((Entity)selectionMap.get(i)).image(), i*(Main.TILESIZE+4)+4-((Entity)selectionMap.get(i)).sprite().anchor().x, a*(Main.TILESIZE+4)+4-((Entity)selectionMap.get(i)).sprite().anchor().y, null);
+					g.drawImage(((Entity)selectionMap.get(i+a*selectionWidth)).image(), i*(Main.TILESIZE+4)+4-((Entity)selectionMap.get(i+a*selectionWidth)).sprite().anchor().x, a*(Main.TILESIZE+4)+4-((Entity)selectionMap.get(i+a*selectionWidth)).sprite().anchor().y, null);
 			}
 		}
 		

@@ -102,6 +102,9 @@ public class Main
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buy Menu.png"));
 			new Sprite("Buy Menu",image,-1,-1,new Point(0,0));
 			
+			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Player Info.png"));
+			new Sprite("Player Info",image,-1,-1,new Point(0,0));
+			
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Terrain.png"));
 			new Sprite("Terrain",image,16,16,new Point(0,0));
 			
@@ -134,8 +137,8 @@ public class Main
 		try
 		{
 			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			infantry.weapon1(new UnitWeapon(0));
-			infantry.weapon2(null);
+			infantry.cost(1000);
+			infantry.addWeapon(new UnitWeapon(0));
 			infantry.defenceID(0);
 			infantry.canCapture(true);
 			infantry.imageIndex(0);
@@ -148,14 +151,14 @@ public class Main
 			stringToUnitID.put("infantry",infantry.id());
 			
 			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			mech.weapon1(new UnitWeapon(1));
-			mech.weapon2(new UnitWeapon(2));
+			mech.cost(3000);
+			mech.addWeapon(new UnitWeapon(2).ammo(3));
+			mech.addWeapon(new UnitWeapon(1));
 			mech.defenceID(1);
 			mech.canCapture(true);
 			mech.imageIndex(4);
 			mech.movement(2);
 			mech.vision(2);
-			mech.ammo(3);
 			mech.fuel(70);
 			mech.movementType(MovementType.FOOT);
 			mech.finalize();
@@ -163,13 +166,13 @@ public class Main
 			stringToUnitID.put("mech",mech.id());
 			
 			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			tank.weapon1(new UnitWeapon(4));
-			tank.weapon2(new UnitWeapon(3));
+			tank.cost(7000);
+			tank.addWeapon(new UnitWeapon(3).ammo(9));
+			tank.addWeapon(new UnitWeapon(4));
 			tank.defenceID(2);
 			tank.imageIndex(12);
 			tank.movement(6);
 			tank.vision(3);
-			tank.ammo(9);
 			tank.fuel(70);
 			tank.movementType(MovementType.TREAD);
 			tank.finalize();
@@ -177,13 +180,13 @@ public class Main
 			stringToUnitID.put("tank",tank.id());
 			
 			mdTank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			mdTank.weapon1(new UnitWeapon(6));
-			mdTank.weapon2(new UnitWeapon(5));
+			mdTank.cost(16000);
+			mdTank.addWeapon(new UnitWeapon(5).ammo(8));
+			mdTank.addWeapon(new UnitWeapon(6));
 			mdTank.defenceID(3);
 			mdTank.imageIndex(16);
 			mdTank.movement(5);
 			mdTank.vision(1);
-			mdTank.ammo(8);
 			mdTank.fuel(50);
 			mdTank.movementType(MovementType.TREAD);
 			mdTank.finalize();
@@ -191,8 +194,8 @@ public class Main
 			stringToUnitID.put("mdTank",mdTank.id());
 			
 			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			recon.weapon1(new UnitWeapon(7));
-			recon.weapon2(null);
+			recon.cost(4000);
+			recon.addWeapon(new UnitWeapon(7));
 			recon.defenceID(4);
 			recon.imageIndex(8);
 			recon.movement(8);
@@ -204,13 +207,12 @@ public class Main
 			stringToUnitID.put("recon",recon.id());
 			
 			aa=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			aa.weapon1(null);
-			aa.weapon2(new UnitWeapon(8));
+			aa.cost(8000);
+			aa.addWeapon(new UnitWeapon(8).ammo(9));
 			aa.defenceID(5);
 			aa.imageIndex(32);
 			aa.movement(6);
 			aa.vision(2);
-			aa.ammo(9);
 			aa.fuel(60);
 			aa.movementType(MovementType.TREAD);
 			aa.finalize();
@@ -218,13 +220,12 @@ public class Main
 			stringToUnitID.put("aa",aa.id());
 			
 			missiles=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			missiles.weapon1(null);
-			missiles.weapon2(new UnitWeapon(8));
+			missiles.cost(12000);
+			missiles.addWeapon(new UnitWeapon(8).ammo(6));
 			missiles.defenceID(6);
 			missiles.imageIndex(36);
 			missiles.movement(4);
 			missiles.vision(5);
-			missiles.ammo(6);
 			missiles.fuel(50);
 			missiles.movementType(MovementType.TIRES);
 			missiles.finalize();
@@ -232,13 +233,12 @@ public class Main
 			stringToUnitID.put("missiles",missiles.id());
 			
 			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			artillery.weapon1(null);
-			artillery.weapon2(new UnitWeapon(10));
+			artillery.cost(6000);
+			artillery.addWeapon(new UnitWeapon(10).ammo(9));
 			artillery.defenceID(7);
 			artillery.imageIndex(24);
 			artillery.movement(5);
 			artillery.vision(1);
-			artillery.ammo(9);
 			artillery.fuel(50);
 			artillery.movementType(MovementType.TREAD);
 			artillery.attackRange(new Point(2,3));
@@ -247,13 +247,12 @@ public class Main
 			stringToUnitID.put("artillery",artillery.id());
 			
 			rockets=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			rockets.weapon1(null);
-			rockets.weapon2(new UnitWeapon(10));
+			rockets.cost(18000);
+			rockets.addWeapon(new UnitWeapon(10).ammo(6));
 			rockets.defenceID(8);
 			rockets.imageIndex(28);
 			rockets.movement(5);
 			rockets.vision(1);
-			rockets.ammo(6);
 			rockets.fuel(50);
 			rockets.movementType(MovementType.TREAD);
 			rockets.attackRange(new Point(2,3));
@@ -262,8 +261,7 @@ public class Main
 			stringToUnitID.put("rockets",rockets.id());
 			
 			apc=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			apc.weapon1(null);
-			apc.weapon2(null);
+			apc.cost(5000);
 			apc.defenceID(9);
 			apc.imageIndex(20);
 			apc.movement(6);
@@ -286,44 +284,84 @@ public class Main
 	{
 		terrainMap=new GameMap<Terrain>();
 		
-		plain=new Terrain("Plain",new int[]{1,1,1,1,999,999,1});
+		plain=new Terrain("Plain",new int[]{1,1,1,1,99,99,1});
 		plain.defence(1);
 		plain.imageIndex(9);
 		terrainMap.add(plain);
 		
-		mountain=new Terrain("Mtn",new int[]{2,1,999,999,999,999,1});
+		mountain=new Terrain("Mtn",new int[]{2,1,99,99,99,99,1});
 		mountain.defence(4);
 		mountain.visionBoost(1);
 		mountain.imageIndex(19);
 		terrainMap.add(mountain);
 		
-		forest=new Terrain("Wood",new int[]{1,1,2,3,999,999,1});
+		forest=new Terrain("Wood",new int[]{1,1,2,3,99,99,1});
 		forest.defence(3);
 		forest.hiding(true);
 		forest.imageIndex(21);
 		terrainMap.add(forest);
 		
-		city=new Building("City",null,new int[]{1,1,1,1,999,999,1});
+		road=new Terrain("Road",new int[]{1,1,1,1,99,99,1});
+		road.defence(0);
+		road.imageIndex(25);
+		terrainMap.add(road);
+		
+		river=new Terrain("River",new int[]{2,1,99,99,99,99,1});
+		river.defence(0);
+		river.imageIndex(1);
+		terrainMap.add(river);
+		
+		bridge=new Terrain("Bridge",new int[]{1,1,1,1,99,99,1});
+		bridge.defence(0);
+		bridge.imageIndex(7);
+		terrainMap.add(bridge);
+		
+		shoal=new Terrain("Shoal",new int[]{1,1,1,1,99,1,1});
+		shoal.defence(0);
+		shoal.imageIndex(4);
+		terrainMap.add(shoal);
+		
+		sea=new Terrain("Sea",new int[]{99,99,99,99,1,1,1});
+		sea.defence(0);
+		sea.imageIndex(3);
+		terrainMap.add(sea);
+		
+		reef=new Terrain("Reef",new int[]{99,99,99,99,2,2,1});
+		reef.defence(2);
+		reef.imageIndex(5);
+		terrainMap.add(reef);
+		
+		city=new Building("City",null,new int[]{1,1,1,1,99,99,1});
 		city.defence(4);
 		city.imageIndex(0);
 		terrainMap.add(city);
 		
-		base=new Building("Base",null,new int[]{1,1,1,1,999,999,1});
-		base.addSelling("Infantry", unitMap.get(stringToUnitID.get("infantry")), 1000);
-		base.addSelling("Mech", unitMap.get(stringToUnitID.get("mech")), 3000);
-		base.addSelling("Recon", unitMap.get(stringToUnitID.get("recon")), 4000);
-		base.addSelling("Tank", unitMap.get(stringToUnitID.get("tank")), 7000);
-		base.addSelling("Md. Tank", unitMap.get(stringToUnitID.get("mdTank")), 16000);
-		base.addSelling("APC", unitMap.get(stringToUnitID.get("apc")), 5000);
-		base.addSelling("Artillery", unitMap.get(stringToUnitID.get("artillery")), 6000);
-		base.addSelling("Rockets", unitMap.get(stringToUnitID.get("rockets")), 18000);
-		base.addSelling("A-Air", unitMap.get(stringToUnitID.get("aa")), 8000);
-		base.addSelling("Missiles", unitMap.get(stringToUnitID.get("missiles")), 12000);
-		base.defence(4);
+		base=new Building("Base",null,new int[]{1,1,1,1,99,99,1});
+		base.addSelling("Infantry", unitMap.get(stringToUnitID.get("infantry")));
+		base.addSelling("Mech", unitMap.get(stringToUnitID.get("mech")));
+		base.addSelling("Recon", unitMap.get(stringToUnitID.get("recon")));
+		base.addSelling("Tank", unitMap.get(stringToUnitID.get("tank")));
+		base.addSelling("Md. Tank", unitMap.get(stringToUnitID.get("mdTank")));
+		base.addSelling("APC", unitMap.get(stringToUnitID.get("apc")));
+		base.addSelling("Artillery", unitMap.get(stringToUnitID.get("artillery")));
+		base.addSelling("Rockets", unitMap.get(stringToUnitID.get("rockets")));
+		base.addSelling("A-Air", unitMap.get(stringToUnitID.get("aa")));
+		base.addSelling("Missiles", unitMap.get(stringToUnitID.get("missiles")));
+		base.defence(3);
 		base.imageIndex(1);
 		terrainMap.add(base);
 		
-		hq=new Building("HQ",null,new int[]{1,1,1,1,999,999,1});
+		airport=new Building("Airport",null,new int[]{1,1,1,1,99,99,1});
+		airport.defence(3);
+		airport.imageIndex(2);
+		terrainMap.add(airport);
+		
+		port=new Building("Port",null,new int[]{1,1,1,1,1,1,1});
+		port.defence(3);
+		port.imageIndex(3);
+		terrainMap.add(port);
+		
+		hq=new Building("HQ",null,new int[]{1,1,1,1,99,99,1});
 		hq.hq(true);
 		hq.defence(5);
 		hq.imageIndex(4);
@@ -410,7 +448,7 @@ public class Main
 		engine.addKeyListener(battle);
 		engine.requestFocus(battle);
 		
-		BattleView view=new BattleView(240,160,1,1);
+		BattleView view=new BattleView(240,160,2,2);
 		engine.view(view);
 	}
 	
@@ -432,7 +470,7 @@ public class Main
 		engine.addKeyListener(editor);
 		engine.requestFocus(editor);
 		
-		EditorView view=new EditorView(240,160,1,1);
+		EditorView view=new EditorView(240,160,2,2);
 		editor.addCursorListener(view);
 		engine.view(view);
 	}
@@ -566,7 +604,7 @@ public class Main
 			int fuel=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
 			unit.health(health);
-			unit.ammo(ammo);
+			//unit.ammo(ammo);
 			unit.fuel(fuel);
 			return(unit);
 		}
@@ -639,7 +677,7 @@ public class Main
 		out.writeInt(unit.id());
 		out.writeInt(unit.team().id());
 		out.writeInt(unit.health());
-		out.writeInt(unit.ammo());
+		out.writeInt(1);
 		out.writeInt(unit.fuel());
 	}
 	
@@ -689,10 +727,18 @@ public class Main
 	public static Terrain plain;
 	public static Terrain mountain;
 	public static Terrain forest;
+	public static Terrain road;
+	public static Terrain river;
+	public static Terrain bridge;
+	public static Terrain shoal;
+	public static Terrain sea;
+	public static Terrain reef;
 	
 	public static Building hq;
 	public static Building city;
 	public static Building base;
+	public static Building airport;
+	public static Building port;
 	
 	public static Team teamOrangeStar;
 	public static Team teamBlueMoon;

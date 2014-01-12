@@ -32,9 +32,7 @@ public class Unit extends Entity
 		health=100;
 		movement=1;
 		vision=1;
-		ammo=0;
-		maxAmmo=0;
-		usesAmmo=false;
+		weapons=new ArrayList<UnitWeapon>();
 		movementType=null;
 		canCapture=false;
 		attackRange=new Point(1,1);
@@ -66,24 +64,26 @@ public class Unit extends Entity
 			listener.unitDestroyed(this);
 	}
 	
-	public void weapon1(UnitWeapon weapon)
+	public int cost()
 	{
-		this.weapon1=weapon;
+		return(cost);
 	}
 	
-	public void weapon2(UnitWeapon weapon)
+	public void cost(int cost) throws UnitFinalizedException
 	{
-		this.weapon2=weapon;
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		this.cost=cost;
 	}
 	
-	public UnitWeapon weapon1()
+	public void addWeapon(UnitWeapon weapon)
 	{
-		return(weapon1);
+		weapons.add(weapon);
 	}
 	
-	public UnitWeapon weapon2()
+	public UnitWeapon weapon(int weaponSlot)
 	{
-		return(weapon2);
+		return(weapons.get(weaponSlot));
 	}
 	
 	public Team team()
@@ -124,18 +124,6 @@ public class Unit extends Entity
 	public void fuel(int fuel)
 	{
 		this.fuel=fuel;
-	}
-	
-	public int ammo()
-	{
-		return(ammo);
-	}
-	
-	public void ammo(int ammo)
-	{
-		if(!finalized)
-			this.usesAmmo=true;
-		this.ammo=ammo;
 	}
 	
 	public int health()
@@ -213,6 +201,11 @@ public class Unit extends Entity
 		this.movementType=movementType;
 	}
 	
+	public boolean upkeep()
+	{
+		return(true);//TODO make this an actual upkeep, costing fuel
+	}
+	
 	public void cargoCount(int cargoCount)
 	{
 		cargo=new Unit[cargoCount];
@@ -242,6 +235,8 @@ public class Unit extends Entity
 	
 	public boolean canHoldCargo(int cargoID)
 	{
+		if(cargoType==null)
+			return(false);
 		return(cargoType.contains(cargoID));
 	}
 	
@@ -281,6 +276,11 @@ public class Unit extends Entity
 		return(false);
 	}
 	
+	public int numberOfWeapons()
+	{
+		return(weapons.size());
+	}
+	
 	public boolean hasCargoSpace()
 	{
 		for(int i=0;i<cargo.length;i++)
@@ -289,6 +289,22 @@ public class Unit extends Entity
 				return(true);
 		}
 		return(false);
+	}
+	
+	public void heal(int heal)
+	{
+		health+=heal;
+		if(health>100)
+			health=100;
+	}
+	
+	public void resupply()
+	{
+		fuel=maxFuel;
+		for(int i=0;i<numberOfWeapons();i++)
+		{
+			weapons.get(i).fillAmmo();
+		}
 	}
 	
 	public void uniteWith(Unit other)
@@ -308,21 +324,20 @@ public class Unit extends Entity
 	{
 		Unit unit=new Unit(other.sprite(),other.point());
 		unit.id(other.id());
+		unit.cost=other.cost;
 		unit.team=other.team;
 		unit.canCapture=other.canCapture;
 		unit.fuel=other.fuel;
 		unit.maxFuel=other.maxFuel;
-		unit.usesAmmo=other.usesAmmo;
-		unit.ammo=other.ammo;
-		unit.maxAmmo=other.maxAmmo;
-		unit.usesAmmo=other.usesAmmo;
 		unit.health=other.health;
 		unit.movement=other.movement;
 		unit.movementType=other.movementType;
 		unit.vision=other.vision;
 		unit.attackRange=other.attackRange;
-		unit.weapon1=other.weapon1;
-		unit.weapon2=other.weapon2;
+		unit.weapons=new ArrayList<UnitWeapon>();
+		for(int i=0;i<other.numberOfWeapons();i++)
+			unit.addWeapon(UnitWeapon.copy(other.weapon(i)));
+		unit.defenceID=other.defenceID;
 		unit.cargoType=other.cargoType;
 		if(other.cargo!=null)
 		{
@@ -415,18 +430,16 @@ public class Unit extends Entity
 	private boolean enabled;
 	private Team team;
 	private int fuel, maxFuel;
-	private boolean usesAmmo;
-	private int ammo, maxAmmo;
 	private int health;
 	private int movement;
 	private int vision;
 	private MovementType movementType;
+	private int cost;
 	
 	private ArrayList<Integer> cargoType;
-	private Unit cargo[];
+	private Unit[] cargo;
 	
-	private UnitWeapon weapon1;
-	private UnitWeapon weapon2;
+	private ArrayList<UnitWeapon> weapons;
 	private int defenceID;
 	
 	private Point attackRange;
@@ -490,23 +503,17 @@ public class Unit extends Entity
 			loadBaseAttackChart();
 		}
 		
-		if(attacker.weapon2!=null&&attacker.ammo>0&&attacker.weapon2.isEffectiveAggainst(defender.defenceID()))
+		for(int i=0;i<attacker.numberOfWeapons();i++)
 		{
-			//use weapon2
-			attacker.ammo--;
-			return(baseAttackChart.get(attacker.weapon2.weaponID()).get(defender.defenceID()));
+			if(attacker.weapon(i).hasAmmo()&&attacker.weapon(i).isEffectiveAggainst(defender.defenceID))
+			{
+				attacker.weapon(i).useAmmo();
+				return(baseAttackChart.get(attacker.weapon(i).weaponID()).get(defender.defenceID()));
+			}
 		}
-		else if(attacker.weapon1!=null)
-		{
-			//use weapon1
-			return(baseAttackChart.get(attacker.weapon1.weaponID()).get(defender.defenceID()));
-		}
-		else
-		{
-			System.out.println("ERROR: Unit should not have attacked!");
-			return(0);//this shouldn't happen, but if it does, ok....?
-		}
-		//return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.defenceType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
+
+		System.out.println("ERROR: Unit should not have attacked!");
+		return(0);//this shouldn't happen, but if it does, ok....?
 	}
 	
 	public static int numberOfAttackableUnits(int id)

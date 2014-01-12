@@ -6,6 +6,7 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import denaro.nick.core.Focusable;
+import denaro.nick.core.GameView2D;
 import denaro.nick.core.Sprite;
 
 public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
@@ -16,6 +17,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		createListeners();
 		this.teams=teams;
 		
+		day=0;
 		turn=-1;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
@@ -53,15 +55,85 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(teams.get(turn));
 	}
 	
+	public void newDay()
+	{
+		day++;
+	}
+	
 	public void nextTurn()
 	{
 		turn=++turn%teams.size();
+		if(turn==0)
+		{
+			newDay();
+		}
 		resetFog();
 		clearFogForTeam(whosTurn());
 		enableUnitsForTeam(whosTurn());
 		
 		int count=map.buildingCount(whosTurn());
 		whosTurn().addFunds(count*1000);
+		
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				Unit unit=map.unit(i,a);
+				if(unit!=null)
+				{
+					if(map.terrain(i,a) instanceof Building)
+					{
+						Building building=(Building)map.terrain(i,a);
+						Team team=whosTurn();
+						if(building.team()==team)
+						{
+							if(unit.health()<100)
+							{
+								int cost=unit.cost();//TODO add possibility to reduce based on commander?
+								int healed=1;//heals 2 times
+								while(healed-->=0&&team.funds()>cost/10)
+								{
+									unit.heal(10);
+									team.addFunds(-cost/10);
+								}
+							}
+							unit.resupply();
+						}
+					}
+					//resupply units around apcs
+					if(Main.stringToUnitID.get("apc")==unit.id())
+					{
+						if(i>0)
+							if(map.unit(i-1,a)!=null)
+								map.unit(i-1,a).resupply();
+						if(i+1<map.width())
+							if(map.unit(i+1,a)!=null)
+								map.unit(i+1,a).resupply();
+						if(a>0)
+							if(map.unit(i,a-1)!=null)
+								map.unit(i,a-1).resupply();
+						if(a+1<map.height())
+							if(map.unit(i,a+1)!=null)
+								map.unit(i,a+1).resupply();
+					}
+				}
+			}
+			
+		}
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				Unit unit=map.unit(i,a);
+				if(unit!=null)
+				{
+					if(unit.upkeep()==false)
+					{
+						destroyUnit(new Point(i,a));
+					}
+				}
+			}
+		}
 	}
 	
 	//-------------------------------------------------------------------------------
@@ -92,10 +164,13 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					{
 						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
 						{
-							if(selectedUnit.weapon1()!=null&&selectedUnit.weapon1().isEffectiveAggainst(map.unit(i,a).defenceID()))
-								points.add(new Point(i,a));
-							else if(selectedUnit.ammo()>0&&selectedUnit.weapon2().isEffectiveAggainst(map.unit(i,a).defenceID()))
-								points.add(new Point(i,a));
+							for(int w=0;w<selectedUnit.numberOfWeapons();w++)
+							{
+								if(selectedUnit.weapon(w).hasAmmo()&&selectedUnit.weapon(w).isEffectiveAggainst(map.unit(i,a).defenceID()))
+								{
+									points.add(new Point(i,a));
+								}
+							}
 						}
 					}
 				}
@@ -167,18 +242,18 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		int aco=attacker.team().commander().attackPower();
 		int r=((int)(Math.random()*10));
 		
-		int ahp=attacker.health()/10;
+		int ahp=attacker.health();
 		
 		int dco=defender.team().commander().defencePower();
 		int tdf=map.terrain(defenderLocation.x,defenderLocation.y).defence();
-		int dhp=defender.health()/10;
+		int dhp=defender.health();
 		
 		//old damage calculation
 		//double damage=(base*(aco/100.0)+r)*ahp/10.0*(((200.0-(dco+tdf*dhp))/100.0));
 		
 		//System.out.print("base: "+base+"-");
 		
-		double damage=100*(base/100.0*aco/100.0*(100+r)/100.0*ahp/10.0*(200-dco)/100.0*(10-tdf)/10.0);
+		double damage=100*(base/100.0*aco/100.0*(100+r)/100.0*ahp/100.0*(200-dco)/100.0*(10-tdf)/10.0);
 		
 		//System.out.println("damage: "+damage);
 		
@@ -429,6 +504,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	{
 		if(path!=null&&moveableArea[cursor.x][cursor.y])
 			path.addPoint(cursor.x, cursor.y);
+	}
+	
+	public int day()
+	{
+		return(day);
 	}
 	
 	public void destroyUnit(Point point)
@@ -771,9 +851,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				else if(map.terrain(cursor.x,cursor.y) instanceof Building)
 				{
 					Building building=(Building)map.terrain(cursor.x,cursor.y);
-					if(building.team()==Main.battle.whosTurn())
+					if(building.canSpawnUnits()&&building.team()==Main.battle.whosTurn())
 					{
-						Main.menu=new BuyMenu(null,new Point(0,Main.engine().view().getHeight()-Sprite.sprite("Buy Menu").height()),building);
+						Main.menu=new BuyMenu(null,new Point(0,((GameView2D)Main.engine().view()).height()-Sprite.sprite("Buy Menu").height()),building);
 						Main.engine().requestFocus(Main.menu);
 					}
 				}
@@ -845,6 +925,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	//-------------------------------------------------------------------------------
 	private Map map;
+	
+	private int day;
 	
 	private Unit selectedUnit;
 	

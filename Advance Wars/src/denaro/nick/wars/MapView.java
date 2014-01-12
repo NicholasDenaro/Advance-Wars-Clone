@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
@@ -21,24 +22,59 @@ public class MapView extends GameView2D implements CursorListener
 		view=new Point(0,0);
 	}
 	
+	public Point view()
+	{
+		return(view);
+	}
+	
+	public void addMapViewListener(MapViewListener listener)
+	{
+		if(mapViewListeners==null)
+			mapViewListeners=new ArrayList<MapViewListener>();
+		
+		if(!mapViewListeners.contains(listener))
+			mapViewListeners.add(listener);
+	}
+	
+	public void removeMapViewListener(MapViewListener listener)
+	{
+		if(mapViewListeners==null)
+			mapViewListeners=new ArrayList<MapViewListener>();
+		
+		mapViewListeners.remove(listener);
+	}
+	
+	public void viewMoved()
+	{
+		if(mapViewListeners==null)
+			mapViewListeners=new ArrayList<MapViewListener>();
+		
+		for(MapViewListener listener:mapViewListeners)
+			listener.viewMoved(view);
+	}
+	
 	@Override
 	public void cursorMoved(Point cursor)
 	{
 		if((cursor.x-view.x)*Main.TILESIZE>width()-1)
 		{
 			view.x++;
+			viewMoved();
 		}
 		if((cursor.x-view.x)*Main.TILESIZE<0)
 		{
 			view.x--;
+			viewMoved();
 		}
 		if((cursor.y-view.y)*Main.TILESIZE>height()-1)
 		{
 			view.y++;
+			viewMoved();
 		}
 		if((cursor.y-view.y)*Main.TILESIZE<0)
 		{
 			view.y--;
+			viewMoved();
 		}
 	}
 	
@@ -192,4 +228,6 @@ public class MapView extends GameView2D implements CursorListener
 	}
 	
 	private Point view;
+	
+	private ArrayList<MapViewListener> mapViewListeners;
 }

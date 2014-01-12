@@ -28,7 +28,6 @@ public class Building extends Terrain
 		health=20;
 		spawnListNames=new ArrayList<String>();
 		spawnListUnits=new ArrayList<Unit>();
-		spawnListPrices=new ArrayList<Integer>();
 	}
 	
 	public Building addBuildingListener(BuildingListener listener)
@@ -97,11 +96,15 @@ public class Building extends Terrain
 		image=null;
 	}
 	
-	public void addSelling(String name, Unit unit, int price)
+	public void addSelling(String name, Unit unit)
 	{
 		spawnListNames.add(name);
 		spawnListUnits.add(unit);
-		spawnListPrices.add(price);
+	}
+	
+	public boolean canSpawnUnits()
+	{
+		return(!spawnListNames.isEmpty());
 	}
 	
 	public ArrayList<String> spawnListNames()
@@ -112,11 +115,6 @@ public class Building extends Terrain
 	public ArrayList<Unit> spawnListUnits()
 	{
 		return(spawnListUnits);
-	}
-	
-	public ArrayList<Integer> spawnListPrices()
-	{
-		return(spawnListPrices);
 	}
 	
 	@Override
@@ -148,7 +146,6 @@ public class Building extends Terrain
 		building.visionBoost(other.visionBoost());
 		building.hiding(other.hiding());
 		building.spawnListNames=other.spawnListNames;
-		building.spawnListPrices=other.spawnListPrices;
 		building.spawnListUnits=other.spawnListUnits;
 		building.image=null;
 		return(building);
@@ -161,7 +158,6 @@ public class Building extends Terrain
 	private BufferedImage image;
 	private ArrayList<String> spawnListNames;
 	private ArrayList<Unit> spawnListUnits;
-	private ArrayList<Integer> spawnListPrices;
 	
 	private ArrayList<BuildingListener> buildingListeners;
 }

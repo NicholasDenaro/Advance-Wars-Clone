@@ -26,7 +26,7 @@ public class BuyMenu extends Menu
 		{
 			actions[i]=building.spawnListNames().get(i);
 			units[i]=building.spawnListUnits().get(i);
-			prices[i]=building.spawnListPrices().get(i);
+			prices[i]=units[i].cost();
 		}
 		
 		cursor(new Point(0,0));
