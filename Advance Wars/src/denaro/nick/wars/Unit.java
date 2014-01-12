@@ -213,6 +213,84 @@ public class Unit extends Entity
 		this.movementType=movementType;
 	}
 	
+	public void cargoCount(int cargoCount)
+	{
+		cargo=new Unit[cargoCount];
+	}
+	
+	public int cargoCount()
+	{
+		return(cargo.length);
+	}
+	
+	public void cargoType(ArrayList<Integer> cargoType) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		this.cargoType=cargoType;
+	}
+	
+	public void cargoType(Integer... cargoTypes) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		
+		cargoType=new ArrayList<Integer>();
+		for(Integer id:cargoTypes)
+			cargoType.add(id);
+	}
+	
+	public boolean canHoldCargo(int cargoID)
+	{
+		return(cargoType.contains(cargoID));
+	}
+	
+	public Unit cargo(int slot)
+	{
+		return(cargo[slot]);
+	}
+	
+	public void addCargo(Unit unit)
+	{
+		int i=0;
+		boolean added=false;
+		while(!added&&i<cargo.length)
+		{
+			if(cargo[i]==null)
+			{
+				cargo[i]=unit;
+				added=true;
+			}
+		}
+	}
+	
+	public void dropCargo(int slot)
+	{
+		cargo[slot]=null;
+	}
+	
+	public boolean hasCargo()
+	{
+		if(cargo==null)
+			return(false);
+		for(int i=0;i<cargo.length;i++)
+		{
+			if(cargo[i]!=null)
+				return(true);
+		}
+		return(false);
+	}
+	
+	public boolean hasCargoSpace()
+	{
+		for(int i=0;i<cargo.length;i++)
+		{
+			if(cargo[i]==null)
+				return(true);
+		}
+		return(false);
+	}
+	
 	public void uniteWith(Unit other)
 	{
 		health+=other.health;
@@ -245,11 +323,14 @@ public class Unit extends Entity
 		unit.attackRange=other.attackRange;
 		unit.weapon1=other.weapon1;
 		unit.weapon2=other.weapon2;
-		unit.cargoCount=other.cargoCount;
-		if(unit.cargo1!=null)
-			unit.cargo1=copy(other.cargo1);
-		if(unit.cargo2!=null)
-			unit.cargo2=copy(other.cargo2);
+		unit.cargoType=other.cargoType;
+		if(other.cargo!=null)
+		{
+			unit.cargo=new Unit[other.cargo.length];
+			for(int i=0;i<unit.cargo.length;i++)
+				if(other.cargo[i]!=null)
+					unit.cargo[i]=Unit.copy(other.cargo[i]);
+		}
 		unit.imageIndex(other.imageIndex());
 		return(unit);
 	}
@@ -258,10 +339,13 @@ public class Unit extends Entity
 	{
 		Unit unit=copy(other);
 		unit.team=team;
-		if(unit.cargo1!=null)
-			unit.cargo1.team(unit.team);
-		if(unit.cargo2!=null)
-			unit.cargo2.team(unit.team);
+		if(other.cargo!=null)
+		{
+			unit.cargo=new Unit[other.cargo.length];
+			for(int i=0;i<unit.cargo.length;i++)
+				if(other.cargo[i]!=null)
+					unit.cargo[i]=Unit.copy(other.cargo[i],team);
+		}
 		return(unit);
 	}
 	
@@ -338,9 +422,8 @@ public class Unit extends Entity
 	private int vision;
 	private MovementType movementType;
 	
-	private int cargoCount;
-	private Unit cargo1;
-	private Unit cargo2;
+	private ArrayList<Integer> cargoType;
+	private Unit cargo[];
 	
 	private UnitWeapon weapon1;
 	private UnitWeapon weapon2;
@@ -352,55 +435,59 @@ public class Unit extends Entity
 	
 	private ArrayList<UnitListener> unitListeners;
 	
+	private static void loadBaseAttackChart()
+	{
+		baseAttackChart=new ArrayList<ArrayList<Integer>>();
+		try
+		{
+			BufferedReader in=new BufferedReader(new InputStreamReader(new FileInputStream("Damage Chart.txt")));
+			String line;
+			int count=0;
+			while((line=in.readLine())!=null)
+			{
+				baseAttackChart.add(new ArrayList<Integer>());
+				String tag=line.substring(0,line.indexOf(']')+1);
+				line=line.substring(line.indexOf(']')+1);
+				while(line.length()>0)
+				{
+					int value;
+					int index=line.indexOf(',');
+					if(line.indexOf('|')!=-1&&line.indexOf('|')<index)
+						index=line.indexOf('|');
+					if(index==-1)
+					{
+						value=new Integer(line);
+						line="";
+					}
+					else
+					{
+						value=new Integer(line.substring(0,index));
+						line=line.substring(index+1);
+					}
+					
+					baseAttackChart.get(count).add(value);
+					
+				}
+				count++;
+			}
+		}
+		catch(FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch(IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static int baseDamage(Unit attacker, Unit defender)
 	{
 		if(baseAttackChart==null)
 		{
-			baseAttackChart=new ArrayList<ArrayList<Integer>>();
-			//TODO load from file
-			try
-			{
-				BufferedReader in=new BufferedReader(new InputStreamReader(new FileInputStream("Damage Chart.txt")));
-				String line;
-				int count=0;
-				while((line=in.readLine())!=null)
-				{
-					baseAttackChart.add(new ArrayList<Integer>());
-					String tag=line.substring(0,line.indexOf(']')+1);
-					line=line.substring(line.indexOf(']')+1);
-					while(line.length()>0)
-					{
-						int value;
-						int index=line.indexOf(',');
-						if(line.indexOf('|')!=-1&&line.indexOf('|')<index)
-							index=line.indexOf('|');
-						if(index==-1)
-						{
-							value=new Integer(line);
-							line="";
-						}
-						else
-						{
-							value=new Integer(line.substring(0,index));
-							line=line.substring(index+1);
-						}
-						
-						baseAttackChart.get(count).add(value);
-						
-					}
-					count++;
-				}
-			}
-			catch(FileNotFoundException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			catch(IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			loadBaseAttackChart();
 		}
 		
 		if(attacker.weapon2!=null&&attacker.ammo>0&&attacker.weapon2.isEffectiveAggainst(defender.defenceID()))
@@ -422,25 +509,21 @@ public class Unit extends Entity
 		//return(baseAttackChart[attacker.attackType+(attacker.usesAmmo?(attacker.ammo>0?1:0):0)][defender.defenceType+(defender.usesAmmo?(defender.ammo>0?1:0):0)]);
 	}
 	
-	public static ArrayList<ArrayList<Integer>> baseAttackChart;
-	
-	/*public static final int[][] baseAttackChart=new int[][]
+	public static int numberOfAttackableUnits(int id)
+	{
+		if(baseAttackChart==null)
 		{
-			new int[]{55,45,5,1,12,5,25,15,25,14},//infantry
-			new int[]{65,55,55,15,85,65,85,70,85,75},//mech
-			new int[]{65,55,6,1,18,6,35,32,35,20},//mech no ammo
-			new int[]{75,70,55,15,85,65,85,70,85,75},//tank
-			new int[]{75,70,6,1,40,6,30,45,55,45},//tank no ammo
-			new int[]{},//md tank
-			new int[]{},//md tank no ammo
-			new int[]{70,65,6,1,35,4,28,45,55,45},//recon
-			new int[]{},//anti-air
-			new int[]{},//missiles
-			new int[]{90,85,70,45,80,75,80,75,80,70},//artillery
-			new int[]{},//rockets
-			new int[]{}//apc
-		};*/
+			loadBaseAttackChart();
+		}
+		return(baseAttackChart.get(id).size());
+	}
 	
+	public static int baseAttack(int attackerID, int defenderID)
+	{
+		return(baseAttackChart.get(attackerID).get(defenderID));
+	}
+	
+	private static ArrayList<ArrayList<Integer>> baseAttackChart;
 }
 
 enum MovementType{FOOT,MECH,TREAD,TIRES,SHIP,TRANS,AIR};

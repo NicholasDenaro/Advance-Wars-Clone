@@ -211,8 +211,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 		else
 		{
-			Point end=path.points().get(path.points().size()-1);
-			if(map.unit(end.x,end.y)!=null)
+			Point start=path.first();
+			Point end=path.last();
+			if(map.unit(end.x,end.y)!=null&&!start.equals(end))
 				return(false);
 			else
 				return(isEnemyNextToUnit(selectedUnit));
@@ -235,6 +236,21 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(false);
 	}
 	
+	public boolean canUnitLoad()
+	{
+		if(path.first().equals(path.last()))
+			return(false);
+		if(map.unit(cursor().x,cursor().y)==null)
+			return(false);
+		else if(map.unit(cursor().x,cursor().y).team()!=selectedUnit.team())
+			return(false);
+		else if(!map.unit(cursor().x,cursor().y).canHoldCargo(selectedUnit.id()))
+			return(false);
+		else if(!map.unit(cursor().x,cursor().y).hasCargoSpace())
+			return(false);
+		return(true);
+	}
+	
 	public boolean canUnitMove()
 	{
 		if(unitIfVisible(cursor().x,cursor().y)!=null&&map.unit(cursor().x,cursor().y)!=selectedUnit)
@@ -255,6 +271,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		else if(map.unit(cursor().x, cursor().y).id()!=selectedUnit.id())
 			return(false);
 		return(true);
+	}
+	
+	public boolean canUnitUnload()
+	{
+		if(!selectedUnit.hasCargo())
+			return(false);
+		for(int i=0;i<selectedUnit.cargoCount();i++)
+			if(unitCanBePlaced(selectedUnit.cargo(i),cursor()))
+				return(true);
+		return(false);
 	}
 	
 	public boolean checkLoseConditions(Team team)
@@ -459,6 +485,17 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(!enemiesNextToUnit(unit).isEmpty());
 	}
 	
+	public void loadUnit()
+	{
+		Unit unit=selectedUnit;
+		if(moveUnit())
+		{
+			System.out.println("loaded!?");
+			map.unit(cursor().x,cursor().y).addCargo(unit);
+		}
+		//else was trapped
+	}
+	
 	public boolean[][] moveableArea()
 	{
 		return(moveableArea);
@@ -583,6 +620,23 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		
 	}
 	
+	public boolean unitCanBePlaced(Unit unit, Point center)
+	{
+		if(center.x>0)
+			if(map.terrain(center.x-1,center.y).movementCost(unit.movementType())!=99)
+				return(true);
+		if(center.x<map.width())
+			if(map.terrain(center.x+1,center.y).movementCost(unit.movementType())!=99)
+				return(true);
+		if(center.y>0)
+			if(map.terrain(center.x,center.y-1).movementCost(unit.movementType())!=99)
+				return(true);
+		if(center.y<map.height())
+			if(map.terrain(center.x,center.y+1).movementCost(unit.movementType())!=99)
+				return(true);
+		return(false);
+	}
+	
 	public void unitCaptureBuilding(Unit unit, Point destination)
 	{
 		if(moveUnit())
@@ -636,6 +690,35 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 		else
 			return(map.unit(x,y));
+	}
+	
+	public ArrayList<Point> unloadablePoints(Unit unit, Point center)
+	{
+		ArrayList<Point> points=new ArrayList<Point>();
+		if(center.x>0)
+			if(map.terrain(center.x-1,center.y).movementCost(unit.movementType())!=99)
+				points.add(new Point(center.x-1,center.y));
+		if(center.x<map.width())
+			if(map.terrain(center.x+1,center.y).movementCost(unit.movementType())!=99)
+				points.add(new Point(center.x+1,center.y));
+		if(center.y>0)
+			if(map.terrain(center.x,center.y-1).movementCost(unit.movementType())!=99)
+				points.add(new Point(center.x,center.y-1));
+		if(center.y<map.height())
+			if(map.terrain(center.x,center.y+1).movementCost(unit.movementType())!=99)
+				points.add(new Point(center.x,center.y+1));
+		return(points);
+	}
+	
+	public void unloadUnit(int cargoslot, Point point)
+	{
+		Unit selected=selectedUnit;
+		if(moveUnit())
+		{
+			map.addUnit(selected.cargo(cargoslot),point.x,point.y);
+			selected.dropCargo(cargoslot);
+		}
+		//else was trapped
 	}
 	
 	public void weather(Weather weather)
@@ -700,12 +783,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				ArrayList<String> options=new ArrayList<String>();
 				if(canUnitCapture())
 					options.add("Capture");
+				if(canUnitAttack())
+					options.add("Attack");
 				if(canUnitMove())
 					options.add("Move");
 				if(canUnitUnite())
 					options.add("Unite");
-				if(canUnitAttack())
-					options.add("Attack");
+				if(canUnitLoad())
+					options.add("Load");
+				if(canUnitUnload())
+					options.add("Unload");
 				options.add("Cancel");
 				//show menu
 				if(options.size()>1)

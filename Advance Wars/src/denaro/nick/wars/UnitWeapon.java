@@ -4,12 +4,13 @@ import java.util.ArrayList;
 
 public class UnitWeapon
 {
-	public UnitWeapon(int weaponID, int... targets)
+	public UnitWeapon(int weaponID)
 	{
 		this.weaponID=weaponID;
 		effectiveAgainst=new ArrayList<Integer>();
-		for(int i:targets)
-			effectiveAgainst.add(i);
+		for(int i=0;i<Unit.numberOfAttackableUnits(weaponID);i++)
+			if(Unit.baseAttack(weaponID,i)!=-1)
+				effectiveAgainst.add(i);
 	}
 	
 	public int weaponID()

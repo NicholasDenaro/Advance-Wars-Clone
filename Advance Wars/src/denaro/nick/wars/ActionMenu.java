@@ -65,10 +65,28 @@ public class ActionMenu extends Menu
 				Main.battle.moveUnit();
 				Main.closeMenu();
 			}
-			if(actions[cursor().y].equals("Attack"))
+			else if(actions[cursor().y].equals("Attack"))
 			{
 				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.attackableUnits());
 				Main.openMenu(menu);
+			}
+			else if(actions[cursor().y].equals("Load"))
+			{
+				Main.battle.loadUnit();
+				Main.closeMenu();
+			}
+			else if(actions[cursor().y].equals("Unload"))
+			{
+				ArrayList<String> unloads=new ArrayList<String>();
+				for(int i=0;i<Main.battle.selectedUnit().cargoCount();i++)
+					if(Main.battle.selectedUnit().cargo(i)!=null)
+						unloads.add("Unit "+i);
+				Main.openMenu(new ActionMenu(null,point(),unloads));
+			}
+			else if(actions[cursor().y].contains("Unit "))
+			{
+				int slot=new Integer(actions[cursor().y].substring(5));
+				Main.openMenu(new UnloadMenu(null,new Point(0,0),slot));
 			}
 			else if(actions[cursor().y].equals("Cancel"))
 			{
@@ -106,10 +124,11 @@ public class ActionMenu extends Menu
 			g.drawImage(sprite.subimage(0,1), 0, i*sprite.height(), null);
 			g.drawString(actions[i], 2, (i+1)*sprite.height()-2);
 		}
-		
-		g.drawImage(sprite.subimage(0,2), 0, i*sprite.height(), null);
-		g.drawString(actions[i], 2, (i+1)*sprite.height()-2);
-		
+		if(i<actions.length)
+		{
+			g.drawImage(sprite.subimage(0,2), 0, i*sprite.height(), null);
+			g.drawString(actions[i], 2, (i+1)*sprite.height()-2);
+		}
 		g.setColor(Color.pink);
 		g.drawRect(0, cursor().y*sprite.height(), sprite.width(), sprite.height());
 		

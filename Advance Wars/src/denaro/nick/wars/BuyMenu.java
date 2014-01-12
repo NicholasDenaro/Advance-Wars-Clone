@@ -30,6 +30,7 @@ public class BuyMenu extends Menu
 		}
 		
 		cursor(new Point(0,0));
+		show=0;
 	}
 	
 	public int rows()
@@ -43,14 +44,28 @@ public class BuyMenu extends Menu
 	}
 	
 	@Override
+	public void moveCursorUp()
+	{
+		super.moveCursorUp();
+		if(cursor().y<show)
+			show=cursor().y;
+	}
+	
+	@Override
+	public void moveCursorDown()
+	{
+		super.moveCursorDown();
+		if(cursor().y>=show+6)
+			show++;
+	}
+	
+	@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
 			moveCursorUp();
-			//cursor=(--cursor+actions.length)%actions.length;
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 			moveCursorDown();
-			//cursor=++cursor%actions.length;
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
@@ -87,9 +102,9 @@ public class BuyMenu extends Menu
 		
 		g.setColor(Color.black);
 
-		for(int i=0;i<actions.length;i++)
+		for(int i=show;i<Math.min(show+6,actions.length);i++)
 		{
-			g.drawImage(units[i].image(), 4, 10+i*18, null);
+			g.drawImage(units[i].image(), 4, 10+(i-show)*18, null);
 			
 			if(Main.battle.whosTurn().funds()<prices[i])
 			{
@@ -104,17 +119,18 @@ public class BuyMenu extends Menu
 				g.setColor(Color.gray);
 			else
 				g.setColor(Color.black);
-			g.drawString(actions[i], 20, 10+i*18+fm.getHeight()-2);
-			g.drawString(""+prices[i], 120-fm.stringWidth(""+prices[i]), 10+i*18+fm.getHeight()-2);
+			g.drawString(actions[i], 20, 10+(i-show)*18+fm.getHeight()-2);
+			g.drawString(""+prices[i], 120-fm.stringWidth(""+prices[i]), 10+(i-show)*18+fm.getHeight()-2);
 			
 		}
 		
 		g.setColor(Color.black);
-		g.drawRect(0, 10+cursor().y*18-1, sprite.width()-1, 18);
+		g.drawRect(0, 10+(cursor().y-show)*18-1, sprite.width()-1, 18);
 		
 		return(image);
 	}
 	
+	private int show;
 	private String[] actions;
 	private Unit[] units;
 	private int[] prices;

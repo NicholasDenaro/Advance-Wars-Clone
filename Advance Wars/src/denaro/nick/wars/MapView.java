@@ -114,6 +114,10 @@ public class MapView extends GameView2D implements CursorListener
 								hp=1;
 							g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), i*Main.TILESIZE+8, a*Main.TILESIZE+8, null);
 						}
+						if(map.unit(i,a).hasCargo())
+						{
+							g.drawImage(GameFont.fonts.get("Map Font").stringToImage("+"), i*Main.TILESIZE, a*Main.TILESIZE+8, null);
+						}
 					}
 				}
 			}

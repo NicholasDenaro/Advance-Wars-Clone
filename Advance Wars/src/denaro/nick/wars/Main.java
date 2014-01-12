@@ -129,81 +129,152 @@ public class Main
 	public static void createUnits()
 	{
 		unitMap=new GameMap<Unit>();
+		stringToUnitID=new HashMap<String,Integer>();
 		
 		try
 		{
 			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			infantry.weapon1(new UnitWeapon(0,0,1,2,3,4,5,6));
+			infantry.weapon1(new UnitWeapon(0));
 			infantry.weapon2(null);
 			infantry.defenceID(0);
 			infantry.canCapture(true);
 			infantry.imageIndex(0);
 			infantry.movement(3);
-			infantry.vision(3);
+			infantry.vision(2);
+			infantry.fuel(99);
 			infantry.movementType(MovementType.FOOT);
 			infantry.finalize();
 			unitMap.add(infantry);
+			stringToUnitID.put("infantry",infantry.id());
 			
 			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			mech.weapon1(new UnitWeapon(1,0,1));
-			mech.weapon2(new UnitWeapon(2,2,3,4,5,6));
+			mech.weapon1(new UnitWeapon(1));
+			mech.weapon2(new UnitWeapon(2));
 			mech.defenceID(1);
 			mech.canCapture(true);
 			mech.imageIndex(4);
 			mech.movement(2);
-			mech.vision(3);
-			mech.ammo(9);
+			mech.vision(2);
+			mech.ammo(3);
+			mech.fuel(70);
 			mech.movementType(MovementType.FOOT);
 			mech.finalize();
 			unitMap.add(mech);
-			
-			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			recon.weapon1(new UnitWeapon(7,0,1,2,3,4,5,6));
-			recon.weapon2(null);
-			recon.defenceID(4);
-			recon.imageIndex(8);
-			recon.movement(8);
-			recon.vision(5);
-			recon.movementType(MovementType.TIRES);
-			recon.finalize();
-			unitMap.add(recon);
+			stringToUnitID.put("mech",mech.id());
 			
 			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			tank.weapon1(new UnitWeapon(4,0,1));
-			tank.weapon2(new UnitWeapon(3,2,3,4,5,6));
+			tank.weapon1(new UnitWeapon(4));
+			tank.weapon2(new UnitWeapon(3));
 			tank.defenceID(2);
 			tank.imageIndex(12);
 			tank.movement(6);
 			tank.vision(3);
 			tank.ammo(9);
+			tank.fuel(70);
 			tank.movementType(MovementType.TREAD);
 			tank.finalize();
 			unitMap.add(tank);
+			stringToUnitID.put("tank",tank.id());
 			
 			mdTank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
-			mdTank.weapon1(new UnitWeapon(6,0,1));//TODO
-			mdTank.weapon2(new UnitWeapon(5,2,3,4,5,6));//TODO
+			mdTank.weapon1(new UnitWeapon(6));
+			mdTank.weapon2(new UnitWeapon(5));
 			mdTank.defenceID(3);
 			mdTank.imageIndex(16);
 			mdTank.movement(5);
-			mdTank.vision(3);
-			mdTank.ammo(9);
+			mdTank.vision(1);
+			mdTank.ammo(8);
+			mdTank.fuel(50);
 			mdTank.movementType(MovementType.TREAD);
 			mdTank.finalize();
 			unitMap.add(mdTank);
+			stringToUnitID.put("mdTank",mdTank.id());
+			
+			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			recon.weapon1(new UnitWeapon(7));
+			recon.weapon2(null);
+			recon.defenceID(4);
+			recon.imageIndex(8);
+			recon.movement(8);
+			recon.vision(5);
+			recon.fuel(80);
+			recon.movementType(MovementType.TIRES);
+			recon.finalize();
+			unitMap.add(recon);
+			stringToUnitID.put("recon",recon.id());
+			
+			aa=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			aa.weapon1(null);
+			aa.weapon2(new UnitWeapon(8));
+			aa.defenceID(5);
+			aa.imageIndex(32);
+			aa.movement(6);
+			aa.vision(2);
+			aa.ammo(9);
+			aa.fuel(60);
+			aa.movementType(MovementType.TREAD);
+			aa.finalize();
+			unitMap.add(aa);
+			stringToUnitID.put("aa",aa.id());
+			
+			missiles=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			missiles.weapon1(null);
+			missiles.weapon2(new UnitWeapon(8));
+			missiles.defenceID(6);
+			missiles.imageIndex(36);
+			missiles.movement(4);
+			missiles.vision(5);
+			missiles.ammo(6);
+			missiles.fuel(50);
+			missiles.movementType(MovementType.TIRES);
+			missiles.finalize();
+			unitMap.add(missiles);
+			stringToUnitID.put("missiles",missiles.id());
 			
 			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			artillery.weapon1(null);
-			artillery.weapon2(new UnitWeapon(10,0,1,2,3,4,5,6));
+			artillery.weapon2(new UnitWeapon(10));
 			artillery.defenceID(7);
 			artillery.imageIndex(24);
 			artillery.movement(5);
 			artillery.vision(1);
 			artillery.ammo(9);
+			artillery.fuel(50);
 			artillery.movementType(MovementType.TREAD);
 			artillery.attackRange(new Point(2,3));
 			artillery.finalize();
 			unitMap.add(artillery);
+			stringToUnitID.put("artillery",artillery.id());
+			
+			rockets=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			rockets.weapon1(null);
+			rockets.weapon2(new UnitWeapon(10));
+			rockets.defenceID(8);
+			rockets.imageIndex(28);
+			rockets.movement(5);
+			rockets.vision(1);
+			rockets.ammo(6);
+			rockets.fuel(50);
+			rockets.movementType(MovementType.TREAD);
+			rockets.attackRange(new Point(2,3));
+			rockets.finalize();
+			unitMap.add(rockets);
+			stringToUnitID.put("rockets",rockets.id());
+			
+			apc=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			apc.weapon1(null);
+			apc.weapon2(null);
+			apc.defenceID(9);
+			apc.imageIndex(20);
+			apc.movement(6);
+			apc.vision(1);
+			apc.fuel(70);
+			apc.movementType(MovementType.TREAD);
+			apc.cargoCount(1);
+			apc.cargoType(0,1);
+			apc.finalize();
+			unitMap.add(apc);
+			stringToUnitID.put("apc",apc.id());
 		}
 		catch(UnitFinalizedException ex)
 		{
@@ -238,12 +309,16 @@ public class Main
 		terrainMap.add(city);
 		
 		base=new Building("Base",null,new int[]{1,1,1,1,999,999,1});
-		base.addSelling("Infantry", (Unit)unitMap.get(0), 1000);
-		base.addSelling("Mech", (Unit)unitMap.get(1), 3000);
-		base.addSelling("Recon", (Unit)unitMap.get(2), 4000);
-		base.addSelling("Tank", (Unit)unitMap.get(3), 7000);
-		base.addSelling("Md. Tank", (Unit)unitMap.get(4), 16000);
-		base.addSelling("Artillery", (Unit)unitMap.get(5), 6000);
+		base.addSelling("Infantry", unitMap.get(stringToUnitID.get("infantry")), 1000);
+		base.addSelling("Mech", unitMap.get(stringToUnitID.get("mech")), 3000);
+		base.addSelling("Recon", unitMap.get(stringToUnitID.get("recon")), 4000);
+		base.addSelling("Tank", unitMap.get(stringToUnitID.get("tank")), 7000);
+		base.addSelling("Md. Tank", unitMap.get(stringToUnitID.get("mdTank")), 16000);
+		base.addSelling("APC", unitMap.get(stringToUnitID.get("apc")), 5000);
+		base.addSelling("Artillery", unitMap.get(stringToUnitID.get("artillery")), 6000);
+		base.addSelling("Rockets", unitMap.get(stringToUnitID.get("rockets")), 18000);
+		base.addSelling("A-Air", unitMap.get(stringToUnitID.get("aa")), 8000);
+		base.addSelling("Missiles", unitMap.get(stringToUnitID.get("missiles")), 12000);
 		base.defence(4);
 		base.imageIndex(1);
 		terrainMap.add(base);
@@ -590,6 +665,7 @@ public class Main
 	public static GameMap<Team> teamMap;
 	public static GameMap<Weather> weatherMap;
 	
+	public static HashMap<String,Integer> stringToUnitID;
 	
 	public static Unit infantry;
 	public static Unit mech;
