@@ -160,7 +160,7 @@ public class BattleView extends MapView
 		
 		//draw img
 		int xPos=0;
-		if((Main.battle.cursor().x-view().x)*Main.TILESIZE<width()/2)
+		if((Main.battle.cursor().y-view().y)*Main.TILESIZE<sprite.height()*1.2&&(Main.battle.cursor().x-view().x)*Main.TILESIZE<sprite.width()*1.2)
 		{
 			xPos=width()-sprite.width();
 		}

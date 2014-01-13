@@ -11,20 +11,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import denaro.nick.core.Entity;
 import denaro.nick.core.GameEngineByTick;
 import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
 import denaro.nick.core.GameView2D;
+import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 
 
@@ -46,7 +50,7 @@ public class Main
 		
 		createWeather();
 		
-		System.out.print("Play map? ");
+		/*System.out.print("Play map? ");
 		
 		String command=getInput();
 		
@@ -58,12 +62,27 @@ public class Main
 		{
 			Map map=loadMap(command);
 			createBattle(map);
-		}
+		}*/
+		
+		currentMode=new GameModeMenu();
+		Location location=new Location();
+		Entity entity=new Entity(Sprite.sprite("Homepage"),new Point.Double(0,0))
+		{
+			@Override
+			public void tick()
+			{
+			}
+		};
+		location.addEntity(entity);
+		engine.location(location);
+		engine.requestFocus(currentMode);
+		engine.view(new GameModeMenuView(240,160,2,2));
 		
 		menu=null;
 		
 		GameFrame frame=new GameFrame("Game",engine);
 		frame.setVisible(true);
+		engine.addGameViewListener(frame);
 		
 		engine.start();
 	}
@@ -122,6 +141,9 @@ public class Main
 			
 			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Font.png"));
 			new GameFont("Map Font",image,8,10);
+			
+			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Homepage.png"));
+			new Sprite("Homepage",image,-1,-1,new Point(0,0));//http://retronoob.deviantart.com/art/Retro-War-quot-Advance-Wars-quot-75833354
 		}
 		catch(IOException ex)
 		{
@@ -255,7 +277,7 @@ public class Main
 			rockets.vision(1);
 			rockets.fuel(50);
 			rockets.movementType(MovementType.TREAD);
-			rockets.attackRange(new Point(2,3));
+			rockets.attackRange(new Point(3,4));
 			rockets.finalize();
 			unitMap.add(rockets);
 			stringToUnitID.put("rockets",rockets.id());
@@ -473,6 +495,7 @@ public class Main
 		EditorView view=new EditorView(240,160,2,2);
 		editor.addCursorListener(view);
 		engine.view(view);
+		System.out.println(engine.view());
 	}
 	
 	public static void openMenu(Menu menu)
@@ -530,11 +553,33 @@ public class Main
 		g.dispose();
 	}
 	
+	public static ArrayList<String> getMapList()
+	{
+		ArrayList<String> maps=new ArrayList<String>();
+		
+		File f=new File("maps/");
+		if(f.isDirectory())
+		{
+			FilenameFilter filter=new FilenameFilter()
+			{
+				public boolean accept(File dir, String name)
+				{
+					return(name.contains(".mp"));
+				}
+			};
+			
+			String[] fnames=f.list(filter);
+			for(String name:fnames)
+				maps.add(name.substring(0,name.indexOf(".")));
+		}
+		return(maps);
+	}
+	
 	public static Map loadMap(String mapName)
 	{
 		try
 		{
-			Map map=Main.readMap(new ObjectInputStream(new FileInputStream(mapName+".mp")));
+			Map map=Main.readMap(new ObjectInputStream(new FileInputStream("maps/"+mapName+".mp")));
 			return(map);
 		}
 		catch(ClassNotFoundException ex)
@@ -614,7 +659,7 @@ public class Main
 	{
 		try
 		{
-			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File(map.name()+".mp")));
+			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("maps/"+map.name()+".mp")));
 			writeMap(oos,map);
 			oos.close();
 			System.out.println("map saved?!");
