@@ -6,8 +6,14 @@ public class Weather extends Identifiable
 {
 	private Weather(String name, boolean fog, int visionLoss)
 	{
+		this.name=name;
 		this.fog=fog;
 		this.visionLoss=visionLoss;
+	}
+	
+	public String name()
+	{
+		return(name);
 	}
 	
 	public boolean fog()
@@ -20,11 +26,11 @@ public class Weather extends Identifiable
 		return(visionLoss);
 	}
 	
+	private String name;
 	private boolean fog;
 	private int visionLoss;
 	
 	public static Weather sunny=new Weather("Sunny",false,0);
-	public static Weather foggy=new Weather("Foggy",true,0);
 	public static Weather rainy=new Weather("Rainy",true,1);
 	public static Weather snowy=new Weather("Snowy",true,0);
 }

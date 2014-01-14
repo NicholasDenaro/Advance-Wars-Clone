@@ -76,24 +76,29 @@ public class GameModeMenu extends GameMode
 				{
 					state=SelectionState.NEW;
 					actions=Main.getMapList();
+					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Load Battle"))
 				{
 					state=SelectionState.LOAD;
+					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Edit Map"))
 				{
 					state=SelectionState.EDIT;
-					Main.createEditor();
+					actions=Main.getMapList();
+					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Create Map"))
 				{
 					state=SelectionState.CREATE;
-					Main.createEditor();
+					Main.createEditor(null);
+					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Multiplayer"))
 				{
 					state=SelectionState.MULTIPLAYER;
+					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Quit"))
 				{
@@ -102,8 +107,14 @@ public class GameModeMenu extends GameMode
 			}
 			else if(state==SelectionState.NEW)
 			{
+				MapSelectionMenu menu=new MapSelectionMenu(null,new Point(0,0),actions.get(cursor().y));
+				Main.openMenu(menu);
+				Main.engine().requestFocus(menu);
+			}
+			else if(state==SelectionState.EDIT)
+			{
 				Map map=Main.loadMap(actions.get(cursor().y));
-				Main.createBattle(map);
+				Main.createEditor(map);
 			}
 		}
 		

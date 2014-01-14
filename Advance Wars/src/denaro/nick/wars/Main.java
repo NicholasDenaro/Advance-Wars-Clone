@@ -2,6 +2,7 @@ package denaro.nick.wars;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -82,6 +83,8 @@ public class Main
 		
 		GameFrame frame=new GameFrame("Game",engine);
 		frame.setVisible(true);
+		Dimension screen=java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+		frame.setLocation(screen.width/2-frame.getWidth()/2,screen.height/2-frame.getHeight()/2);
 		engine.addGameViewListener(frame);
 		
 		engine.start();
@@ -408,7 +411,6 @@ public class Main
 		weatherMap=new GameMap<Weather>();
 		
 		weatherMap.add(Weather.sunny);
-		weatherMap.add(Weather.foggy);
 		weatherMap.add(Weather.rainy);
 		weatherMap.add(Weather.snowy);
 	}
@@ -451,7 +453,7 @@ public class Main
 		engine.location(testMap);
 	}
 	
-	public static void createBattle(Map map)
+	public static void createBattle(Map map, BattleSettings settings)
 	{
 		engine.location(map);
 		
@@ -462,10 +464,10 @@ public class Main
 			teams.add(teamMap.get(id));
 		
 		
-		battle=new Battle(map, teams);
+		battle=new Battle(map,teams,settings);
 		Main.currentMode=battle;
 		
-		battle.weather(Weather.foggy);
+		//battle.weather(Weather.foggy);
 		
 		engine.addKeyListener(battle);
 		engine.requestFocus(battle);
@@ -474,18 +476,25 @@ public class Main
 		engine.view(view);
 	}
 	
-	public static void createEditor()
+	public static void createEditor(Map map)
 	{
 		editor=new MapEditor();
 		
-		System.out.print("Map name: ");
-		String name=getInput();
-		System.out.print("Map width: ");
-		Integer width=new Integer(getInput());
-		System.out.print("Map height: ");
-		Integer height=new Integer(getInput());
-		
-		editor.createNewMap(name, width, height);
+		if(map==null)
+		{
+			System.out.print("Map name: ");
+			String name=getInput();
+			System.out.print("Map width: ");
+			Integer width=new Integer(getInput());
+			System.out.print("Map height: ");
+			Integer height=new Integer(getInput());
+			
+			editor.createNewMap(name, width, height);
+		}
+		else
+		{
+			editor.map(map);
+		}
 		engine.location(editor.map());
 		currentMode=editor;
 		
@@ -644,12 +653,16 @@ public class Main
 		else
 		{
 			int teamId=in.readInt();
-			int health=in.readInt();
-			int ammo=in.readInt();
-			int fuel=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
+			int health=in.readInt();
+			int weaponCount=in.readInt();
+			for(int i=0;i<weaponCount;i++)
+			{
+				int ammo=in.readInt();
+				unit.weapon(i).ammo(ammo);
+			}
+			int fuel=in.readInt();
 			unit.health(health);
-			//unit.ammo(ammo);
 			unit.fuel(fuel);
 			return(unit);
 		}
@@ -722,7 +735,9 @@ public class Main
 		out.writeInt(unit.id());
 		out.writeInt(unit.team().id());
 		out.writeInt(unit.health());
-		out.writeInt(1);
+		out.writeInt(unit.numberOfWeapons());
+		for(int i=0;i<unit.numberOfWeapons();i++)
+			out.writeInt(unit.weapon(i).ammo());
 		out.writeInt(unit.fuel());
 	}
 	

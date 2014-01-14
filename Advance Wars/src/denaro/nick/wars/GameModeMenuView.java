@@ -37,6 +37,17 @@ public class GameModeMenuView extends GameView2D
 		}
 	}
 	
+	public void drawMenus(Graphics2D g)
+	{
+		if(Main.menu!=null)
+		{
+			Menu menu=Main.menu;
+			g.drawImage(menu.image(),menu.point().x,menu.point().y,null);
+			while((menu=menu.child())!=null)
+				g.drawImage(menu.image(),menu.point().x,menu.point().y,null);
+		}
+	}
+	
 	@Override
 	public void drawLocation(Location currentLocation, Graphics2D g)
 	{
@@ -46,7 +57,10 @@ public class GameModeMenuView extends GameView2D
 			
 			drawBackground(currentLocation,g);
 			
-			drawActions(menu,g);
+			if(Main.menu==null)
+				drawActions(menu,g);
+			
+			drawMenus(g);
 		}
 	}
 }

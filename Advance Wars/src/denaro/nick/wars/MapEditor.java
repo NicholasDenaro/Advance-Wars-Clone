@@ -32,6 +32,11 @@ public class MapEditor extends GameMode implements MenuListener
 		return(map);
 	}
 	
+	public void map(Map map)
+	{
+		this.map=map;
+	}
+	
 	public Image selected()
 	{
 		if(selectedType==SelectedType.TERRAIN)

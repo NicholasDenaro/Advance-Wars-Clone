@@ -11,17 +11,17 @@ import denaro.nick.core.Sprite;
 
 public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
 {
-	public Battle(Map map, ArrayList<Team> teams)
+	public Battle(Map map, ArrayList<Team> teams, BattleSettings settings)
 	{
 		this.map=map;
 		createListeners();
 		this.teams=teams;
+		this.settings=settings;
 		
 		day=0;
 		turn=-1;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
-		weather=Weather.sunny;
 		this.addCursorListener(this);
 		nextTurn();
 	}
@@ -373,7 +373,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public void clearFog(int x, int y, Unit unit)
 	{
-		clearFog(x,y,unit,unit.vision()+map.terrain(x,y).visionBoost()-weather.visionLoss(),true);
+		clearFog(x,y,unit,unit.vision()+map.terrain(x,y).visionBoost()-Main.weatherMap.get(settings.weather()).visionLoss(),true);
 	}
 	
 	public void clearFog(int x, int y, Unit unit, int count, boolean nextTo)
@@ -557,6 +557,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public boolean fog(int x, int y)
 	{
+		if(!settings.fogOfWar())
+			return(false);
 		return(!fog[x][y]);
 	}
 	
@@ -761,7 +763,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public Unit unitIfVisible(int x, int y)
 	{
-		if(weather.fog())
+		if(!settings.fogOfWar())
+			return(map.unit(x,y));
+		if(Main.weatherMap.get(settings.weather()).fog())
 		{
 			if(!fog(x,y))
 				return(map.unit(x,y));
@@ -803,12 +807,12 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public void weather(Weather weather)
 	{
-		this.weather=weather;
+		settings.weather(weather.id());
 	}
 	
 	public Weather weather()
 	{
-		return(weather);
+		return(Main.weatherMap.get(settings.weather()));
 	}
 	
 	@Override
@@ -938,9 +942,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	private boolean[][] fog;
 	
-	private Weather weather;
-	
 	private int turn;
+	
+	private BattleSettings settings;
 	
 	private ArrayList<Team> teams;
 }
