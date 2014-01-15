@@ -19,9 +19,9 @@ public class UnloadMenu extends Menu
 	{
 		super(child, point);
 		this.cargoSlot=cargoSlot;
-		this.points=Main.battle.unloadablePoints(Main.battle.selectedUnit().cargo(cargoSlot),Main.battle.path().last());
+		this.points=((Battle)Main.currentMode).unloadablePoints(((Battle)Main.currentMode).selectedUnit().cargo(cargoSlot),((Battle)Main.currentMode).path().last());
 		cursor(new Point(0,0));
-		Main.battle.cursor(points.get(cursor().y));
+		Main.currentMode.cursor(points.get(cursor().y));
 	}
 	
 	public ArrayList<Point> points()
@@ -45,17 +45,17 @@ public class UnloadMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
 		{
 			moveCursorUp();
-			Main.battle.cursor(points.get(cursor().y));
+			Main.currentMode.cursor(points.get(cursor().y));
 		}
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 		{
 			moveCursorDown();
-			Main.battle.cursor(points.get(cursor().y));
+			Main.currentMode.cursor(points.get(cursor().y));
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			Main.battle.unloadUnit(cargoSlot,points.get(cursor().y));
+			((Battle)Main.currentMode).unloadUnit(cargoSlot,points.get(cursor().y));
 			Main.closeMenu();
 			Main.closeMenu();
 			Main.closeMenu();
@@ -74,7 +74,7 @@ public class UnloadMenu extends Menu
 		
 		//Sprite sprite=Sprite.sprite("Action Menu");
 		
-		BufferedImage image=new BufferedImage(Main.battle.map().width()*Main.TILESIZE,Main.battle.map().height()*Main.TILESIZE,BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image=new BufferedImage(((Battle)Main.currentMode).map().width()*Main.TILESIZE,((Battle)Main.currentMode).map().height()*Main.TILESIZE,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g=image.createGraphics();
 		
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));

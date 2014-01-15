@@ -1,17 +1,28 @@
 package denaro.nick.wars;
 
-public class Commander
+import java.awt.Point;
+
+import denaro.nick.core.Identifiable;
+
+public class Commander extends Identifiable
 {
 	public Commander(String name)
 	{
 		this.name=name;
-		attackPower=100;
+		meleeAttackPower=100;
+		rangedAttackPower=100;
 		defencePower=100;
+		rangeModifier=new Point(0,0);
 	}
 	
-	public int attackPower()
+	public int meleeAttackPower()
 	{
-		return(attackPower);
+		return(meleeAttackPower);
+	}
+	
+	public int rangedAttackPower()
+	{
+		return(rangedAttackPower);
 	}
 	
 	public int defencePower()
@@ -19,7 +30,19 @@ public class Commander
 		return(defencePower);
 	}
 	
+	public Point rangeModifier()
+	{
+		return(rangeModifier);
+	}
+	
+	public String name()
+	{
+		return(name);
+	}
+	
 	private String name;
-	private int attackPower;
+	private int meleeAttackPower;
+	private int rangedAttackPower;
 	private int defencePower;
+	private Point rangeModifier;
 }

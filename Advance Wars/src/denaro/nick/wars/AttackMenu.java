@@ -2,15 +2,12 @@ package denaro.nick.wars;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import denaro.nick.core.Sprite;
 
 public class AttackMenu extends Menu
 {
@@ -20,7 +17,7 @@ public class AttackMenu extends Menu
 		super(child, point);
 		this.enemies=enemies;
 		cursor(new Point(0,0));
-		Main.battle.cursor(enemies.get(cursor().y));
+		Main.currentMode.cursor(enemies.get(cursor().y));
 	}
 	
 	public ArrayList<Point> enemies()
@@ -45,18 +42,18 @@ public class AttackMenu extends Menu
 		{
 			//cursor=(--cursor+enemies.size())%enemies.size();
 			moveCursorUp();
-			Main.battle.cursor(enemies.get(cursor().y));
+			Main.currentMode.cursor(enemies.get(cursor().y));
 		}
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 		{
 			//cursor=++cursor%enemies.size();
 			moveCursorDown();
-			Main.battle.cursor(enemies.get(cursor().y));
+			Main.currentMode.cursor(enemies.get(cursor().y));
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			Main.battle.attackUnit(Main.battle.path().first(),enemies.get(cursor().y));
+			((Battle)Main.currentMode).attackUnit(((Battle)Main.currentMode).path().first(),enemies.get(cursor().y));
 			Main.closeMenu();
 			Main.closeMenu();
 		}
@@ -74,7 +71,7 @@ public class AttackMenu extends Menu
 		
 		//Sprite sprite=Sprite.sprite("Action Menu");
 		
-		BufferedImage image=new BufferedImage(Main.battle.map().width()*Main.TILESIZE,Main.battle.map().height()*Main.TILESIZE,BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image=new BufferedImage(((Battle)Main.currentMode).map().width()*Main.TILESIZE,((Battle)Main.currentMode).map().height()*Main.TILESIZE,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g=image.createGraphics();
 		
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));

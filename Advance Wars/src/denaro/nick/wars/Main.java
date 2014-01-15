@@ -1,12 +1,10 @@
 package denaro.nick.wars;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,9 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -28,7 +24,6 @@ import denaro.nick.core.Entity;
 import denaro.nick.core.GameEngineByTick;
 import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
-import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 
@@ -163,7 +158,7 @@ public class Main
 		{
 			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			infantry.cost(1000);
-			infantry.addWeapon(new UnitWeapon(0));
+			infantry.addWeapon(new UnitWeapon(0).complete());
 			infantry.defenceID(0);
 			infantry.canCapture(true);
 			infantry.imageIndex(0);
@@ -171,14 +166,14 @@ public class Main
 			infantry.vision(2);
 			infantry.fuel(99);
 			infantry.movementType(MovementType.FOOT);
-			infantry.finalize();
+			infantry.complete();
 			unitMap.add(infantry);
 			stringToUnitID.put("infantry",infantry.id());
 			
 			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			mech.cost(3000);
-			mech.addWeapon(new UnitWeapon(2).ammo(3));
-			mech.addWeapon(new UnitWeapon(1));
+			mech.addWeapon(new UnitWeapon(2).ammo(3).complete());
+			mech.addWeapon(new UnitWeapon(1).complete());
 			mech.defenceID(1);
 			mech.canCapture(true);
 			mech.imageIndex(4);
@@ -186,80 +181,80 @@ public class Main
 			mech.vision(2);
 			mech.fuel(70);
 			mech.movementType(MovementType.FOOT);
-			mech.finalize();
+			mech.complete();
 			unitMap.add(mech);
 			stringToUnitID.put("mech",mech.id());
 			
 			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			tank.cost(7000);
-			tank.addWeapon(new UnitWeapon(3).ammo(9));
-			tank.addWeapon(new UnitWeapon(4));
+			tank.addWeapon(new UnitWeapon(3).ammo(9).complete());
+			tank.addWeapon(new UnitWeapon(4).complete());
 			tank.defenceID(2);
 			tank.imageIndex(12);
 			tank.movement(6);
 			tank.vision(3);
 			tank.fuel(70);
 			tank.movementType(MovementType.TREAD);
-			tank.finalize();
+			tank.complete();
 			unitMap.add(tank);
 			stringToUnitID.put("tank",tank.id());
 			
 			mdTank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			mdTank.cost(16000);
-			mdTank.addWeapon(new UnitWeapon(5).ammo(8));
-			mdTank.addWeapon(new UnitWeapon(6));
+			mdTank.addWeapon(new UnitWeapon(5).ammo(8).complete());
+			mdTank.addWeapon(new UnitWeapon(6).complete());
 			mdTank.defenceID(3);
 			mdTank.imageIndex(16);
 			mdTank.movement(5);
 			mdTank.vision(1);
 			mdTank.fuel(50);
 			mdTank.movementType(MovementType.TREAD);
-			mdTank.finalize();
+			mdTank.complete();
 			unitMap.add(mdTank);
 			stringToUnitID.put("mdTank",mdTank.id());
 			
 			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			recon.cost(4000);
-			recon.addWeapon(new UnitWeapon(7));
+			recon.addWeapon(new UnitWeapon(7).complete());
 			recon.defenceID(4);
 			recon.imageIndex(8);
 			recon.movement(8);
 			recon.vision(5);
 			recon.fuel(80);
 			recon.movementType(MovementType.TIRES);
-			recon.finalize();
+			recon.complete();
 			unitMap.add(recon);
 			stringToUnitID.put("recon",recon.id());
 			
 			aa=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			aa.cost(8000);
-			aa.addWeapon(new UnitWeapon(8).ammo(9));
+			aa.addWeapon(new UnitWeapon(8).ammo(9).complete());
 			aa.defenceID(5);
 			aa.imageIndex(32);
 			aa.movement(6);
 			aa.vision(2);
 			aa.fuel(60);
 			aa.movementType(MovementType.TREAD);
-			aa.finalize();
+			aa.complete();
 			unitMap.add(aa);
 			stringToUnitID.put("aa",aa.id());
 			
 			missiles=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			missiles.cost(12000);
-			missiles.addWeapon(new UnitWeapon(8).ammo(6));
+			missiles.addWeapon(new UnitWeapon(8).ammo(6).complete());
 			missiles.defenceID(6);
 			missiles.imageIndex(36);
 			missiles.movement(4);
 			missiles.vision(5);
 			missiles.fuel(50);
 			missiles.movementType(MovementType.TIRES);
-			missiles.finalize();
+			missiles.complete();
 			unitMap.add(missiles);
 			stringToUnitID.put("missiles",missiles.id());
 			
 			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			artillery.cost(6000);
-			artillery.addWeapon(new UnitWeapon(10).ammo(9));
+			artillery.addWeapon(new UnitWeapon(10).ammo(9).complete());
 			artillery.defenceID(7);
 			artillery.imageIndex(24);
 			artillery.movement(5);
@@ -267,13 +262,13 @@ public class Main
 			artillery.fuel(50);
 			artillery.movementType(MovementType.TREAD);
 			artillery.attackRange(new Point(2,3));
-			artillery.finalize();
+			artillery.complete();
 			unitMap.add(artillery);
 			stringToUnitID.put("artillery",artillery.id());
 			
 			rockets=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			rockets.cost(18000);
-			rockets.addWeapon(new UnitWeapon(10).ammo(6));
+			rockets.addWeapon(new UnitWeapon(10).ammo(6).complete());
 			rockets.defenceID(8);
 			rockets.imageIndex(28);
 			rockets.movement(5);
@@ -281,7 +276,7 @@ public class Main
 			rockets.fuel(50);
 			rockets.movementType(MovementType.TREAD);
 			rockets.attackRange(new Point(3,4));
-			rockets.finalize();
+			rockets.complete();
 			unitMap.add(rockets);
 			stringToUnitID.put("rockets",rockets.id());
 			
@@ -295,7 +290,7 @@ public class Main
 			apc.movementType(MovementType.TREAD);
 			apc.cargoCount(1);
 			apc.cargoType(0,1);
-			apc.finalize();
+			apc.complete();
 			unitMap.add(apc);
 			stringToUnitID.put("apc",apc.id());
 		}
@@ -398,28 +393,33 @@ public class Main
 		teamMap=new GameMap<Team>();
 		
 		colorPalette=new TeamColorPalette((BufferedImage)Sprite.sprite("Color Palette").subimage(0));
-		teamOrangeStar=new Team("Orange Star",1,new Commander("None"));
+		teamOrangeStar=new Team("Orange Star",1);
 		teamMap.add(teamOrangeStar);
-		teamBlueMoon=new Team("Blue Moon",2,new Commander("None"));
+		teamBlueMoon=new Team("Blue Moon",2);
 		teamMap.add(teamBlueMoon);
-		teamGreenEarth=new Team("Green Earth",3,new Commander("None"));
+		teamGreenEarth=new Team("Green Earth",3);
 		teamMap.add(teamGreenEarth);
+		
+		commanderMap=new GameMap<Commander>();
+		
+		commanderMap.add(new Commander("Nell"));
+		commanderMap.add(new Commander("Andy"));
 	}
 	
 	public static void createWeather()
 	{
 		weatherMap=new GameMap<Weather>();
 		
-		weatherMap.add(Weather.sunny);
+		weatherMap.add(Weather.clear);
 		weatherMap.add(Weather.rainy);
 		weatherMap.add(Weather.snowy);
 	}
 	
-	public static void createMap()
+	/*public static void createMap()
 	{
 		if(!new File("Test Map.mp").exists())
 		{
-			testMap=new Map("Test Room",8,8);
+			Map testMap=new Map("Test Room",8,8);
 			testMap.addUnit(Unit.copy(infantry,teamOrangeStar),3,4);
 			Unit damagedUnit=Unit.copy(infantry,teamOrangeStar);
 			damagedUnit.health(67);
@@ -445,15 +445,16 @@ public class Main
 			testMap.setTerrain(Building.copy(base,teamBlueMoon),6,2);
 			
 			saveMap(testMap);
+			engine.location(testMap);
 		}
 		else
 		{
-			loadMap("Test Map");
+			Map map=loadMap("Test Map");
+			engine.location(map);
 		}
-		engine.location(testMap);
-	}
+	}*/
 	
-	public static void createBattle(Map map, BattleSettings settings)
+	public static void createBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
 	{
 		engine.location(map);
 		
@@ -461,13 +462,27 @@ public class Main
 		ArrayList<Team> teams=new ArrayList<Team>();
 		
 		for(Integer id:teamsId)
-			teams.add(teamMap.get(id));
+			teams.add(Team.copy(teamMap.get(id),commanders.get(id)));
 		
 		
-		battle=new Battle(map,teams,settings);
+		Battle battle=new Battle(map,teams,settings);
+		battle.turn(-1);
+		battle.nextTurn();
+		startBattle(battle);
+		/*Main.currentMode=battle;
+		
+		engine.addKeyListener(battle);
+		engine.requestFocus(battle);
+		
+		BattleView view=new BattleView(240,160,2,2);
+		engine.view(view);*/
+	}
+	
+	public static void startBattle(Battle battle)
+	{
 		Main.currentMode=battle;
 		
-		//battle.weather(Weather.foggy);
+		engine.location(battle.map());
 		
 		engine.addKeyListener(battle);
 		engine.requestFocus(battle);
@@ -478,7 +493,7 @@ public class Main
 	
 	public static void createEditor(Map map)
 	{
-		editor=new MapEditor();
+		MapEditor editor=new MapEditor();
 		
 		if(map==null)
 		{
@@ -584,6 +599,115 @@ public class Main
 		return(maps);
 	}
 	
+	public static ArrayList<String> getBattleList()
+	{
+		ArrayList<String> maps=new ArrayList<String>();
+		
+		File f=new File("battles/");
+		if(f.isDirectory())
+		{
+			FilenameFilter filter=new FilenameFilter()
+			{
+				public boolean accept(File dir, String name)
+				{
+					return(name.contains(".bt"));
+				}
+			};
+			
+			String[] fnames=f.list(filter);
+			for(String name:fnames)
+				maps.add(name.substring(0,name.indexOf(".")));
+		}
+		return(maps);
+	}
+	
+	public static Battle loadBattle(String battleName)
+	{
+		try
+		{
+			ObjectInputStream ois=new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt"));
+			
+			int turn=ois.readInt();
+			
+			ArrayList<Team> teams=new ArrayList<Team>();
+			
+			int size=ois.readInt();
+			for(int i=0;i<size;i++)
+			{
+				int teamid=ois.readInt();
+				//String name=(String)ois.readObject();
+				int funds=ois.readInt();
+				int comid=ois.readInt();
+				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
+				team.funds(funds);
+				teams.add(team);
+			}
+			
+			BattleSettings settings=new BattleSettings();
+			
+			int startingFunds=ois.readInt();
+			int fundsPerTurn=ois.readInt();
+			boolean fogOfWar=ois.readBoolean();
+			int weather=ois.readInt();
+			
+			settings.startingFunds(startingFunds);
+			settings.fundsPerTurn(fundsPerTurn);
+			settings.fogOfWar(fogOfWar);
+			settings.weather(weather);
+			
+			int width=ois.readInt();
+			int height=ois.readInt();
+			
+			boolean fog[][]=new boolean[width][height];
+			
+			for(int a=0;a<height;a++)
+			{
+				for(int i=0;i<width;i++)
+				{
+					fog[i][a]=ois.readBoolean();
+				}
+			}
+			
+			Map map=readMap(ois);
+			ois.close();
+			
+			Battle battle=new Battle(map,teams,settings);
+			battle.turn(turn);
+			battle.fog(fog);
+			for(int a=0;a<map.height();a++)
+			{
+				for(int i=0;i<map.width();i++)
+				{
+					if(map.terrain(i,a) instanceof Building)
+					{
+						Building building=(Building)map.terrain(i,a);
+						building.team(battle.team(building.team()));
+					}
+					
+					if(map.unit(i,a)!=null)
+					{
+						Unit unit=map.unit(i,a);
+						unit.team(battle.team(unit.team()));
+					}
+				}
+			}
+			return(battle);
+		}
+		catch(ClassNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(FileNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(IOException ex)
+		{
+			ex.printStackTrace();
+		}
+		return(null);
+	}
+	
 	public static Map loadMap(String mapName)
 	{
 		try
@@ -654,6 +778,7 @@ public class Main
 		{
 			int teamId=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
+			boolean enabled=in.readBoolean();
 			int health=in.readInt();
 			int weaponCount=in.readInt();
 			for(int i=0;i<weaponCount;i++)
@@ -662,9 +787,61 @@ public class Main
 				unit.weapon(i).ammo(ammo);
 			}
 			int fuel=in.readInt();
+			unit.enabled(enabled);
 			unit.health(health);
 			unit.fuel(fuel);
 			return(unit);
+		}
+	}
+	
+	public static void saveBattle(Battle battle)
+	{
+		try
+		{
+			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("battles/"+battle.map().name()+".bt")));
+			
+			oos.writeInt(battle.whosTurn().id());
+			ArrayList<Team> teams=battle.teams();
+			oos.writeInt(teams.size());
+			for(int i=0;i<teams.size();i++)
+			{
+				Team team=teams.get(i);
+				oos.writeInt(team.id());
+				//oos.writeObject(team.name());
+				oos.writeInt(team.funds());
+				oos.writeInt(team.commander().id());
+			}
+			
+			BattleSettings settings=battle.settings();
+			
+			oos.writeInt(settings.startingFunds());
+			oos.writeInt(settings.fundsPerTurn());
+			oos.writeBoolean(settings.fogOfWar());
+			oos.writeInt(settings.weather());
+			
+			
+			oos.writeInt(battle.map().width());
+			oos.writeInt(battle.map().height());
+			
+			for(int a=0;a<battle.map().height();a++)
+			{
+				for(int i=0;i<battle.map().width();i++)
+				{
+					oos.writeBoolean(battle.fog(i,a));
+				}
+			}
+			
+			writeMap(oos,battle.map());
+			oos.close();
+			System.out.println("battle saved?!");
+		}
+		catch(FileNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(IOException ex)
+		{
+			ex.printStackTrace();
 		}
 	}
 	
@@ -734,6 +911,7 @@ public class Main
 		}
 		out.writeInt(unit.id());
 		out.writeInt(unit.team().id());
+		out.writeBoolean(unit.enabled());
 		out.writeInt(unit.health());
 		out.writeInt(unit.numberOfWeapons());
 		for(int i=0;i<unit.numberOfWeapons();i++)
@@ -748,8 +926,8 @@ public class Main
 	
 	public static Menu menu;
 	
-	public static Battle battle;
-	public static MapEditor editor;
+	//public static Battle battle;
+	//public static MapEditor editor;
 	public static GameMode currentMode;
 	
 	public static TeamColorPalette colorPalette;
@@ -762,6 +940,7 @@ public class Main
 	public static GameMap<Terrain> terrainMap;
 	public static GameMap<Team> teamMap;
 	public static GameMap<Weather> weatherMap;
+	public static GameMap<Commander> commanderMap;
 	
 	public static HashMap<String,Integer> stringToUnitID;
 	
@@ -804,5 +983,5 @@ public class Main
 	public static Team teamBlueMoon;
 	public static Team teamGreenEarth;
 	
-	public static Map testMap;
+	//public static Map testMap;
 }

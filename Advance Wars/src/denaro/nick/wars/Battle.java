@@ -17,13 +17,15 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		createListeners();
 		this.teams=teams;
 		this.settings=settings;
+		for(int i=0;i<teams.size();i++)
+			teams.get(i).addFunds(settings.startingFunds());
 		
 		day=0;
-		turn=-1;
+		//turn=-1;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
 		this.addCursorListener(this);
-		nextTurn();
+		//nextTurn();
 	}
 	
 	private void createListeners()
@@ -50,9 +52,32 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(map);
 	}
 	
+	public void turn(int turn)
+	{
+		this.turn=turn;
+	}
+	
+	public void fog(boolean[][] fog)
+	{
+		this.fog=fog;
+	}
+	
 	public Team whosTurn()
 	{
 		return(teams.get(turn));
+	}
+	
+	public Team team(Team team)
+	{
+		if(team==null)
+			return(null);
+		for(int i=0;i<teams.size();i++)
+		{
+			if(Team.sameTeam(teams.get(i),team))
+				return(teams.get(i));
+		}
+		System.out.println("ERROR: should have returned a team.");
+		return(null);
 	}
 	
 	public void newDay()
@@ -72,7 +97,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		enableUnitsForTeam(whosTurn());
 		
 		int count=map.buildingCount(whosTurn());
-		whosTurn().addFunds(count*1000);
+		whosTurn().addFunds(count*settings.fundsPerTurn());
 		
 		for(int a=0;a<map.height();a++)
 		{
@@ -85,7 +110,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					{
 						Building building=(Building)map.terrain(i,a);
 						Team team=whosTurn();
-						if(building.team()==team)
+						if(Team.sameTeam(building.team(),team))
 						{
 							if(unit.health()<100)
 							{
@@ -162,7 +187,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				{
 					for(int i=0;i<map.width();i++)
 					{
-						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
+						if(attackableArea[i][a]&&unitIfVisible(i,a)!=null&&!Team.sameTeam(map.unit(i,a).team(),selectedUnit.team()))
 						{
 							for(int w=0;w<selectedUnit.numberOfWeapons();w++)
 							{
@@ -239,7 +264,15 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public double calculateDamage(Unit attacker, Unit defender, Point defenderLocation)
 	{
 		double base=Unit.baseDamage(attacker,defender);
-		int aco=attacker.team().commander().attackPower();
+		int aco;
+		if(attacker.attackRange().y==1)
+		{
+			System.out.println(attacker.team().name());
+			System.out.println(attacker.team().commander().name());
+			aco=attacker.team().commander().meleeAttackPower();
+		}
+		else
+			aco=attacker.team().commander().rangedAttackPower();
 		int r=((int)(Math.random()*10));
 		
 		int ahp=attacker.health();
@@ -273,7 +306,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				{
 					for(int i=0;i<map.width();i++)
 					{
-						if(attackableArea[i][a]&&map.unit(i,a)!=null&&map.unit(i,a).team()!=selectedUnit.team())
+						if(attackableArea[i][a]&&map.unit(i,a)!=null&&!Team.sameTeam(map.unit(i,a).team(),selectedUnit.team()))
 						{
 							attackableArea=null;
 							return(true);
@@ -317,7 +350,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			return(false);
 		if(map.unit(cursor().x,cursor().y)==null)
 			return(false);
-		else if(map.unit(cursor().x,cursor().y).team()!=selectedUnit.team())
+		else if(!Team.sameTeam(map.unit(cursor().x,cursor().y).team(),selectedUnit.team()))
 			return(false);
 		else if(!map.unit(cursor().x,cursor().y).canHoldCargo(selectedUnit.id()))
 			return(false);
@@ -339,7 +372,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			return(false);
 		if(map.unit(cursor().x,cursor().y)==null)
 			return(false);
-		else if(map.unit(cursor().x,cursor().y).team()!=selectedUnit.team())
+		else if(!Team.sameTeam(map.unit(cursor().x,cursor().y).team(),selectedUnit.team()))
 			return(false);
 		else if(map.unit(cursor().x,cursor().y).health()==100)
 			return(false);
@@ -420,7 +453,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				}
 				if(map.unit(i,a)!=null)
 				{
-					if(map.unit(i,a).team()==team)
+					if(Team.sameTeam(map.unit(i,a).team(),team))
 					{
 						clearFog(i,a,map.unit(i,a));
 					}
@@ -478,7 +511,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public void createMoveableArea(int x, int y, Unit unit, int count)
 	{
 		
-		if(fog(x,y)||(map.unit(x,y)==null)||(map.unit(x,y).team()==unit.team()))
+		if(fog(x,y)||(map.unit(x,y)==null)||(Team.sameTeam(map.unit(x,y).team(),unit.team())))
 		{
 			if(count>=0)
 			{
@@ -528,7 +561,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			{
 				if(map.unit(i,a)!=null)
 				{
-					if(map.unit(i,a).team()==team)
+					if(Team.sameTeam(map.unit(i,a).team(),team))
 					{
 						map.unit(i,a).enabled(true);
 					}
@@ -541,16 +574,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	{
 		ArrayList<Point> points=new ArrayList<Point>();
 		if(path.last().x-1>=0)
-			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&map.unit(path.last().x-1,path.last().y).team()!=unit.team())
+			if(unitIfVisible(path.last().x-1,path.last().y)!=null&&!Team.sameTeam(map.unit(path.last().x-1,path.last().y).team(),unit.team()))
 				points.add(new Point(path.last().x-1,path.last().y));
 		if(path.last().x+1<map.width())
-			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&map.unit(path.last().x+1,path.last().y).team()!=unit.team())
+			if(unitIfVisible(path.last().x+1,path.last().y)!=null&&!Team.sameTeam(map.unit(path.last().x+1,path.last().y).team(),unit.team()))
 				points.add(new Point(path.last().x+1,path.last().y));
 		if(path.last().y-1>=0)
-			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&map.unit(path.last().x,path.last().y-1).team()!=unit.team())
+			if(unitIfVisible(path.last().x,path.last().y-1)!=null&&!Team.sameTeam(map.unit(path.last().x,path.last().y-1).team(),unit.team()))
 				points.add(new Point(path.last().x,path.last().y-1));
 		if(path.last().y+1<map.height())
-			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&map.unit(path.last().x,path.last().y+1).team()!=unit.team())
+			if(unitIfVisible(path.last().x,path.last().y+1)!=null&&!Team.sameTeam(map.unit(path.last().x,path.last().y+1).team(),unit.team()))
 				points.add(new Point(path.last().x,path.last().y+1));
 		return(points);
 	}
@@ -619,7 +652,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			}
 			else
 			{
-				if(unit.team()!=map.unit(points.get(i).x,points.get(i).y).team())
+				if(!Team.sameTeam(unit.team(),map.unit(points.get(i).x,points.get(i).y).team()))
 				{
 					//TODO Display message "Trap!"
 					trap=true;
@@ -659,7 +692,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				if(map.terrain(i, a) instanceof Building)
 				{
 					Building building=(Building)map.terrain(i,a);
-					if(building.team()==oldTeam)
+					if(Team.sameTeam(building.team(),oldTeam))
 						building.team(newTeam);
 				}
 			}
@@ -681,11 +714,21 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(selectedUnit);
 	}
 	
+	public BattleSettings settings()
+	{
+		return(settings);
+	}
+	
 	public void spawnUnit(Unit unit, Point spawnLocation)
 	{
 		unit.addUnitListener(this);
 		map.addUnit(unit,cursor().x,cursor().y);
-		clearFog(Main.battle.cursor().x, Main.battle.cursor().y, unit);
+		clearFog(cursor().x, cursor().y, unit);
+	}
+	
+	public ArrayList<Team> teams()
+	{
+		return(teams);
 	}
 	
 	public void teamLoses(Team team)
@@ -835,11 +878,17 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		
 		Point cursor=cursor();
 		
+		if(ke.getKeyCode()==KeyEvent.VK_HOME)
+		{
+			//TODO make this part of a menu
+			Main.saveBattle(this);
+		}
+		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
 			if(selectedUnit==null)
 			{
-				if((map.unit(cursor.x,cursor.y)!=null)&&(map.unit(cursor.x,cursor.y).enabled())&&(map.unit(cursor.x,cursor.y).team()==Main.battle.whosTurn()))
+				if((map.unit(cursor.x,cursor.y)!=null)&&(map.unit(cursor.x,cursor.y).enabled())&&Team.sameTeam(map.unit(cursor.x,cursor.y).team(),whosTurn()))
 				{
 					selectedUnit=map.unit(cursor.x,cursor.y);
 					moveableArea=new boolean[map.width()][map.height()];
@@ -855,7 +904,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				else if(map.terrain(cursor.x,cursor.y) instanceof Building)
 				{
 					Building building=(Building)map.terrain(cursor.x,cursor.y);
-					if(building.canSpawnUnits()&&building.team()==Main.battle.whosTurn())
+					if(building.canSpawnUnits()&&Team.sameTeam(building.team(),whosTurn()))
 					{
 						Main.menu=new BuyMenu(null,new Point(0,((GameView2D)Main.engine().view()).height()-Sprite.sprite("Buy Menu").height()),building);
 						Main.engine().requestFocus(Main.menu);
@@ -907,7 +956,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		
 		if(ke.getKeyCode()==KeyEvent.VK_ENTER)
 		{
-			Main.battle.nextTurn();
+			//TODO make this part of a menu
+			nextTurn();
 		}
 	}
 

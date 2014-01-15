@@ -55,7 +55,7 @@ public class Map extends Location
 				if(terrain(x,y) instanceof Building)
 				{
 					Building building=(Building)terrain(x,y);
-					if(building.hq()&&building.team()==team)
+					if(building.hq()&&Team.sameTeam(building.team(),team))
 						return(true);
 				}
 			}
@@ -143,7 +143,7 @@ public class Map extends Location
 				if(terrain(x,y) instanceof Building)
 				{
 					Building building=(Building)terrain(x,y);
-					if(building.team()==team)
+					if(Team.sameTeam(building.team(),team))
 						count++;
 				}
 			}
@@ -160,7 +160,7 @@ public class Map extends Location
 				if(terrain(x,y) instanceof Building)
 				{
 					Building building=(Building)terrain(x,y);
-					if(building.team()==team&&building.id()==buildingId)
+					if(Team.sameTeam(building.team(),team)&&building.id()==buildingId)
 						return(true);
 				}
 			}
@@ -177,7 +177,7 @@ public class Map extends Location
 				if(terrain(x,y) instanceof Building)
 				{
 					Building building=(Building)terrain(x,y);
-					if(building.team()==team&&building.hq())
+					if(Team.sameTeam(building.team(),team)&&building.hq())
 						return(true);
 				}
 			}
@@ -193,7 +193,7 @@ public class Map extends Location
 			{
 				if(unit(x,y)!=null)
 				{
-					if(unit(x,y).team()==team)
+					if(Team.sameTeam(unit(x,y).team(),team))
 						return(true);
 				}
 			}

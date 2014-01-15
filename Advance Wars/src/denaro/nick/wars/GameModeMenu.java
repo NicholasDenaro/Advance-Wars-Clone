@@ -81,6 +81,7 @@ public class GameModeMenu extends GameMode
 				else if(actions.get(cursor().y).equals("Load Battle"))
 				{
 					state=SelectionState.LOAD;
+					actions=Main.getBattleList();
 					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Edit Map"))
@@ -110,6 +111,11 @@ public class GameModeMenu extends GameMode
 				MapSelectionMenu menu=new MapSelectionMenu(null,new Point(0,0),actions.get(cursor().y));
 				Main.openMenu(menu);
 				Main.engine().requestFocus(menu);
+			}
+			else if(state==SelectionState.LOAD)
+			{
+				Battle battle=Main.loadBattle(actions.get(cursor().y));
+				Main.startBattle(battle);
 			}
 			else if(state==SelectionState.EDIT)
 			{

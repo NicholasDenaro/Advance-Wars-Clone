@@ -23,6 +23,11 @@ public class GameFont
 			letters.put(ch, trimImage(characterToImage(ch)));
 		}
 		
+		for(char ch='A';ch<='Z';ch++)
+		{
+			letters.put(ch, trimImage(characterToImage(ch)));
+		}
+		
 		for(char ch='0';ch<='9';ch++)
 		{
 			letters.put(ch, trimImage(characterToImage(ch)));
@@ -42,21 +47,23 @@ public class GameFont
 	{
 		int windex=(image.getWidth()/(width));
 		if(ch==' ')
-			return(image.getSubimage((26+9+1)%windex*width, (26+9+1)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+1)%windex*width, (26*2+9+1)/windex*height, width, height));
 		if(ch=='%')
-			return(image.getSubimage((26+9+2)%windex*width, (26+9+2)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+2)%windex*width, (26*2+9+2)/windex*height, width, height));
 		if(ch=='@')
-			return(image.getSubimage((26+9+3)%windex*width, (26+9+3)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+3)%windex*width, (26*2+9+3)/windex*height, width, height));
 		if(ch=='#')
-			return(image.getSubimage((26+9+4)%windex*width, (26+9+4)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+4)%windex*width, (26*2+9+4)/windex*height, width, height));
 		if(ch=='*')
-			return(image.getSubimage((26+9+6)%windex*width, (26+9+6)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+6)%windex*width, (26*2+9+6)/windex*height, width, height));
 		if(ch=='+')
-			return(image.getSubimage((26+9+7)%windex*width, (26+9+7)/windex*height, width, height));
+			return(image.getSubimage((26*2+9+7)%windex*width, (26*2+9+7)/windex*height, width, height));
 		if(ch>='a'&&ch<='z')
 			return(image.getSubimage(((ch-'a')%windex)*width, ((ch-'a')/windex)*height, width, height));
+		if(ch>='A'&&ch<='Z')
+			return(image.getSubimage(((ch-'A'+26)%windex)*width, ((ch-'A'+26)/windex)*height, width, height));
 		if(ch>='0'&&ch<='9')
-			return(image.getSubimage(((26+ch-'0')%windex)*width, ((26+ch-'0')/windex)*height, width, height));
+			return(image.getSubimage(((26*2+ch-'0')%windex)*width, ((26*2+ch-'0')/windex)*height, width, height));
 		else
 			return(null);
 	}
@@ -86,7 +93,7 @@ public class GameFont
 	
 	public Image stringToImage(String string)
 	{
-		string=string.toLowerCase();
+		//string=string.toLowerCase();
 		if(words.get(string)==null)
 		{
 			//System.out.println(string);

@@ -69,11 +69,12 @@ public class BuyMenu extends Menu
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			if(Main.battle.whosTurn().funds()>=prices[cursor().y])
+			Battle battle=(Battle)Main.currentMode;
+			if(battle.whosTurn().funds()>=prices[cursor().y])
 			{
-				Main.battle.whosTurn().addFunds(-prices[cursor().y]);
-				Unit adding=Unit.copy(units[cursor().y],Main.battle.whosTurn());
-				Main.battle.spawnUnit(adding, Main.battle.cursor());
+				battle.whosTurn().addFunds(-prices[cursor().y]);
+				Unit adding=Unit.copy(units[cursor().y],battle.whosTurn());
+				battle.spawnUnit(adding, battle.cursor());
 				Main.closeMenu();
 			}
 		}
@@ -87,6 +88,7 @@ public class BuyMenu extends Menu
 	@Override
 	public Image image()
 	{
+		Battle battle=(Battle)Main.currentMode;
 		
 		Sprite sprite=Sprite.sprite("Buy Menu");
 		
@@ -95,7 +97,7 @@ public class BuyMenu extends Menu
 			return(image);
 		Graphics2D g=image.createGraphics();
 		g.drawImage(sprite.subimage(0), 0, 0, null);
-		Main.swapPalette(image, Main.battle.whosTurn(), 0);
+		Main.swapPalette(image, battle.whosTurn(), 0);
 		g.setFont(new Font(g.getFont().getName(),Font.BOLD,13));
 		
 		FontMetrics fm=g.getFontMetrics();
@@ -106,16 +108,16 @@ public class BuyMenu extends Menu
 		{
 			g.drawImage(units[i].image(), 4, 10+(i-show)*18, null);
 			
-			if(Main.battle.whosTurn().funds()<prices[i])
+			if(battle.whosTurn().funds()<prices[i])
 			{
 				Main.swapPalette(image, null, 1);
 			}
 			else
 			{
-				Main.swapPalette(image, Main.battle.whosTurn(), 1);
+				Main.swapPalette(image, battle.whosTurn(), 1);
 			}
 			
-			if(Main.battle.whosTurn().funds()<prices[i])
+			if(battle.whosTurn().funds()<prices[i])
 				g.setColor(Color.gray);
 			else
 				g.setColor(Color.black);

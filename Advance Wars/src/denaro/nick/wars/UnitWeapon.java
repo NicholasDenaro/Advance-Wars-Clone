@@ -11,6 +11,7 @@ public class UnitWeapon
 		for(int i=0;i<Unit.numberOfAttackableUnits(weaponID);i++)
 			if(Unit.baseAttack(weaponID,i)!=-1)
 				effectiveAgainst.add(i);
+		finalized=false;
 	}
 	
 	public int weaponID()
@@ -20,7 +21,8 @@ public class UnitWeapon
 	
 	public UnitWeapon ammo(int ammo)
 	{
-		usesAmmo=true;
+		if(!finalized)
+			usesAmmo=true;
 		this.ammo=ammo;
 		this.maxAmmo=ammo;
 		return(this);
@@ -33,7 +35,9 @@ public class UnitWeapon
 	
 	public boolean hasAmmo()
 	{
-		return(!usesAmmo||ammo>0);
+		if(!usesAmmo)
+			return(true);
+		return(ammo>0);
 	}
 	
 	public void useAmmo()
@@ -45,6 +49,12 @@ public class UnitWeapon
 	public void fillAmmo()
 	{
 		ammo=maxAmmo;
+	}
+	
+	public UnitWeapon complete()
+	{
+		finalized=true;
+		return(this);
 	}
 	
 	public ArrayList<Integer> effectiveAgainst()
@@ -60,6 +70,7 @@ public class UnitWeapon
 	public static UnitWeapon copy(UnitWeapon other)
 	{
 		UnitWeapon weapon=new UnitWeapon(other.weaponID);
+		weapon.finalized=other.finalized;
 		weapon.usesAmmo=other.usesAmmo;
 		weapon.maxAmmo=other.maxAmmo;
 		weapon.ammo=other.ammo;
@@ -72,4 +83,6 @@ public class UnitWeapon
 	private boolean usesAmmo;
 	private int ammo;
 	private int maxAmmo;
+	
+	private boolean finalized;
 }

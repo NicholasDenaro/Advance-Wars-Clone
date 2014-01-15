@@ -418,7 +418,7 @@ public class Unit extends Entity
 		
 	}
 	
-	public void finalize()
+	public void complete()
 	{
 		finalized=true;
 		maxFuel=fuel;

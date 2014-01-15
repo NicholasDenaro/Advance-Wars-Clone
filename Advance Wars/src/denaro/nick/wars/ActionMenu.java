@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.RasterFormatException;
 import java.util.ArrayList;
 
 import denaro.nick.core.Sprite;
@@ -50,36 +49,37 @@ public class ActionMenu extends Menu
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
+			Battle battle=(Battle)Main.currentMode;
 			if(actions[cursor().y].equals("Move"))
 			{
-				Main.battle.moveUnit();
+				battle.moveUnit();
 				Main.closeMenu();
 			}
 			else if(actions[cursor().y].equals("Capture"))
 			{
-				Main.battle.unitCaptureBuilding(Main.battle.selectedUnit(),Main.battle.path().last());
+				battle.unitCaptureBuilding(battle.selectedUnit(),battle.path().last());
 				Main.closeMenu();
 			}
 			else if(actions[cursor().y].equals("Unite"))
 			{
-				Main.battle.moveUnit();
+				battle.moveUnit();
 				Main.closeMenu();
 			}
 			else if(actions[cursor().y].equals("Attack"))
 			{
-				AttackMenu menu=new AttackMenu(null,new Point(0,0),Main.battle.attackableUnits());
+				AttackMenu menu=new AttackMenu(null,new Point(0,0),((Battle)Main.currentMode).attackableUnits());
 				Main.openMenu(menu);
 			}
 			else if(actions[cursor().y].equals("Load"))
 			{
-				Main.battle.loadUnit();
+				((Battle)Main.currentMode).loadUnit();
 				Main.closeMenu();
 			}
 			else if(actions[cursor().y].equals("Unload"))
 			{
 				ArrayList<String> unloads=new ArrayList<String>();
-				for(int i=0;i<Main.battle.selectedUnit().cargoCount();i++)
-					if(Main.battle.selectedUnit().cargo(i)!=null)
+				for(int i=0;i<((Battle)Main.currentMode).selectedUnit().cargoCount();i++)
+					if(((Battle)Main.currentMode).selectedUnit().cargo(i)!=null)
 						unloads.add("Unit "+i);
 				Main.openMenu(new ActionMenu(null,point(),unloads));
 			}

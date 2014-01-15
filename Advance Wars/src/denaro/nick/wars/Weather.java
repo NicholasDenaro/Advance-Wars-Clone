@@ -30,7 +30,7 @@ public class Weather extends Identifiable
 	private boolean fog;
 	private int visionLoss;
 	
-	public static Weather sunny=new Weather("Sunny",false,0);
+	public static Weather clear=new Weather("Clear",false,0);
 	public static Weather rainy=new Weather("Rainy",true,1);
 	public static Weather snowy=new Weather("Snowy",true,0);
 }
