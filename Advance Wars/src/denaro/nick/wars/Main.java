@@ -42,15 +42,7 @@ public class Main
 		engine.setTicksPerSecond(60);
 		engine.setFramesPerSecond(60);
 		
-		createSprites();
-		
-		createUnits();
-		
-		createTerrain();
-		
-		createTeams();
-		
-		createWeather();
+		loadAssets();
 		
 		/*System.out.print("Play map? ");
 		
@@ -89,6 +81,19 @@ public class Main
 		engine.addGameViewListener(frame);
 		
 		engine.start();
+	}
+	
+	public static void loadAssets()
+	{
+		createSprites();
+		
+		createUnits();
+		
+		createTerrain();
+		
+		createTeams();
+		
+		createWeather();
 	}
 	
 	public static String getInput()
@@ -467,6 +472,9 @@ public class Main
 		ArrayList<Integer> teamsId=map.teams();
 		ArrayList<Team> teams=new ArrayList<Team>();
 		
+		System.out.println("creating battle...");
+		System.out.println("commanders: "+commanders);
+		
 		for(Integer id:teamsId)
 			teams.add(Team.copy(teamMap.get(id),commanders.get(id)));
 		
@@ -487,6 +495,7 @@ public class Main
 	
 	public static void startBattle(Battle battle)
 	{
+		fixTeams(battle);
 		engine.location(battle.map());
 		Main.currentMode=battle;
 		
@@ -497,6 +506,8 @@ public class Main
 		
 		BattleView view=new BattleView(240,160,2,2);
 		engine.view(view);
+		
+		System.out.println("battle started!");
 	}
 	
 	public static void createEditor(Map map)
@@ -652,27 +663,54 @@ public class Main
 		return(buffer);
 	}
 	
+	public static void fixTeams(Battle battle)
+	{
+		Map map=battle.map();
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				if(map.terrain(i,a) instanceof Building)
+				{
+					Building building=(Building)map.terrain(i,a);
+					building.team(battle.team(building.team()));
+				}
+				
+				if(map.unit(i,a)!=null)
+				{
+					Unit unit=map.unit(i,a);
+					unit.team(battle.team(unit.team()));
+				}
+			}
+		}
+	}
+	
 	public static Battle loadBattle(String battleName, ByteBuffer buffer)
 	{
+		System.out.println("loading battle");
 		try
 		{
+			MyInputStream in;
 			if(buffer==null)
 			{
-				ObjectInputStream ois=new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt"));
-				buffer=readFromStream(ois);
+				in=new MyInputStream(new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt")));
+				in.read();
 			}
-			MyInputStream in=new MyInputStream(buffer);
+			else
+				in=new MyInputStream(buffer);
 			int turn=in.readInt();
+			
 			
 			ArrayList<Team> teams=new ArrayList<Team>();
 			
 			int size=in.readInt();
+			//System.out.println("team size: "+size);
 			for(int i=0;i<size;i++)
 			{
 				int teamid=in.readInt();
-				//String name=(String)ois.readObject();
 				int funds=in.readInt();
 				int comid=in.readInt();
+				//System.out.println("team id: "+teamid);
 				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
 				team.funds(funds);
 				teams.add(team);
@@ -708,23 +746,8 @@ public class Main
 			Battle battle=new Battle(map,teams,settings);
 			battle.turn(turn);
 			battle.fog(fog);
-			for(int a=0;a<map.height();a++)
-			{
-				for(int i=0;i<map.width();i++)
-				{
-					if(map.terrain(i,a) instanceof Building)
-					{
-						Building building=(Building)map.terrain(i,a);
-						building.team(battle.team(building.team()));
-					}
-					
-					if(map.unit(i,a)!=null)
-					{
-						Unit unit=map.unit(i,a);
-						unit.team(battle.team(unit.team()));
-					}
-				}
-			}
+			fixTeams(battle);
+			
 			return(battle);
 		}
 		catch(ClassNotFoundException ex)
@@ -747,9 +770,12 @@ public class Main
 		try
 		{
 			ObjectInputStream ois=new ObjectInputStream(new FileInputStream("maps/"+mapName+".mp"));
-			ByteBuffer buffer=Main.readFromStream(ois);
-			System.out.println(buffer.capacity());
-			Map map=Main.readMap(new MyInputStream(buffer));
+			//ByteBuffer buffer=Main.readFromStream(ois);
+			//System.out.println(buffer.capacity());
+			MyInputStream in=new MyInputStream(ois);
+			in.read();
+			System.out.println(in.remaining());
+			Map map=Main.readMap(in);
 			return(map);
 		}
 		catch(ClassNotFoundException ex)
@@ -769,9 +795,10 @@ public class Main
 	
 	public static Map readMap(MyInputStream in) throws IOException, ClassNotFoundException
 	{
+		//TODO fix
 		int id=in.readInt();
 		Map map=new Map(in.readString(),in.readInt(),in.readInt());
-		
+		//System.out.println("map dims: "+map.width()+","+map.height());
 		
 		for(int a=0;a<map.height();a++)
 		{
@@ -843,8 +870,8 @@ public class Main
 			for(int i=0;i<teams.size();i++)
 			{
 				Team team=teams.get(i);
+				//System.out.println("team: "+team.id()+", "+team.name());
 				message.addInt(team.id());
-				//oos.writeObject(team.name());
 				message.addInt(team.funds());
 				message.addInt(team.commander().id());
 			}
@@ -916,6 +943,7 @@ public class Main
 	
 	public static void writeMap(Message message, Map map) throws IOException
 	{
+		//TODO fix
 		message.addInt(map.id());
 		message.addString(map.name());
 		message.addInt(map.width());

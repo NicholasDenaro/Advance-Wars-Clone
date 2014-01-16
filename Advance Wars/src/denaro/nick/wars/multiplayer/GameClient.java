@@ -1,6 +1,7 @@
 package denaro.nick.wars.multiplayer;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
@@ -13,7 +14,7 @@ public class GameClient extends Client
 {
 	public GameClient() throws IOException
 	{
-		super(new Socket(MainServer.hostname,MainServer.port));
+		super(new Socket(MainServer.hostname==null?InetAddress.getLocalHost().getHostAddress():MainServer.hostname,MainServer.port));
 	}
 	
 	public GameClient(Socket socket) throws IOException
@@ -22,7 +23,7 @@ public class GameClient extends Client
 	}
 
 	@Override
-	public void handleMessages(MyInputStream in,int messageid) throws IOException
+	public void handleMessages(MyInputStream in, int messageid) throws IOException
 	{
 		switch(messageid)
 		{
@@ -36,7 +37,7 @@ public class GameClient extends Client
 	@Override
 	public int maxMessageSize()
 	{
-		return 1024;
+		return 1024;//TODO check to see if this is too small?
 	}
 	
 }

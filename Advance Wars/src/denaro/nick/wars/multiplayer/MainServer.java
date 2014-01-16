@@ -7,12 +7,15 @@ import java.util.HashMap;
 import denaro.nick.server.Client;
 import denaro.nick.server.Server;
 import denaro.nick.wars.Battle;
+import denaro.nick.wars.Main;
 
 public class MainServer extends Server
 {
 	public MainServer(String hostname,int port) throws IOException
 	{
 		super(hostname,port);
+		
+		Main.loadAssets();
 	}
 
 	public static void main(String[] args)
@@ -43,7 +46,7 @@ public class MainServer extends Server
 		return(session);
 	}
 	
-	public static final String hostname="localhost";
+	public static final String hostname=null;//loopback!
 	public static final int port=7589;
 	
 	private static HashMap<String,BattleSession> sessions;

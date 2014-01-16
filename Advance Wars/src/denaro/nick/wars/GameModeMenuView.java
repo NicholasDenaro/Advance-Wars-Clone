@@ -20,7 +20,7 @@ public class GameModeMenuView extends GameView2D
 		g.drawImage(location.entityList().get(0).image(),0,0,null);
 	}
 	
-	public void drawActions(GameModeMenu menu, Graphics2D g)
+	public void drawActions(GameModeMenu modemenu, Graphics2D g)
 	{
 		g.setColor(Color.black);
 		
@@ -30,7 +30,7 @@ public class GameModeMenuView extends GameView2D
 		
 		for(int i=-1;i<=1;i++)
 		{
-			action=menu.action((menu.cursor().y+i));
+			action=modemenu.action((modemenu.cursor().y+i));
 			if(i==0)
 				action=">"+action+"<";
 			g.drawString(action,width()/2-fm.stringWidth(action)/2,height()/2-(-i-1)*fm.getHeight());
@@ -53,12 +53,12 @@ public class GameModeMenuView extends GameView2D
 	{
 		if(Main.currentMode instanceof GameModeMenu)
 		{
-			GameModeMenu menu=(GameModeMenu)Main.currentMode;
+			GameModeMenu modemenu=(GameModeMenu)Main.currentMode;
 			
 			drawBackground(currentLocation,g);
 			
 			if(Main.menu==null)
-				drawActions(menu,g);
+				drawActions(modemenu,g);
 			
 			drawMenus(g);
 		}

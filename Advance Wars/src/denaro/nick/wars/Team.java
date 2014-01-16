@@ -52,10 +52,12 @@ public class Team extends Identifiable
 	
 	public static Team copy(Team other, Commander commander)
 	{
+		if(other==null)
+			return(null);
 		Team team=new Team(other.name,other.color);
 		team.id(other.id());
-		System.out.println("name: "+other.name);
-		System.out.println("commander: "+commander.name());
+		//System.out.println("name: "+other.name);
+		//System.out.println("commander: "+commander.name());
 		team.commander=commander;
 		team.funds=other.funds;
 		

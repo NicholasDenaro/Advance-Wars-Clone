@@ -31,7 +31,6 @@ public class ServerClient extends Client
 				Battle battle=Main.loadBattle(null,buffer);
 				
 				boolean added=MainServer.addSession(name,battle)!=null;
-				System.out.println("added session: "+added);
 				Message mes=new Message(messageid);
 				mes.addBoolean(added);
 				addMessage(mes);

@@ -267,17 +267,29 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		int aco;
 		if(attacker.attackRange().y==1)
 		{
-			System.out.println(attacker.team().name());
-			System.out.println(attacker.team().commander().name());
-			aco=attacker.team().commander().meleeAttackPower();
+			//System.out.println(attacker.team().name());
+			//System.out.println(attacker.team().commander().name());
+			if(attacker.team()!=null)
+				aco=attacker.team().commander().meleeAttackPower();
+			else
+				aco=100;
 		}
 		else
-			aco=attacker.team().commander().rangedAttackPower();
+		{
+			if(attacker.team()!=null)
+				aco=attacker.team().commander().rangedAttackPower();
+			else
+				aco=100;
+		}
 		int r=((int)(Math.random()*10));
 		
 		int ahp=attacker.health();
 		
-		int dco=defender.team().commander().defencePower();
+		int dco;
+		if(defender.team()!=null)
+			dco=defender.team().commander().defencePower();
+		else
+			dco=100;
 		int tdf=map.terrain(defenderLocation.x,defenderLocation.y).defence();
 		int dhp=defender.health();
 		

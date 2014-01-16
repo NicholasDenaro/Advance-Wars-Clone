@@ -115,9 +115,12 @@ public class Map extends Location
 				}
 				if(unit(x,y)!=null)
 				{
-					if(!teams.contains(unit(x,y).team().id()))
+					if(unit(x,y).team()!=null)
 					{
-						teams.add(unit(x,y).team().id());
+						if(!teams.contains(unit(x,y).team().id()))
+						{
+							teams.add(unit(x,y).team().id());
+						}
 					}
 				}
 			}

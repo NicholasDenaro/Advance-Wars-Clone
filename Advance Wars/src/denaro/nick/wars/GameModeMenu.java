@@ -126,6 +126,7 @@ public class GameModeMenu extends GameMode
 					try
 					{
 						Main.client=new GameClient();
+						Main.client.start();
 					}
 					catch(IOException ex)
 					{

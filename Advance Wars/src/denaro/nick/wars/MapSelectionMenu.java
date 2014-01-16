@@ -23,12 +23,15 @@ public class MapSelectionMenu extends Menu
 		cursor(new Point(0,0));
 		settings=new BattleSettings();
 		this.map=Main.loadMap(mapName);
+		//System.out.println("teams: "+this.map.teams());
 		chooseCommanders=true;
 		commanders=new ArrayList<Integer>();
 		for(int i=0;i<map.teams().size();i++)
 		{
 			commanders.add(0);
 		}
+		//System.out.println("commanders: "+commanders);
+		//System.out.println("new menu!");
 	}
 	
 	@Override
@@ -158,7 +161,9 @@ public class MapSelectionMenu extends Menu
 						}
 					}
 					else
+					{
 						Main.startBattle(battle);
+					}
 				}
 			}
 			else
