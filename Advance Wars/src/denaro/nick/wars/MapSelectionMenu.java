@@ -7,9 +7,12 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import denaro.nick.core.GameView2D;
+import denaro.nick.server.Message;
+import denaro.nick.wars.multiplayer.ServerClient;
 
 public class MapSelectionMenu extends Menu
 {
@@ -135,7 +138,27 @@ public class MapSelectionMenu extends Menu
 					{
 						coms.add(Main.commanderMap.get(commanders.get(i)));
 					}
-					Main.createBattle(map,settings,coms);
+					Battle battle=Main.createBattle(map,settings,coms);
+					if(((GameModeMenu)Main.currentMode).previousState()==SelectionState.MULTIPLAYER)
+					{
+						Message mes=new Message(ServerClient.NEWSESSION);
+						mes.addString("session1");
+						Message bat=Main.saveBattle(battle);
+						mes.addInt(bat.size());
+						mes.addMessage(bat);
+						Main.client.addMessage(mes);
+						try
+						{
+							Main.client.sendMessages();
+						}
+						catch(IOException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					else
+						Main.startBattle(battle);
 				}
 			}
 			else

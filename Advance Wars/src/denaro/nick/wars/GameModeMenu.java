@@ -2,7 +2,11 @@ package denaro.nick.wars;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import denaro.nick.server.Message;
+import denaro.nick.wars.multiplayer.GameClient;
 
 
 public class GameModeMenu extends GameMode
@@ -14,16 +18,34 @@ public class GameModeMenu extends GameMode
 		main.add("Load Battle");
 		main.add("Edit Map");
 		main.add("Create Map");
-		//actions.add("Multiplayer");
+		main.add("Multiplayer");
 		main.add("Quit");
+		
+		multiplayer=new ArrayList<String>();
+		multiplayer.add("New Battle");
+		multiplayer.add("Join Battle");
+		multiplayer.add("Back");
+		
 		actions=main;
 		cursor(new Point(0,0));
 		state=SelectionState.MAIN;
+		previousState=null;
 	}
 	
 	public SelectionState state()
 	{
 		return(state);
+	}
+	
+	public SelectionState previousState()
+	{
+		return(previousState);
+	}
+	
+	public void changeState(SelectionState state)
+	{
+		previousState=this.state;
+		this.state=state;
 	}
 	
 	@Override
@@ -74,32 +96,41 @@ public class GameModeMenu extends GameMode
 			{
 				if(actions.get(cursor().y).equals("New Battle"))
 				{
-					state=SelectionState.NEW;
+					changeState(SelectionState.NEW);
 					actions=Main.getMapList();
 					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Load Battle"))
 				{
-					state=SelectionState.LOAD;
+					changeState(SelectionState.LOAD);
 					actions=Main.getBattleList();
 					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Edit Map"))
 				{
-					state=SelectionState.EDIT;
+					changeState(SelectionState.EDIT);
 					actions=Main.getMapList();
 					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Create Map"))
 				{
-					state=SelectionState.CREATE;
+					changeState(SelectionState.CREATE);
 					Main.createEditor(null);
 					cursor(new Point(0,0));
 				}
 				else if(actions.get(cursor().y).equals("Multiplayer"))
 				{
-					state=SelectionState.MULTIPLAYER;
+					changeState(SelectionState.MULTIPLAYER);
 					cursor(new Point(0,0));
+					actions=multiplayer;
+					try
+					{
+						Main.client=new GameClient();
+					}
+					catch(IOException ex)
+					{
+						ex.printStackTrace();
+					}
 				}
 				else if(actions.get(cursor().y).equals("Quit"))
 				{
@@ -114,7 +145,7 @@ public class GameModeMenu extends GameMode
 			}
 			else if(state==SelectionState.LOAD)
 			{
-				Battle battle=Main.loadBattle(actions.get(cursor().y));
+				Battle battle=Main.loadBattle(actions.get(cursor().y),null);
 				Main.startBattle(battle);
 			}
 			else if(state==SelectionState.EDIT)
@@ -122,11 +153,28 @@ public class GameModeMenu extends GameMode
 				Map map=Main.loadMap(actions.get(cursor().y));
 				Main.createEditor(map);
 			}
+			else if(state==SelectionState.MULTIPLAYER)
+			{
+				if(actions.get(cursor().y).equals("New Battle"))
+				{
+					actions=Main.getMapList();
+					changeState(SelectionState.NEW);
+				}
+				else if(actions.get(cursor().y).equals("Join Battle"))
+				{
+					
+				}
+				else if(actions.get(cursor().y).equals("Back"))
+				{
+					changeState(SelectionState.MAIN);
+					actions=main;
+				}
+			}
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_Z)
 		{
-			state=SelectionState.MAIN;
+			changeState(SelectionState.MAIN);
 			actions=main;
 		}
 	}
@@ -147,7 +195,9 @@ public class GameModeMenu extends GameMode
 	
 	private ArrayList<String> actions;
 	private static ArrayList<String> main;
+	private static ArrayList<String> multiplayer;
 	private SelectionState state;
+	private SelectionState previousState;
 	
 }
 

@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,6 +28,10 @@ import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
+import denaro.nick.server.Message;
+import denaro.nick.server.MyInputStream;
+import denaro.nick.server.MyOutputStream;
+import denaro.nick.wars.multiplayer.GameClient;
 
 
 public class Main
@@ -454,9 +460,9 @@ public class Main
 		}
 	}*/
 	
-	public static void createBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
+	public static Battle createBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
 	{
-		engine.location(map);
+		
 		
 		ArrayList<Integer> teamsId=map.teams();
 		ArrayList<Team> teams=new ArrayList<Team>();
@@ -468,7 +474,8 @@ public class Main
 		Battle battle=new Battle(map,teams,settings);
 		battle.turn(-1);
 		battle.nextTurn();
-		startBattle(battle);
+		return(battle);
+		//startBattle(battle);
 		/*Main.currentMode=battle;
 		
 		engine.addKeyListener(battle);
@@ -480,6 +487,7 @@ public class Main
 	
 	public static void startBattle(Battle battle)
 	{
+		engine.location(battle.map());
 		Main.currentMode=battle;
 		
 		engine.location(battle.map());
@@ -621,23 +629,50 @@ public class Main
 		return(maps);
 	}
 	
-	public static Battle loadBattle(String battleName)
+	public static ByteBuffer readFromStream(ObjectInputStream ois) throws IOException
+	{
+		ByteBuffer buffer;
+		ArrayList<Byte> bytes=new ArrayList<Byte>();
+		try
+		{
+			while(true)
+			{
+				bytes.add(ois.readByte());
+			}
+		}
+		catch(EOFException ex)
+		{
+			//end of file breaks while! =D
+		}
+		ois.close();
+		buffer=ByteBuffer.allocate(bytes.size());
+		for(Byte b:bytes)
+			buffer.put(b);
+		
+		return(buffer);
+	}
+	
+	public static Battle loadBattle(String battleName, ByteBuffer buffer)
 	{
 		try
 		{
-			ObjectInputStream ois=new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt"));
-			
-			int turn=ois.readInt();
+			if(buffer==null)
+			{
+				ObjectInputStream ois=new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt"));
+				buffer=readFromStream(ois);
+			}
+			MyInputStream in=new MyInputStream(buffer);
+			int turn=in.readInt();
 			
 			ArrayList<Team> teams=new ArrayList<Team>();
 			
-			int size=ois.readInt();
+			int size=in.readInt();
 			for(int i=0;i<size;i++)
 			{
-				int teamid=ois.readInt();
+				int teamid=in.readInt();
 				//String name=(String)ois.readObject();
-				int funds=ois.readInt();
-				int comid=ois.readInt();
+				int funds=in.readInt();
+				int comid=in.readInt();
 				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
 				team.funds(funds);
 				teams.add(team);
@@ -645,18 +680,18 @@ public class Main
 			
 			BattleSettings settings=new BattleSettings();
 			
-			int startingFunds=ois.readInt();
-			int fundsPerTurn=ois.readInt();
-			boolean fogOfWar=ois.readBoolean();
-			int weather=ois.readInt();
+			int startingFunds=in.readInt();
+			int fundsPerTurn=in.readInt();
+			boolean fogOfWar=in.readBoolean();
+			int weather=in.readInt();
 			
 			settings.startingFunds(startingFunds);
 			settings.fundsPerTurn(fundsPerTurn);
 			settings.fogOfWar(fogOfWar);
 			settings.weather(weather);
 			
-			int width=ois.readInt();
-			int height=ois.readInt();
+			int width=in.readInt();
+			int height=in.readInt();
 			
 			boolean fog[][]=new boolean[width][height];
 			
@@ -664,12 +699,11 @@ public class Main
 			{
 				for(int i=0;i<width;i++)
 				{
-					fog[i][a]=ois.readBoolean();
+					fog[i][a]=in.readBoolean();
 				}
 			}
 			
-			Map map=readMap(ois);
-			ois.close();
+			Map map=readMap(in);
 			
 			Battle battle=new Battle(map,teams,settings);
 			battle.turn(turn);
@@ -712,7 +746,10 @@ public class Main
 	{
 		try
 		{
-			Map map=Main.readMap(new ObjectInputStream(new FileInputStream("maps/"+mapName+".mp")));
+			ObjectInputStream ois=new ObjectInputStream(new FileInputStream("maps/"+mapName+".mp"));
+			ByteBuffer buffer=Main.readFromStream(ois);
+			System.out.println(buffer.capacity());
+			Map map=Main.readMap(new MyInputStream(buffer));
 			return(map);
 		}
 		catch(ClassNotFoundException ex)
@@ -730,10 +767,10 @@ public class Main
 		return(null);
 	}
 	
-	public static Map readMap(ObjectInputStream in) throws IOException, ClassNotFoundException
+	public static Map readMap(MyInputStream in) throws IOException, ClassNotFoundException
 	{
 		int id=in.readInt();
-		Map map=new Map((String)in.readObject(),in.readInt(),in.readInt());
+		Map map=new Map(in.readString(),in.readInt(),in.readInt());
 		
 		
 		for(int a=0;a<map.height();a++)
@@ -750,11 +787,10 @@ public class Main
 				map.addUnit(readUnit(in),i,a);
 			}
 		}
-		in.close();
 		return(map);
 	}
 	
-	private static Terrain readTerrain(ObjectInputStream in) throws IOException
+	private static Terrain readTerrain(MyInputStream in) throws IOException
 	{
 		int id=in.readInt();
 		if(terrainMap.get(id) instanceof Building)
@@ -769,7 +805,7 @@ public class Main
 			return((Terrain)terrainMap.get(id));
 	}
 	
-	public static Unit readUnit(ObjectInputStream in) throws IOException
+	public static Unit readUnit(MyInputStream in) throws IOException
 	{
 		int id=in.readInt();
 		if(id==-1)
@@ -794,46 +830,53 @@ public class Main
 		}
 	}
 	
-	public static void saveBattle(Battle battle)
+	public static Message saveBattle(Battle battle)
 	{
 		try
 		{
 			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("battles/"+battle.map().name()+".bt")));
+			Message message=new Message();
 			
-			oos.writeInt(battle.whosTurn().id());
+			message.addInt(battle.whosTurn().id());
 			ArrayList<Team> teams=battle.teams();
-			oos.writeInt(teams.size());
+			message.addInt(teams.size());
 			for(int i=0;i<teams.size();i++)
 			{
 				Team team=teams.get(i);
-				oos.writeInt(team.id());
+				message.addInt(team.id());
 				//oos.writeObject(team.name());
-				oos.writeInt(team.funds());
-				oos.writeInt(team.commander().id());
+				message.addInt(team.funds());
+				message.addInt(team.commander().id());
 			}
 			
 			BattleSettings settings=battle.settings();
 			
-			oos.writeInt(settings.startingFunds());
-			oos.writeInt(settings.fundsPerTurn());
-			oos.writeBoolean(settings.fogOfWar());
-			oos.writeInt(settings.weather());
+			message.addInt(settings.startingFunds());
+			message.addInt(settings.fundsPerTurn());
+			message.addBoolean(settings.fogOfWar());
+			message.addInt(settings.weather());
 			
 			
-			oos.writeInt(battle.map().width());
-			oos.writeInt(battle.map().height());
+			message.addInt(battle.map().width());
+			message.addInt(battle.map().height());
 			
 			for(int a=0;a<battle.map().height();a++)
 			{
 				for(int i=0;i<battle.map().width();i++)
 				{
-					oos.writeBoolean(battle.fog(i,a));
+					message.addBoolean(battle.fog(i,a));
 				}
 			}
 			
-			writeMap(oos,battle.map());
-			oos.close();
+			writeMap(message,battle.map());
+			
+			MyOutputStream out=new MyOutputStream(oos);
+			out.addMessage(message);
+			out.flush(message.size());
+			out.close();
+			
 			System.out.println("battle saved?!");
+			return(message);
 		}
 		catch(FileNotFoundException ex)
 		{
@@ -843,6 +886,7 @@ public class Main
 		{
 			ex.printStackTrace();
 		}
+		return(null);
 	}
 	
 	public static void saveMap(Map map)
@@ -850,8 +894,14 @@ public class Main
 		try
 		{
 			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("maps/"+map.name()+".mp")));
-			writeMap(oos,map);
-			oos.close();
+			Message message=new Message();
+			writeMap(message,map);
+			
+			MyOutputStream out=new MyOutputStream(oos);
+			out.addMessage(message);
+			System.out.println("message size: "+message.size());
+			out.flush(message.size());
+			out.close();
 			System.out.println("map saved?!");
 		}
 		catch(FileNotFoundException ex)
@@ -864,59 +914,62 @@ public class Main
 		}
 	}
 	
-	public static void writeMap(ObjectOutputStream out, Map map) throws IOException
+	public static void writeMap(Message message, Map map) throws IOException
 	{
-		out.writeInt(map.id());
-		out.writeObject(map.name());
-		out.writeInt(map.width());
-		out.writeInt(map.height());
+		message.addInt(map.id());
+		message.addString(map.name());
+		message.addInt(map.width());
+		message.addInt(map.height());
 		
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				writeTerrain(out,map.terrain(i, a));
+				writeTerrain(message,map.terrain(i, a));
 			}
 		}
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				writeUnit(out,map.unit(i, a));
+				writeUnit(message,map.unit(i, a));
 			}
 		}
 	}
 	
-	private static void writeTerrain(ObjectOutputStream out, Terrain terrain) throws IOException
+	private static void writeTerrain(Message message, Terrain terrain) throws IOException
 	{
-		out.writeInt(terrain.id());
+		message.addInt(terrain.id());
 		if(terrain instanceof Building)
 		{
 			Building building=(Building)terrain;
 			if(building.team()!=null)
-				out.writeInt(building.team().id());
+				message.addInt(building.team().id());
 			else
-				out.writeInt(-1);
-			out.writeInt(building.health());
+				message.addInt(-1);
+			message.addInt(building.health());
 		}
 			
 	}
 	
-	private static void writeUnit(ObjectOutputStream out, Unit unit) throws IOException
+	private static void writeUnit(Message message, Unit unit) throws IOException
 	{
 		if(unit==null)
 		{
-			out.writeInt(-1);
+			message.addInt(-1);
 			return;
 		}
-		out.writeInt(unit.id());
-		out.writeInt(unit.team().id());
-		out.writeBoolean(unit.enabled());
-		out.writeInt(unit.health());
-		out.writeInt(unit.numberOfWeapons());
+		message.addInt(unit.id());
+		if(unit.team()!=null)
+			message.addInt(unit.team().id());
+		else
+			message.addInt(-1);
+		message.addBoolean(unit.enabled());
+		message.addInt(unit.health());
+		message.addInt(unit.numberOfWeapons());
 		for(int i=0;i<unit.numberOfWeapons();i++)
-			out.writeInt(unit.weapon(i).ammo());
-		out.writeInt(unit.fuel());
+			message.addInt(unit.weapon(i).ammo());
+		message.addInt(unit.fuel());
 	}
 	
 	public static GameEngineByTick engine()
@@ -926,8 +979,6 @@ public class Main
 	
 	public static Menu menu;
 	
-	//public static Battle battle;
-	//public static MapEditor editor;
 	public static GameMode currentMode;
 	
 	public static TeamColorPalette colorPalette;
@@ -982,6 +1033,8 @@ public class Main
 	public static Team teamOrangeStar;
 	public static Team teamBlueMoon;
 	public static Team teamGreenEarth;
+	
+	public static GameClient client;
 	
 	//public static Map testMap;
 }
