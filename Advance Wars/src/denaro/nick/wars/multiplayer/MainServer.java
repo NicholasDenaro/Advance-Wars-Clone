@@ -2,7 +2,9 @@ package denaro.nick.wars.multiplayer;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import denaro.nick.server.Client;
 import denaro.nick.server.Server;
@@ -44,6 +46,21 @@ public class MainServer extends Server
 		BattleSession session=new BattleSession(name,battle);
 		sessions.put(name,session);
 		return(session);
+	}
+	
+	synchronized public static void removeSession(String name)
+	{
+		sessions.remove(name);
+	}
+	
+	public static Set<String> sessions()
+	{
+		return(sessions.keySet());
+	}
+	
+	public static BattleSession session(String name)
+	{
+		return(sessions.get(name));
 	}
 	
 	public static final String hostname=null;//loopback!

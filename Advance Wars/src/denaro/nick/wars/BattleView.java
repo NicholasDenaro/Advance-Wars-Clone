@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.multiplayer.MultiplayerBattle;
 
 public class BattleView extends MapView
 {
@@ -111,7 +112,42 @@ public class BattleView extends MapView
 	@Override
 	public void drawLocation(Location currentLocation, Graphics2D g)
 	{
-		if(currentLocation instanceof Map && Main.currentMode instanceof Battle)
+		if(currentLocation instanceof Map==false)
+			return;
+		if(Main.currentMode instanceof MultiplayerBattle)
+		{
+			Map map=(Map)currentLocation;
+			MultiplayerBattle battle=(MultiplayerBattle)Main.currentMode;
+			
+			drawTerrain(map,g);
+			
+			if(battle.started())
+			{
+				drawAttackSpaces(battle,g);
+				
+				drawUnits(map,g);
+		
+				drawMoveableArea(battle,g);
+				drawPath(battle,g);
+		
+				drawGrid(map,g);
+				
+				drawCursor(g);
+				
+				drawMenus(g);
+				
+				drawInfo(map,g);
+				
+				drawPlayerInfo(battle,g);
+			}
+			else
+			{
+				GameView2D view=(GameView2D)Main.engine().view();
+				Image image=GameFont.fonts.get("Map Font").stringToImage("Waiting for Players");
+				g.drawImage(image,view.width()/2-image.getWidth(null)/2,view.height()/2,null);
+			}
+		}
+		else if(Main.currentMode instanceof Battle)
 		{
 			Map map=(Map)currentLocation;
 			Battle battle=(Battle)Main.currentMode;

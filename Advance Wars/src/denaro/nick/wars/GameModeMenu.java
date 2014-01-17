@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import denaro.nick.server.Message;
 import denaro.nick.wars.multiplayer.GameClient;
+import denaro.nick.wars.multiplayer.ServerClient;
 
 
 public class GameModeMenu extends GameMode
@@ -46,6 +47,9 @@ public class GameModeMenu extends GameMode
 	{
 		previousState=this.state;
 		this.state=state;
+		if(this.state==SelectionState.MAIN)
+			actions=main;
+		cursor(new Point(0,0));
 	}
 	
 	@Override
@@ -75,6 +79,11 @@ public class GameModeMenu extends GameMode
 	public String action(int index)
 	{
 		return(actions.get((index+actions.size())%actions.size()));
+	}
+	
+	public void addAction(String action)
+	{
+		actions.add(actions.size()-1,action);
 	}
 	
 	public int numberOfActions()
@@ -163,7 +172,11 @@ public class GameModeMenu extends GameMode
 				}
 				else if(actions.get(cursor().y).equals("Join Battle"))
 				{
-					
+					actions=new ArrayList<String>();
+					actions.add("Back");
+					Message mes=new Message(ServerClient.SESSIONS);
+					Main.client.addMessage(mes);
+					Main.client.sendMessages();
 				}
 				else if(actions.get(cursor().y).equals("Back"))
 				{
@@ -171,6 +184,15 @@ public class GameModeMenu extends GameMode
 					actions=main;
 				}
 			}
+			/*else if(state==SelectionState.WAITING)
+			{
+				if(actions.get(cursor().y).equals("Back"))
+				{
+					Message message=new Message(ServerClient.LEAVESESSION);
+					Main.client.addMessage(message);
+					Main.client.sendMessages();
+				}
+			}*/
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_Z)
@@ -200,6 +222,6 @@ public class GameModeMenu extends GameMode
 	private SelectionState state;
 	private SelectionState previousState;
 	
+	public enum SelectionState{MAIN,NEW,LOAD,EDIT,CREATE,MULTIPLAYER}
 }
 
-enum SelectionState{MAIN,NEW,LOAD,EDIT,CREATE,MULTIPLAYER}

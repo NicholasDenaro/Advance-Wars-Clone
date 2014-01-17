@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.server.Message;
+import denaro.nick.wars.multiplayer.MultiplayerBattle;
 import denaro.nick.wars.multiplayer.ServerClient;
 
 public class MapSelectionMenu extends Menu
@@ -23,15 +24,12 @@ public class MapSelectionMenu extends Menu
 		cursor(new Point(0,0));
 		settings=new BattleSettings();
 		this.map=Main.loadMap(mapName);
-		//System.out.println("teams: "+this.map.teams());
 		chooseCommanders=true;
 		commanders=new ArrayList<Integer>();
 		for(int i=0;i<map.teams().size();i++)
 		{
 			commanders.add(0);
 		}
-		//System.out.println("commanders: "+commanders);
-		//System.out.println("new menu!");
 	}
 	
 	@Override
@@ -141,27 +139,24 @@ public class MapSelectionMenu extends Menu
 					{
 						coms.add(Main.commanderMap.get(commanders.get(i)));
 					}
-					Battle battle=Main.createBattle(map,settings,coms);
-					if(((GameModeMenu)Main.currentMode).previousState()==SelectionState.MULTIPLAYER)
+					if(((GameModeMenu)Main.currentMode).previousState()==GameModeMenu.SelectionState.MULTIPLAYER)
 					{
+						MultiplayerBattle battle=Main.createMultiplayerBattle(map,settings,coms);
 						Message mes=new Message(ServerClient.NEWSESSION);
-						mes.addString("session1");
+						System.out.print("Name the session: ");
+						String ses=Main.getInput();
+						mes.addString(ses);
 						Message bat=Main.saveBattle(battle);
 						mes.addInt(bat.size());
 						mes.addMessage(bat);
 						Main.client.addMessage(mes);
-						try
-						{
-							Main.client.sendMessages();
-						}
-						catch(IOException e)
-						{
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						Main.client.sendMessages();
+						
+						Main.startBattle((MultiplayerBattle)battle);
 					}
 					else
 					{
+						Battle battle=Main.createBattle(map,settings,coms);
 						Main.startBattle(battle);
 					}
 				}

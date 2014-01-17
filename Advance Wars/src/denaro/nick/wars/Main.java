@@ -32,6 +32,7 @@ import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.server.MyOutputStream;
 import denaro.nick.wars.multiplayer.GameClient;
+import denaro.nick.wars.multiplayer.MultiplayerBattle;
 
 
 public class Main
@@ -426,49 +427,26 @@ public class Main
 		weatherMap.add(Weather.snowy);
 	}
 	
-	/*public static void createMap()
+	public static MultiplayerBattle createMultiplayerBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
 	{
-		if(!new File("Test Map.mp").exists())
-		{
-			Map testMap=new Map("Test Room",8,8);
-			testMap.addUnit(Unit.copy(infantry,teamOrangeStar),3,4);
-			Unit damagedUnit=Unit.copy(infantry,teamOrangeStar);
-			damagedUnit.health(67);
-			testMap.addUnit(damagedUnit,5,4);
-			testMap.addUnit(Unit.copy(artillery,teamOrangeStar),3,7);
-			testMap.addUnit(Unit.copy(recon,teamBlueMoon),1,4);
-			testMap.addUnit(Unit.copy(infantry,teamBlueMoon), 4, 5);
-			testMap.addUnit(Unit.copy(infantry,teamGreenEarth), 4, 6);
-			for(int a=0;a<testMap.height();a++)
-			{
-				for(int i=0;i<testMap.width();i++)
-				{
-					testMap.setTerrain(plain,i,a);
-					if(i==a)
-						testMap.setTerrain(mountain,i,a);
-					if(i==a+1)
-						testMap.setTerrain(forest,i,a);
-				}
-			}
-			testMap.setTerrain(Building.copy(city,teamOrangeStar),3,2);
-			testMap.setTerrain(Building.copy(city,null),4,2);
-			testMap.setTerrain(Building.copy(base,teamOrangeStar),5,2);
-			testMap.setTerrain(Building.copy(base,teamBlueMoon),6,2);
-			
-			saveMap(testMap);
-			engine.location(testMap);
-		}
-		else
-		{
-			Map map=loadMap("Test Map");
-			engine.location(map);
-		}
-	}*/
+		ArrayList<Integer> teamsId=map.teams();
+		ArrayList<Team> teams=new ArrayList<Team>();
+		
+		System.out.println("creating multiplayer battle...");
+		System.out.println("commanders: "+commanders);
+		
+		for(Integer id:teamsId)
+			teams.add(Team.copy(teamMap.get(id),commanders.get(id)));
+		
+		
+		MultiplayerBattle battle=new MultiplayerBattle(map,teams,settings);
+		battle.turn(-1);
+		battle.nextTurn();
+		return(battle);
+	}
 	
 	public static Battle createBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
 	{
-		
-		
 		ArrayList<Integer> teamsId=map.teams();
 		ArrayList<Team> teams=new ArrayList<Team>();
 		
@@ -483,14 +461,6 @@ public class Main
 		battle.turn(-1);
 		battle.nextTurn();
 		return(battle);
-		//startBattle(battle);
-		/*Main.currentMode=battle;
-		
-		engine.addKeyListener(battle);
-		engine.requestFocus(battle);
-		
-		BattleView view=new BattleView(240,160,2,2);
-		engine.view(view);*/
 	}
 	
 	public static void startBattle(Battle battle)
@@ -693,7 +663,7 @@ public class Main
 			MyInputStream in;
 			if(buffer==null)
 			{
-				in=new MyInputStream(new ObjectInputStream(new FileInputStream("battles/"+battleName+".bt")));
+				in=new MyInputStream(new FileInputStream("battles/"+battleName+".bt"));
 				in.read();
 			}
 			else
@@ -704,13 +674,11 @@ public class Main
 			ArrayList<Team> teams=new ArrayList<Team>();
 			
 			int size=in.readInt();
-			//System.out.println("team size: "+size);
 			for(int i=0;i<size;i++)
 			{
 				int teamid=in.readInt();
 				int funds=in.readInt();
 				int comid=in.readInt();
-				//System.out.println("team id: "+teamid);
 				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
 				team.funds(funds);
 				teams.add(team);
@@ -769,13 +737,11 @@ public class Main
 	{
 		try
 		{
-			ObjectInputStream ois=new ObjectInputStream(new FileInputStream("maps/"+mapName+".mp"));
-			//ByteBuffer buffer=Main.readFromStream(ois);
-			//System.out.println(buffer.capacity());
-			MyInputStream in=new MyInputStream(ois);
+			MyInputStream in=new MyInputStream(new FileInputStream("maps/"+mapName+".mp"));
 			in.read();
-			System.out.println(in.remaining());
+			System.out.println("remaining bytes:"+in.remaining());
 			Map map=Main.readMap(in);
+			in.close();
 			return(map);
 		}
 		catch(ClassNotFoundException ex)
@@ -795,23 +761,31 @@ public class Main
 	
 	public static Map readMap(MyInputStream in) throws IOException, ClassNotFoundException
 	{
-		//TODO fix
+		//TODO fix this shit for big maps?
 		int id=in.readInt();
 		Map map=new Map(in.readString(),in.readInt(),in.readInt());
-		//System.out.println("map dims: "+map.width()+","+map.height());
+		System.out.println("map name: "+map.name());
+		System.out.println("map dims: "+map.width()+","+map.height());
 		
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				map.setTerrain(readTerrain(in),i,a);
+				System.out.println(i+","+a+"|terrain: ");
+				Terrain terrain=readTerrain(in);
+				System.out.println(terrain);
+				map.setTerrain(terrain,i,a);
+				
 			}
 		}
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				map.addUnit(readUnit(in),i,a);
+				System.out.print(i+","+a+"|unit: ");
+				Unit unit=readUnit(in);
+				System.out.println(unit);
+				map.addUnit(unit,i,a);
 			}
 		}
 		return(map);
@@ -839,6 +813,7 @@ public class Main
 			return(null);
 		else
 		{
+			System.out.println("remaining: "+in.remaining());
 			int teamId=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
 			boolean enabled=in.readBoolean();
@@ -861,7 +836,7 @@ public class Main
 	{
 		try
 		{
-			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("battles/"+battle.map().name()+".bt")));
+			FileOutputStream fos=new FileOutputStream(new File("battles/"+battle.map().name()+".bt"));
 			Message message=new Message();
 			
 			message.addInt(battle.whosTurn().id());
@@ -897,7 +872,7 @@ public class Main
 			
 			writeMap(message,battle.map());
 			
-			MyOutputStream out=new MyOutputStream(oos);
+			MyOutputStream out=new MyOutputStream(fos);
 			out.addMessage(message);
 			out.flush(message.size());
 			out.close();
@@ -920,11 +895,11 @@ public class Main
 	{
 		try
 		{
-			ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream(new File("maps/"+map.name()+".mp")));
+			FileOutputStream fos=new FileOutputStream(new File("maps/"+map.name()+".mp"));
 			Message message=new Message();
 			writeMap(message,map);
 			
-			MyOutputStream out=new MyOutputStream(oos);
+			MyOutputStream out=new MyOutputStream(fos);
 			out.addMessage(message);
 			System.out.println("message size: "+message.size());
 			out.flush(message.size());
@@ -943,7 +918,7 @@ public class Main
 	
 	public static void writeMap(Message message, Map map) throws IOException
 	{
-		//TODO fix
+		//TODO fix this shit for big maps?
 		message.addInt(map.id());
 		message.addString(map.name());
 		message.addInt(map.width());

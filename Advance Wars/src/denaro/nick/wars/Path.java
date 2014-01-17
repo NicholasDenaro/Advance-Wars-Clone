@@ -38,6 +38,24 @@ public class Path
 		}
 	}
 	
+	public boolean isValid(Map map)
+	{
+		Unit unit=map.unit(first().x,first().y);
+		for(int i=1;i<points.size();i++)
+		{
+			Point prev=points.get(i-1);
+			Point curr=points.get(i);
+			int diff=Math.abs(prev.x-curr.x)+Math.abs(prev.y-curr.y);
+			if(diff!=1)
+				return(false);
+			if(map.terrain(curr.x,curr.y).movementCost(movementType)==99)
+				return(false);
+			if(map.unit(curr.x,curr.y)!=null&&!Team.sameTeam(unit.team(),map.unit(curr.x,curr.y).team()))
+				return(false);
+		}
+		return(true);
+	}
+	
 	public ArrayList<Point> points()
 	{
 		return(points);
