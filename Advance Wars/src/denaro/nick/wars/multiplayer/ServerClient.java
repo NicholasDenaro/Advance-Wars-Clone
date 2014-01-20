@@ -17,12 +17,18 @@ import denaro.nick.wars.Unit;
 public class ServerClient extends Client
 {
 
-	public ServerClient(Socket socket) throws IOException
+	public ServerClient(Socket socket, String name) throws IOException
 	{
 		super(socket);
 		session=null;
+		this.name=name;
 	}
 
+	public String name()
+	{
+		return(name);
+	}
+	
 	@Override
 	public void handleMessages(MyInputStream in, int messageid) throws IOException
 	{
@@ -39,39 +45,80 @@ public class ServerClient extends Client
 				sendMessages();
 			return;
 			case NEWSESSION:
-				String name=in.readString();
+				String sesname=in.readString();
+				
 				int size=in.readInt();
 				ByteBuffer buffer=ByteBuffer.allocate(size);
 				buffer.put(in.readBytes(size));
 				Battle battle=Main.loadBattle(null,buffer);
 				
-				if(!name.equalsIgnoreCase("back"))
-					session=MainServer.addSession(name,battle);
+				if(!sesname.equalsIgnoreCase("back"))
+					session=MainServer.addSession(sesname,battle);
+				if(session!=null)
+					session.addClient(this);
 				boolean added=session!=null;
+				System.out.println("added: "+added);
+				System.out.println("session players: "+session.players());
 				mes=new Message(messageid);
 				mes.addBoolean(added);
+				if(added)
+				{
+					System.out.println("added!");
+					Message batmes=Main.saveBattle(battle);
+					mes.addInt(batmes.size());
+					mes.addMessage(batmes);
+					
+					mes.addString(name);
+					mes.addInt(0);
+				}
 				addMessage(mes);
 				sendMessages();
 			return;
 			case JOINSESSION:
-				String sesname=in.readString();
+				sesname=in.readString();
 				mes=new Message(messageid);
-				if((session=MainServer.session(sesname))!=null)
+				if((session=MainServer.session(sesname))!=null&&!session.isFull())
 				{
 					Battle bat=session.battle();
 					Message batmes=Main.saveBattle(bat);
+					mes.addInt(batmes.size());
 					mes.addMessage(batmes);
-					Main.client.addMessage(mes);
-					Main.client.sendMessages();
+					
+					int index=session.firstOpenSlot();
+					
+					mes.addInt(index);
+					
+					size=session.size();
+					mes.addInt(size);
+					for(int i=0;i<size;i++)
+					{
+						mes.addString(session.player(i));
+						mes.addBoolean(session.isReady(i));
+					}
+					mes.addString(name);
+					
+					addMessage(mes);
+					sendMessages();
+					
+					session.sendMessage(new Message(PLAYERJOINEDSESSION).addInt(index).addString(name));
 					
 					session.addClient(this);
 				}
 			return;
-			case LEAVESESSION:
-				session.removeClient(this);
+			case PLAYERREADY:
+				int commander=in.readInt();
+				session.clientReady(this,commander);
 				mes=new Message(messageid);
-				addMessage(mes);
-				sendMessages();
+				int pindex=session.playerIndex(this);
+				mes.addInt(pindex);
+				mes.addBoolean(session.isReady(pindex));
+				session.sendMessage(mes);
+				session.checkIfReady();
+			return;
+			case LEAVESESSION:
+				mes=new Message(messageid);
+				mes.addInt(session.removeClient(this));
+				session.sendMessage(mes);
 			return;
 			case UNITMOVE:
 				int xpos=in.readInt();
@@ -111,20 +158,25 @@ public class ServerClient extends Client
 	private BattleSession session;
 	
 	
-	public static final int SESSIONS=1;
-	public static final int NEWSESSION=2;
-	public static final int JOINSESSION=3;
-	public static final int LEAVESESSION=4;
-	public static final int UNITMOVE=5;
-	public static final int UNITUNITE=6;
-	public static final int UNITATTACK=7;
-	public static final int UNITCAPTURE=8;
-	public static final int UNITLOAD=9;
-	public static final int UNITUNLOAD=10;
+	public static final int SESSIONS=5;
+	public static final int NEWSESSION=6;
+	public static final int JOINSESSION=7;
+	public static final int PLAYERJOINEDSESSION=8;
+	public static final int PLAYERREADY=9;
+	public static final int LEAVESESSION=10;
+	public static final int STARTSESSION=11;
+	public static final int UNITMOVE=20;
+	public static final int UNITUNITE=21;
+	public static final int UNITATTACK=22;
+	public static final int UNITCAPTURE=23;
+	public static final int UNITLOAD=24;
+	public static final int UNITUNLOAD=25;
 
 	@Override
 	public int maxMessageSize()
 	{
 		return(1024*10);
 	}
+	
+	private String name;
 }

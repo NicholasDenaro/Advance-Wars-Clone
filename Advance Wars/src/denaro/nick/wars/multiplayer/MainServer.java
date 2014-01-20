@@ -36,7 +36,7 @@ public class MainServer extends Server
 	
 	public Client newClient(Socket socket) throws IOException
 	{
-		return(new ServerClient(socket));
+		return(new ServerClient(socket,"guest_"+(guestid++)));
 	}
 	
 	synchronized public static BattleSession addSession(String name, Battle battle)
@@ -67,4 +67,6 @@ public class MainServer extends Server
 	public static final int port=7589;
 	
 	private static HashMap<String,BattleSession> sessions;
+	
+	private static int guestid=1;
 }

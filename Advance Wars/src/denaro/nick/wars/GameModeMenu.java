@@ -183,16 +183,14 @@ public class GameModeMenu extends GameMode
 					changeState(SelectionState.MAIN);
 					actions=main;
 				}
-			}
-			/*else if(state==SelectionState.WAITING)
-			{
-				if(actions.get(cursor().y).equals("Back"))
+				else
 				{
-					Message message=new Message(ServerClient.LEAVESESSION);
-					Main.client.addMessage(message);
+					Message mes=new Message(ServerClient.JOINSESSION);
+					mes.addString(actions.get(cursor().y));
+					Main.client.addMessage(mes);
 					Main.client.sendMessages();
 				}
-			}*/
+			}
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_Z)

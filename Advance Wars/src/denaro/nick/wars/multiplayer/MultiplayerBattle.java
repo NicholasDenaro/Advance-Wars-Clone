@@ -1,6 +1,6 @@
 package denaro.nick.wars.multiplayer;
 
-import java.util.ArrayList;
+
 
 import denaro.nick.server.Message;
 import denaro.nick.wars.Battle;
@@ -12,15 +12,32 @@ import denaro.nick.wars.Team;
 public class MultiplayerBattle extends Battle
 {
 
-	public MultiplayerBattle(Map map, ArrayList<Team> teams, BattleSettings settings)
+	public MultiplayerBattle(Map map, BattleSettings settings)
 	{
-		super(map,teams,settings);
+		super(map,null,settings);
 		started=false;
+		myTeam=-1;
+	}
+	
+	@Override
+	public Team whosTurn()
+	{
+		return(teams().get(myTeam));
+	}
+	
+	public void start()
+	{
+		started=true;
 	}
 	
 	public boolean started()
 	{
 		return(started);
+	}
+	
+	public void myTeam(int myTeam)
+	{
+		this.myTeam=myTeam;
 	}
 	
 	public void moveMessage(Message message)
@@ -52,4 +69,5 @@ public class MultiplayerBattle extends Battle
 	}
 	
 	private boolean started;
+	private int myTeam;
 }

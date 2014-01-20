@@ -59,19 +59,7 @@ public class Main
 			createBattle(map);
 		}*/
 		
-		currentMode=new GameModeMenu();
-		Location location=new Location();
-		Entity entity=new Entity(Sprite.sprite("Homepage"),new Point.Double(0,0))
-		{
-			@Override
-			public void tick()
-			{
-			}
-		};
-		location.addEntity(entity);
-		engine.location(location);
-		engine.requestFocus(currentMode);
-		engine.view(new GameModeMenuView(240,160,2,2));
+		gotoMainMenu();
 		
 		menu=null;
 		
@@ -95,6 +83,23 @@ public class Main
 		createTeams();
 		
 		createWeather();
+	}
+	
+	public static void gotoMainMenu()
+	{
+		currentMode=new GameModeMenu();
+		Location location=new Location();
+		Entity entity=new Entity(Sprite.sprite("Homepage"),new Point.Double(0,0))
+		{
+			@Override
+			public void tick()
+			{
+			}
+		};
+		location.addEntity(entity);
+		engine.location(location);
+		engine.requestFocus(currentMode);
+		engine.view(new GameModeMenuView(240,160,2,2));
 	}
 	
 	public static String getInput()
@@ -427,21 +432,11 @@ public class Main
 		weatherMap.add(Weather.snowy);
 	}
 	
-	public static MultiplayerBattle createMultiplayerBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
+	public static MultiplayerBattle createMultiplayerBattle(Map map, BattleSettings settings)
 	{
-		ArrayList<Integer> teamsId=map.teams();
-		ArrayList<Team> teams=new ArrayList<Team>();
-		
-		System.out.println("creating multiplayer battle...");
-		System.out.println("commanders: "+commanders);
-		
-		for(Integer id:teamsId)
-			teams.add(Team.copy(teamMap.get(id),commanders.get(id)));
-		
-		
-		MultiplayerBattle battle=new MultiplayerBattle(map,teams,settings);
-		battle.turn(-1);
-		battle.nextTurn();
+		MultiplayerBattle battle=new MultiplayerBattle(map,settings);
+		/*battle.turn(-1);
+		battle.nextTurn();*/
 		return(battle);
 	}
 	
@@ -550,6 +545,12 @@ public class Main
 		}
 	}
 	
+	public static void closeAllMenus()
+	{
+		menu=null;
+		engine.requestFocus(currentMode);
+	}
+	
 	public static void swapPalette(BufferedImage image, Team team, int base)
 	{
 		Graphics2D g=image.createGraphics();
@@ -655,7 +656,7 @@ public class Main
 		}
 	}
 	
-	public static Battle loadBattle(String battleName, ByteBuffer buffer)
+	public static MultiplayerBattle loadMultiplayerBattle(String battleName, ByteBuffer buffer)
 	{
 		System.out.println("loading battle");
 		try
@@ -711,10 +712,92 @@ public class Main
 			
 			Map map=readMap(in);
 			
+			MultiplayerBattle battle=new MultiplayerBattle(map,settings);
+			battle.turn(turn);
+			battle.fog(fog);
+			//fixTeams(battle);
+			//TODO remember to fix teams before starting!
+			
+			return(battle);
+		}
+		catch(ClassNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(FileNotFoundException ex)
+		{
+			ex.printStackTrace();
+		}
+		catch(IOException ex)
+		{
+			ex.printStackTrace();
+		}
+		return(null);
+	}
+	
+	public static Battle loadBattle(String battleName, ByteBuffer buffer)
+	{
+		System.out.println("loading battle");
+		try
+		{
+			MyInputStream in;
+			if(buffer==null)
+			{
+				in=new MyInputStream(new FileInputStream("battles/"+battleName+".bt"));
+				in.read();
+			}
+			else
+				in=new MyInputStream(buffer);
+			
+			
+			int turn=in.readInt();
+			
+			ArrayList<Team> teams=new ArrayList<Team>();
+			
+			int size=in.readInt();
+			for(int i=0;i<size;i++)
+			{
+				int teamid=in.readInt();
+				int funds=in.readInt();
+				int comid=in.readInt();
+				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
+				team.funds(funds);
+				teams.add(team);
+			}
+			
+			BattleSettings settings=new BattleSettings();
+			
+			int startingFunds=in.readInt();
+			int fundsPerTurn=in.readInt();
+			boolean fogOfWar=in.readBoolean();
+			int weather=in.readInt();
+			
+			settings.startingFunds(startingFunds);
+			settings.fundsPerTurn(fundsPerTurn);
+			settings.fogOfWar(fogOfWar);
+			settings.weather(weather);
+			
+			int width=in.readInt();
+			int height=in.readInt();
+			
+			boolean fog[][]=new boolean[width][height];
+			
+			for(int a=0;a<height;a++)
+			{
+				for(int i=0;i<width;i++)
+				{
+					fog[i][a]=in.readBoolean();
+				}
+			}
+			
+			Map map=readMap(in);
+			
 			Battle battle=new Battle(map,teams,settings);
 			battle.turn(turn);
 			battle.fog(fog);
-			fixTeams(battle);
+			if(!teams.isEmpty())
+				fixTeams(battle);
+			//TODO remember to fix the teams later
 			
 			return(battle);
 		}
@@ -739,7 +822,7 @@ public class Main
 		{
 			MyInputStream in=new MyInputStream(new FileInputStream("maps/"+mapName+".mp"));
 			in.read();
-			System.out.println("remaining bytes:"+in.remaining());
+			//System.out.println("remaining bytes:"+in.remaining());
 			Map map=Main.readMap(in);
 			in.close();
 			return(map);
@@ -764,16 +847,14 @@ public class Main
 		//TODO fix this shit for big maps?
 		int id=in.readInt();
 		Map map=new Map(in.readString(),in.readInt(),in.readInt());
-		System.out.println("map name: "+map.name());
-		System.out.println("map dims: "+map.width()+","+map.height());
+		//System.out.println("map name: "+map.name());
+		//System.out.println("map dims: "+map.width()+","+map.height());
 		
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				System.out.println(i+","+a+"|terrain: ");
 				Terrain terrain=readTerrain(in);
-				System.out.println(terrain);
 				map.setTerrain(terrain,i,a);
 				
 			}
@@ -782,9 +863,7 @@ public class Main
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				System.out.print(i+","+a+"|unit: ");
 				Unit unit=readUnit(in);
-				System.out.println(unit);
 				map.addUnit(unit,i,a);
 			}
 		}
@@ -813,7 +892,7 @@ public class Main
 			return(null);
 		else
 		{
-			System.out.println("remaining: "+in.remaining());
+			//System.out.println("remaining: "+in.remaining());
 			int teamId=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
 			boolean enabled=in.readBoolean();
@@ -839,17 +918,23 @@ public class Main
 			FileOutputStream fos=new FileOutputStream(new File("battles/"+battle.map().name()+".bt"));
 			Message message=new Message();
 			
-			message.addInt(battle.whosTurn().id());
+			//message.addInt(battle.whosTurn().id());
+			message.addInt(battle.turn());
 			ArrayList<Team> teams=battle.teams();
-			message.addInt(teams.size());
-			for(int i=0;i<teams.size();i++)
+			if(teams!=null)
 			{
-				Team team=teams.get(i);
-				//System.out.println("team: "+team.id()+", "+team.name());
-				message.addInt(team.id());
-				message.addInt(team.funds());
-				message.addInt(team.commander().id());
+				message.addInt(teams.size());
+				for(int i=0;i<teams.size();i++)
+				{
+					Team team=teams.get(i);
+					//System.out.println("team: "+team.id()+", "+team.name());
+					message.addInt(team.id());
+					message.addInt(team.funds());
+					message.addInt(team.commander().id());
+				}
 			}
+			else
+				message.addInt(0);
 			
 			BattleSettings settings=battle.settings();
 			

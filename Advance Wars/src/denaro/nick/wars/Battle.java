@@ -17,8 +17,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		createListeners();
 		this.teams=teams;
 		this.settings=settings;
-		for(int i=0;i<teams.size();i++)
-			teams.get(i).addFunds(settings.startingFunds());
+		if(teams!=null)
+			for(int i=0;i<teams.size();i++)
+				teams.get(i).addFunds(settings.startingFunds());
 		
 		day=0;
 		//turn=-1;
@@ -65,6 +66,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public Team whosTurn()
 	{
 		return(teams.get(turn));
+	}
+	
+	public int turn()
+	{
+		return(turn);
+	}
+	
+	public void teams(ArrayList<Team> teams)
+	{
+		this.teams=teams;
 	}
 	
 	public Team team(Team team)
