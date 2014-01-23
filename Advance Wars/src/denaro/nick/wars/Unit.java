@@ -388,24 +388,6 @@ public class Unit extends Entity
 			{
 				Main.swapPalette(image,null,1);
 			}
-			
-			/*if(!enabled)
-			{
-				g.setColor(Color.black);
-				//Composite oldComposite=g.getComposite();
-				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
-				g.fillRect(0, 0, sprite().width(), sprite().height());
-			}
-			g.setComposite(oldComposite);*/
-			
-			/*int hp=(health+5)/10;
-			if(hp!=10)
-			{
-				if(hp==0)
-					hp=1;
-				g.drawImage(GameFont.fonts.get("Map Font").stringToImage(""+hp), sprite().width()-8, sprite().height()-8, null);
-			}*/
-			
 			g.dispose();
 		}
 		return(image);
@@ -414,8 +396,29 @@ public class Unit extends Entity
 	@Override
 	public void tick()
 	{
-		// TODO Auto-generated method stub
-		
+		/*if(path!=null)
+		{
+			if(path.size()==1)
+			{
+				path=null;
+				return;
+			}
+			Point p1=path.points().get(pathpoint-1);
+			Point p2=path.points().get(pathpoint);
+			Point.Double delta=new Point.Double((p2.x-p1.x)*2,(p2.y-p1.y)*2);
+			this.moveDelta(delta);
+			count++;
+			if(count==Main.TILESIZE/2)
+			{
+				count=0;
+				pathpoint++;
+				if(pathpoint==path.points().size())
+				{
+					path=null;
+					finishAnimation();
+				}
+			}
+		}*/
 	}
 	
 	public void complete()

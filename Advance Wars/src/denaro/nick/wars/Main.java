@@ -96,7 +96,7 @@ public class Main
 			{
 			}
 		};
-		location.addEntity(entity);
+		engine.addEntity(entity,location);
 		engine.location(location);
 		engine.requestFocus(currentMode);
 		engine.view(new GameModeMenuView(240,160,2,2));
@@ -435,8 +435,6 @@ public class Main
 	public static MultiplayerBattle createMultiplayerBattle(Map map, BattleSettings settings)
 	{
 		MultiplayerBattle battle=new MultiplayerBattle(map,settings);
-		/*battle.turn(-1);
-		battle.nextTurn();*/
 		return(battle);
 	}
 	
@@ -453,14 +451,13 @@ public class Main
 		
 		
 		Battle battle=new Battle(map,teams,settings);
-		battle.turn(-1);
-		battle.nextTurn();
 		return(battle);
 	}
 	
 	public static void startBattle(Battle battle)
 	{
 		fixTeams(battle);
+		battle.start();
 		engine.location(battle.map());
 		Main.currentMode=battle;
 		
@@ -506,6 +503,18 @@ public class Main
 		System.out.println(engine.view());
 	}
 	
+	public static Menu currentMenu()
+	{
+		if(Main.menu!=null)
+		{
+			Menu child=Main.menu;
+			while(child.child()!=null)
+				child=child.child();
+			return(child);
+		}
+		return(null);
+	}
+	
 	public static void openMenu(Menu menu)
 	{
 		if(Main.menu!=null)
@@ -527,6 +536,11 @@ public class Main
 	public static void closeMenu()
 	{
 		Menu child=Main.menu;
+		if(child==null)
+		{
+			System.out.println("~ERROR~: The menu you are trying to close does not exist...");
+			return;
+		}
 		while(child.child()!=null)
 			child=child.child();
 		
@@ -870,7 +884,7 @@ public class Main
 		return(map);
 	}
 	
-	private static Terrain readTerrain(MyInputStream in) throws IOException
+	public static Terrain readTerrain(MyInputStream in) throws IOException
 	{
 		int id=in.readInt();
 		if(terrainMap.get(id) instanceof Building)
@@ -1025,7 +1039,7 @@ public class Main
 		}
 	}
 	
-	private static void writeTerrain(Message message, Terrain terrain) throws IOException
+	public static void writeTerrain(Message message, Terrain terrain) throws IOException
 	{
 		message.addInt(terrain.id());
 		if(terrain instanceof Building)
@@ -1040,7 +1054,7 @@ public class Main
 			
 	}
 	
-	private static void writeUnit(Message message, Unit unit) throws IOException
+	public static void writeUnit(Message message, Unit unit) throws IOException
 	{
 		if(unit==null)
 		{

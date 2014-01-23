@@ -21,7 +21,7 @@ public class CommanderSelectionMenu extends Menu
 	public CommanderSelectionMenu(Menu child, Point point, Map map, BattleSettings settings)
 	{
 		super(child,point);
-		commanders=new ArrayList<Integer>();
+		commanders=new int[map.teams().size()];
 		this.map=map;
 		this.settings=settings;
 		cursor(new Point(0,0));
@@ -30,14 +30,32 @@ public class CommanderSelectionMenu extends Menu
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
+		if(ke.getKeyCode()==KeyEvent.VK_UP)
+			moveCursorUp();
+		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
+			moveCursorDown();
+		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
+		{
+			commanders[cursor().y]=(commanders[cursor().y]-1+Main.commanderMap.size())%Main.commanderMap.size();
+		}
+		if(ke.getKeyCode()==KeyEvent.VK_RIGHT)
+		{
+			commanders[cursor().y]=(commanders[cursor().y]+1+Main.commanderMap.size())%Main.commanderMap.size();
+		}
+		
+		if(ke.getKeyCode()==KeyEvent.VK_Z)
+		{
+			Main.closeMenu();
+		}
+		
 		if(ke.getKeyCode()==KeyEvent.VK_ENTER)
 		{
 			Main.closeMenu();
 			Main.closeMenu();
 			ArrayList<Commander> coms=new ArrayList<Commander>();
-			for(int i=0;i<commanders.size();i++)
+			for(int i=0;i<commanders.length;i++)
 			{
-				coms.add(Main.commanderMap.get(commanders.get(i)));
+				coms.add(Main.commanderMap.get(commanders[i]));
 			}
 			
 			if(Main.currentMode instanceof BattleLobby)
@@ -55,13 +73,13 @@ public class CommanderSelectionMenu extends Menu
 	@Override
 	public int columns()
 	{
-		return commanders.size();
+		return 0;
 	}
 	
 	@Override
 	public int rows()
 	{
-		return 0;
+		return commanders.length;
 	}
 	
 	@Override
@@ -80,9 +98,9 @@ public class CommanderSelectionMenu extends Menu
 
 		String action="";
 
-		for(int i=0;i<commanders.size();i++)
+		for(int i=0;i<commanders.length;i++)
 		{
-			action=Main.commanderMap.get(commanders.get(i)).name();
+			action=Main.commanderMap.get(commanders[i]).name();
 			if(cursor().y==i)
 				action=">"+action+"<";
 			g.drawString(action,view.width()/2-fm.stringWidth(action)/2,view.height()/4+fm.getHeight()*(i+1));
@@ -93,7 +111,7 @@ public class CommanderSelectionMenu extends Menu
 	}
 	
 	
-	private ArrayList<Integer> commanders;
+	private int[] commanders;
 	private Map map;
 	private BattleSettings settings;
 }

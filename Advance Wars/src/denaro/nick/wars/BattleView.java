@@ -82,7 +82,10 @@ public class BattleView extends MapView
 		
 		//draw bg
 		gimg.drawImage(sprite.subimage(0),0,0,null);
-		Main.swapPalette(img,battle.whosTurn(),0);
+		if(battle instanceof MultiplayerBattle==false)
+			Main.swapPalette(img,battle.whosTurn(),0);
+		else
+			Main.swapPalette(img,((MultiplayerBattle)battle).myTeam(),0);
 		
 		//draw day//draw funds
 		boolean drawDay=false;
@@ -94,8 +97,13 @@ public class BattleView extends MapView
 		}
 		else
 		{
+			
 			gimg.drawImage(GameFont.fonts.get("Map Font").stringToImage("G"),5,6,null);
-			Image txt=GameFont.fonts.get("Map Font").stringToImage(""+battle.whosTurn().funds());
+			Image txt;
+			if(battle instanceof MultiplayerBattle==false)
+				txt=GameFont.fonts.get("Map Font").stringToImage(""+battle.whosTurn().funds());
+			else
+				txt=GameFont.fonts.get("Map Font").stringToImage(""+((MultiplayerBattle)battle).myTeam().funds());
 			gimg.drawImage(txt,66-txt.getWidth(null),6,null);
 		}
 		

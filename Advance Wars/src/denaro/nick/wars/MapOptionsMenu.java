@@ -15,10 +15,10 @@ import denaro.nick.server.Message;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
 import denaro.nick.wars.multiplayer.ServerClient;
 
-public class MapSelectionMenu extends Menu
+public class MapOptionsMenu extends Menu
 {
 	
-	public MapSelectionMenu(Menu child, Point point, String mapName)
+	public MapOptionsMenu(Menu child, Point point, String mapName)
 	{
 		super(child,point);
 		cursor(new Point(0,0));
@@ -96,7 +96,6 @@ public class MapSelectionMenu extends Menu
 			}
 			if(cursor().y==5)
 			{
-				//TODO open a new commander selection menu
 				if(((GameModeMenu)Main.currentMode).previousState()==GameModeMenu.SelectionState.MULTIPLAYER)
 				{
 					MultiplayerBattle battle=Main.createMultiplayerBattle(map,settings);
@@ -109,8 +108,6 @@ public class MapSelectionMenu extends Menu
 					mes.addMessage(bat);
 					Main.client.addMessage(mes);
 					Main.client.sendMessages();
-					
-					//Main.startBattle((MultiplayerBattle)battle);
 				}
 				else
 				{
@@ -143,6 +140,8 @@ public class MapSelectionMenu extends Menu
 	{
 		GameView2D view=(GameView2D)Main.engine().view();
 		BufferedImage image=new BufferedImage(view.width(),view.height(),BufferedImage.TYPE_INT_ARGB);
+		if(child()!=null)
+			return(image);
 		Graphics2D g=image.createGraphics();
 		
 		FontMetrics fm=g.getFontMetrics();

@@ -149,7 +149,7 @@ public class GameModeMenu extends GameMode
 			}
 			else if(state==SelectionState.NEW)
 			{
-				MapSelectionMenu menu=new MapSelectionMenu(null,new Point(0,0),actions.get(cursor().y));
+				MapOptionsMenu menu=new MapOptionsMenu(null,new Point(0,0),actions.get(cursor().y));
 				Main.openMenu(menu);
 				Main.engine().requestFocus(menu);
 			}

@@ -8,6 +8,12 @@ public class BattleSettings
 		fundsPerTurn=1000;
 		fogOfWar=false;
 		weather=0;
+		animationSpeed=2;
+	}
+	
+	public int animationSpeed()
+	{
+		return(animationSpeed);
 	}
 	
 	public void startingFunds(int startingFunds)
@@ -54,4 +60,5 @@ public class BattleSettings
 	private int fundsPerTurn;
 	private boolean fogOfWar;
 	private int weather;
+	private int animationSpeed;
 }

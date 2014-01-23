@@ -9,6 +9,4 @@ public interface UnitListener
 	public void unitCreated(Unit unit, Point location);
 	
 	public void unitAttacked(Unit unit, int damage);
-	
-	
 }

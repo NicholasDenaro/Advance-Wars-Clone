@@ -20,7 +20,17 @@ public class Map extends Location
 		this.height=height;
 		units=new Unit[width][height];
 		terrain=new Terrain[width][height];
-		//attackableUnits=null;
+	}
+	
+	@Override
+	public void tick()
+	{
+		super.tick();
+		if(Main.currentMode instanceof Battle)
+		{
+			Battle battle=(Battle)Main.currentMode;
+			battle.performAction();
+		}
 	}
 	
 	public String name()
@@ -36,13 +46,27 @@ public class Map extends Location
 	public void addUnit(Unit unit, int x, int y)
 	{
 		if(unit(x,y)==null)
+		{
 			units[x][y]=unit;
+			if(unit!=null)
+			{
+				if(Main.engine()!=null)
+					Main.engine().addEntity(unit,this);
+				unit.move(x*Main.TILESIZE,y*Main.TILESIZE);
+			}
+		}
 		else
 			System.out.println("ERROR: Unit already exists at this location: "+x+", "+y);
 	}
 	
 	public void setUnit(Unit unit, int x, int y)
 	{
+		if(Main.engine()!=null)
+		{
+			if(unit==null&&units[x][y]!=null)
+				Main.engine().removeEntity(units[x][y],this);
+			Main.engine().addEntity(unit,this);
+		}
 		units[x][y]=unit;
 	}
 	

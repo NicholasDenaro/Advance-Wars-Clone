@@ -70,11 +70,8 @@ public class BuyMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
 			Battle battle=(Battle)Main.currentMode;
-			if(battle.whosTurn().funds()>=prices[cursor().y])
+			if(battle.purchaseUnit(Unit.copy(units[cursor().y],battle.whosTurn())))
 			{
-				battle.whosTurn().addFunds(-prices[cursor().y]);
-				Unit adding=Unit.copy(units[cursor().y],battle.whosTurn());
-				battle.spawnUnit(adding, battle.cursor());
 				Main.closeMenu();
 			}
 		}

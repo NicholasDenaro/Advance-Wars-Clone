@@ -4,15 +4,17 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import denaro.nick.core.Focusable;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.multiplayer.MainServer;
 
 public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
 {
 	public Battle(Map map, ArrayList<Team> teams, BattleSettings settings)
-	{
+	{	
 		this.map=map;
 		createListeners();
 		this.teams=teams;
@@ -21,12 +23,62 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			for(int i=0;i<teams.size();i++)
 				teams.get(i).addFunds(settings.startingFunds());
 		
+		actionQueue=new LinkedList<BattleAction>();
+		
 		day=0;
 		//turn=-1;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
 		this.addCursorListener(this);
 		//nextTurn();
+	}
+	
+	public void start()
+	{
+		turn=-1;
+		nextTurn();
+		started=true;
+	}
+	
+	public boolean started()
+	{
+		return(started);
+	}
+	
+	public void pushAction(BattleAction action)
+	{
+		action.init();
+		actionQueue.push(action);
+	}
+	
+	public void addAction(BattleAction action)
+	{
+		action.init();
+		actionQueue.add(action);
+	}
+	
+	public boolean isInputLocked()
+	{
+		if(!started)
+		{
+			//System.out.println("ERROR: the battle needs to be started!");
+			return(true);
+		}
+		
+		if(!actionQueue.isEmpty())
+			return(true);
+		
+		return(false);
+	}
+	
+	public void performAction()
+	{
+		if(!actionQueue.isEmpty())
+		{
+			actionQueue.peek().callFunction();
+			if(actionQueue.peek().shouldEnd())
+				actionQueue.pop();
+		}
 	}
 	
 	private void createListeners()
@@ -94,6 +146,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public void newDay()
 	{
 		day++;
+	}
+	
+	public void endTurn()
+	{
+		nextTurn();
 	}
 	
 	public void nextTurn()
@@ -172,8 +229,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 	}
 	
-	//-------------------------------------------------------------------------------
-	
+	//------------------------------------------------------------------------------
 	public boolean[][] attackableArea()
 	{
 		return(attackableArea);
@@ -220,33 +276,58 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 	}
 	
-	public void attackUnit(Point attackerPoint, Point defenderPoint)
+	public boolean attackUnit(final Point attackerPoint, final Point defenderPoint)
 	{
-		Unit attacker=map.unit(attackerPoint.x,attackerPoint.y);
-		Unit defender=map.unit(defenderPoint.x,defenderPoint.y);
+		final Unit attacker=map.unit(attackerPoint.x,attackerPoint.y);
+		final Unit defender=map.unit(defenderPoint.x,defenderPoint.y);
 		if(moveUnit())
 		{
-			double damage=calculateDamage(attacker,defender,defenderPoint);
-			defender.damage((int)damage);
-			
-			if(defender.health()>0)
+			BattleAction action=new BattleAction()
 			{
-				if(attacker.attackRange().y==1&&defender.attackRange().y==1)
+				@Override
+				public void init()
 				{
-					damage=calculateDamage(defender,attacker,attackerPoint);
-					attacker.damage((int)damage);
-					if(attacker.health()<=0)
+					//empty
+				}
+
+				@Override
+				public void callFunction()
+				{
+					double damage=calculateDamage(attacker,defender,defenderPoint);
+					defender.damage((int)damage);
+					
+					if(defender.health()>0)
 					{
-						destroyUnit(attackerPoint);
+						if(attacker.attackRange().y==1&&defender.attackRange().y==1)
+						{
+							damage=calculateDamage(defender,attacker,attackerPoint);
+							attacker.damage((int)damage);
+							if(attacker.health()<=0)
+							{
+								destroyUnit(attackerPoint);
+							}
+						}
+					}
+					else
+					{
+						destroyUnit(defenderPoint);
 					}
 				}
-			}
+
+				@Override
+				public boolean shouldEnd()
+				{
+					return true;
+				}
+				
+			};
+			if(Main.engine()!=null)
+				addAction(action);
 			else
-			{
-				destroyUnit(defenderPoint);
-			}
+				action.callFunction();
+			return(true);
 		}
-		//else was trapped
+		return(false);
 	}
 	
 	@Override
@@ -311,7 +392,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		
 		double damage=100*(base/100.0*aco/100.0*(100+r)/100.0*ahp/100.0*(200-dco)/100.0*(10-tdf)/10.0);
 		
-		//System.out.println("damage: "+damage);
+		System.out.println("damage: "+damage);
 		
 		return(damage);
 	}
@@ -485,6 +566,13 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 	}
 	
+	public void clearMovement()
+	{
+		selectedUnit=null;
+		path=null;
+		moveableArea=new boolean[map.width()][map.height()];
+	}
+	
 	public void createAttackableArea(int x, int y, Unit unit)
 	{
 		if(unit.attackRange().x==1)
@@ -647,16 +735,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public boolean moveUnit()
 	{
 		boolean notTrap=this.moveUnitAlongPath(selectedUnit, path);
-		selectedUnit=null;
-		path=null;
-		moveableArea=new boolean[map.width()][map.height()];
+		clearMovement();
 		return(notTrap);
 	}
 	
-	public boolean moveUnitAlongPath(Unit unit, Path path)
+	public boolean moveUnitAlongPath(final Unit unit, Path path)
 	{
 		boolean trap=false;
 		ArrayList<Point> points=path.points();
+		final Path unitpath=new Path(map,unit.movementType(),unit.movement());
+		unitpath.start(path.first().x,path.first().y);
 		if(points.size()>1)
 		{
 			//reset the capture for a building
@@ -682,7 +770,46 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					break;
 				}
 			}
+			unitpath.start(points.get(i).x,points.get(i).y);
 		}
+		BattleAction action=new BattleAction()
+		{
+			@Override
+			public void init()
+			{
+				count=0;
+				pathindex=0;
+			}
+			
+			@Override
+			public void callFunction()
+			{
+				if(pathindex+1<unitpath.size())
+				{
+					int speed=settings.animationSpeed();
+					Point start=unitpath.get(pathindex);
+					Point end=unitpath.get(pathindex+1);
+					Point.Double delta=new Point.Double(speed*(end.x-start.x),speed*(end.y-start.y));
+					unit.moveDelta(delta);
+					count++;
+					if(count>=Main.TILESIZE/speed)
+					{
+						count=0;
+						pathindex++;
+					}
+				}
+			}
+
+			@Override
+			public boolean shouldEnd()
+			{
+				return pathindex>=unitpath.size()-1;
+			}
+			
+			private int count;
+			private int pathindex;
+		};
+		pushAction(action);
 		i--;
 		if(!points.get(0).equals(points.get(i)))
 		{
@@ -704,6 +831,23 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public Path path()
 	{
 		return(path);
+	}
+	
+	public void path(Path path)
+	{
+		this.path=path;
+	}
+	
+	public boolean purchaseUnit(Unit unit)
+	{
+		if(whosTurn().funds()>=unit.cost())
+		{
+			whosTurn().addFunds(-unit.cost());
+			Unit adding=Unit.copy(unit,whosTurn());
+			spawnUnit(adding, cursor());
+			return(true);
+		}
+		return(false);
 	}
 	
 	public void replaceTeam(Team oldTeam, Team newTeam)
@@ -737,6 +881,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(selectedUnit);
 	}
 	
+	public void selectedUnit(Unit unit)
+	{
+		selectedUnit=unit;
+	}
+	
 	public BattleSettings settings()
 	{
 		return(settings);
@@ -745,8 +894,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public void spawnUnit(Unit unit, Point spawnLocation)
 	{
 		unit.addUnitListener(this);
-		map.addUnit(unit,cursor().x,cursor().y);
-		clearFog(cursor().x, cursor().y, unit);
+		map.addUnit(unit,spawnLocation.x,spawnLocation.y);
+		clearFog(spawnLocation.x, spawnLocation.y, unit);
 	}
 	
 	public ArrayList<Team> teams()
@@ -764,8 +913,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	@Override
 	public void unitAttacked(Unit unit, int damage)
 	{
-		// TODO Auto-generated method stub
-		
+
 	}
 	
 	public boolean unitCanBePlaced(Unit unit, Point center)
@@ -803,8 +951,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	@Override
 	public void unitCreated(Unit unit, Point location)
 	{
-		// TODO Auto-generated method stub
-		
+
 	}
 	
 	@Override
@@ -890,6 +1037,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
+		if(isInputLocked())
+			return;
+		
 		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
 			moveCursorLeft();
 		if(ke.getKeyCode()==KeyEvent.VK_RIGHT)
@@ -916,7 +1066,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					selectedUnit=map.unit(cursor.x,cursor.y);
 					moveableArea=new boolean[map.width()][map.height()];
 					createMoveableArea(cursor.x,cursor.y,map.unit(cursor.x,cursor.y),map.unit(cursor.x,cursor.y).movement());
-					path=new Path(map.unit(cursor.x,cursor.y).movementType(),map.unit(cursor.x,cursor.y).movement());
+					path=new Path(map,map.unit(cursor.x,cursor.y).movementType(),map.unit(cursor.x,cursor.y).movement());
 					path.start(cursor.x,cursor.y);
 				}
 				else if(unitIfVisible(cursor.x,cursor.y)!=null)
@@ -953,8 +1103,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				//show menu
 				if(options.size()>1)
 				{
-					Main.menu=new ActionMenu(null,new Point(cursor.x*Main.TILESIZE,cursor.y*Main.TILESIZE),options);
-					Main.engine().requestFocus(Main.menu);
+					Main.openMenu(new ActionMenu(null,new Point(cursor.x*Main.TILESIZE,cursor.y*Main.TILESIZE),options));
 				}
 			}
 		}
@@ -980,7 +1129,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		if(ke.getKeyCode()==KeyEvent.VK_ENTER)
 		{
 			//TODO make this part of a menu
-			nextTurn();
+			endTurn();
 		}
 	}
 
@@ -1001,6 +1150,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	}
 	
 	//-------------------------------------------------------------------------------
+	private LinkedList<BattleAction> actionQueue;
+	
 	private Map map;
 	
 	private int day;
@@ -1020,4 +1171,6 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	private BattleSettings settings;
 	
 	private ArrayList<Team> teams;
+	
+	private boolean started;
 }

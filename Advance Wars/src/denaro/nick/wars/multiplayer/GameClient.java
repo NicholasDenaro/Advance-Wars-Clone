@@ -1,20 +1,26 @@
 package denaro.nick.wars.multiplayer;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import denaro.nick.core.EngineAction;
 import denaro.nick.server.Client;
 import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.wars.Battle;
+import denaro.nick.wars.BattleAction;
 import denaro.nick.wars.BattleLobbyView;
 import denaro.nick.wars.BattleView;
 import denaro.nick.wars.GameModeMenu;
 import denaro.nick.wars.Main;
+import denaro.nick.wars.Path;
 import denaro.nick.wars.Team;
+import denaro.nick.wars.Terrain;
+import denaro.nick.wars.Unit;
 
 public class GameClient extends Client
 {
@@ -123,6 +129,128 @@ public class GameClient extends Client
 				mbattle.myTeam(lobby.player());
 				mbattle.start();
 				System.out.println("Started: "+((MultiplayerBattle)Main.currentMode).started());
+			return;
+			case ServerClient.UPDATETEAM:
+				int funds=in.readInt();
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				mbattle.myTeam().funds(funds);
+			return;
+			case ServerClient.UPDATEMAP:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				for(int a=0;a<mbattle.map().height();a++)
+				{
+					for(int i=0;i<mbattle.map().width();i++)
+					{
+						Terrain terrain=Main.readTerrain(in);
+						mbattle.map().setTerrain(terrain,i,a);
+					}
+				}
+				for(int a=0;a<mbattle.map().height();a++)
+				{
+					for(int i=0;i<mbattle.map().width();i++)
+					{
+						Unit unit=Main.readUnit(in);
+						mbattle.map().setUnit(unit,i,a);
+						if(unit!=null)
+							unit.move(i*Main.TILESIZE,a*Main.TILESIZE);
+					}
+				}
+			return;
+			case ServerClient.ENDTURN:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				mbattle.nextTurn();
+			return;
+			case ServerClient.PURCHASEUNIT:
+				boolean canbuy=in.readBoolean();
+				if(canbuy)
+				{
+					int unitid=in.readInt();
+					mbattle=((MultiplayerBattle)Main.currentMode);
+					mbattle.spawnUnit(Unit.copy(Main.unitMap.get(unitid),mbattle.myTeam(),false),Main.currentMode.cursor());
+					Main.closeMenu();
+				}
+				else
+					Main.engine().requestFocus(Main.currentMenu());
+			return;
+			case ServerClient.UNITMOVE:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				int xpos=in.readInt();
+				int ypos=in.readInt();
+				Unit unit=mbattle.map().unit(xpos,ypos);
+				int pathsize=in.readInt();
+				Path path=new Path(mbattle.map(),unit.movementType(), unit.movement());
+				path.start(in.readInt(),in.readInt());
+				for(int i=0;i<pathsize-1;i++)
+					path.addPoint(in.readInt(),in.readInt());
+				mbattle.moveUnitAlongPath(unit,path);
+				//mbattle.returnBoolean();
+				
+				mbattle.clearMovement();
+				Main.closeMenu();
+			return;
+			case ServerClient.UNITATTACK:
+				final MultiplayerBattle finalmbattle=((MultiplayerBattle)Main.currentMode);
+				boolean attacked=in.readBoolean();
+				if(attacked)
+				{
+					final Point attackerPos=new Point(in.readInt(),in.readInt());
+					final Unit attacker=Main.readUnit(in);
+					final Point defenderPos=new Point(in.readInt(),in.readInt());
+					final Unit defender=Main.readUnit(in);
+					BattleAction action=new BattleAction()
+					{
+	
+						@Override
+						public void init()
+						{
+							//empty
+						}
+	
+						@Override
+						public void callFunction()
+						{
+							EngineAction engineAction=new EngineAction()
+							{
+
+								@Override
+								public void init()
+								{
+									//empty
+								}
+
+								@Override
+								public void callFunction()
+								{
+									
+									finalmbattle.map().setUnit(attacker,attackerPos.x,attackerPos.y);
+									attacker.move(attackerPos.x*Main.TILESIZE,attackerPos.y*Main.TILESIZE);
+									if(attacker.health()<=0)
+										finalmbattle.destroyUnit(attackerPos);
+									System.out.println("defender: "+defender);
+									finalmbattle.map().setUnit(defender,defenderPos.x,defenderPos.y);
+									defender.move(defenderPos.x*Main.TILESIZE,defenderPos.y*Main.TILESIZE);
+									if(defender.health()<=0)
+										finalmbattle.destroyUnit(defenderPos);
+								}
+
+								@Override
+								public boolean shouldEnd()
+								{
+									return true;
+								}
+							
+							};
+							Main.engine().addAction(engineAction);
+						}
+	
+						@Override
+						public boolean shouldEnd()
+						{
+							return true;
+						}
+					};
+					finalmbattle.addAction(action);
+				}
 			return;
 		}
 	}

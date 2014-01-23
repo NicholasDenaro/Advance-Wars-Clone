@@ -116,24 +116,34 @@ public class MapView extends GameView2D implements CursorListener
 		{
 			for(int i=0;i<map.width();i++)
 			{
-				if((Main.currentMode instanceof Battle==false)||((!((Battle)Main.currentMode).weather().fog())||(!((Battle)Main.currentMode).fog(i,a))))
+				Unit unit=map.unit(i,a);
+				int x=i;
+				int y=a;
+				if(unit!=null)
 				{
-					if(map.unit(i,a)!=null)
+					x=(int)(unit.point().x/Main.TILESIZE);
+					y=(int)(unit.point().y/Main.TILESIZE);
+				}
+				if((Main.currentMode instanceof Battle==false)||((!((Battle)Main.currentMode).weather().fog())||(!((Battle)Main.currentMode).fog(x,y))))
+				{
+					if(unit!=null)
 					{
-						if(!map.unit(i,a).enabled())
+						if(!unit.enabled())
 						{
-							Image unitImg=map.unit(i, a).image();
+							Image unitImg=unit.image();
 							BufferedImage image=new BufferedImage(unitImg.getWidth(null),unitImg.getHeight(null),BufferedImage.TYPE_INT_ARGB);
 							Graphics2D gimg=image.createGraphics();
 							gimg.drawImage(unitImg, 0, 0, null);
 							gimg.setColor(Color.black);
 							gimg.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
 							gimg.fillRect(0, 0, image.getWidth(), image.getHeight());
-							g.drawImage(image,i*Main.TILESIZE,a*Main.TILESIZE,null);
+							//g.drawImage(image,i*Main.TILESIZE,a*Main.TILESIZE,null);
+							g.drawImage(image,(int)unit.point().x,(int)unit.point().y,null);
 						}
 						else
 						{
-							g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
+							//g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
+							g.drawImage(unit.image(),(int)unit.point().x,(int)unit.point().y,null);
 						}
 						if(map.terrain(i, a) instanceof Building)
 						{

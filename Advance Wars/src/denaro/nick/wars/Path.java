@@ -11,8 +11,9 @@ import denaro.nick.core.Sprite;
 
 public class Path
 {
-	public Path(MovementType movementType, int cost)
+	public Path(Map map, MovementType movementType, int cost)
 	{
+		this.map=map;
 		this.movementType=movementType;
 		points=new ArrayList<Point>();
 		this.cost=cost;
@@ -28,7 +29,6 @@ public class Path
 		Point to=new Point(x,y);
 		if(to.distance(points.get(points.size()-1))==1)
 		{
-			Map map=(Map)Main.engine().location();
 			if(cost-map.terrain(x, y).movementCost(movementType)>=0)
 			{
 				points.add(to);
@@ -38,7 +38,17 @@ public class Path
 		}
 	}
 	
-	public boolean isValid(Map map)
+	public int size()
+	{
+		return(points.size());
+	}
+	
+	public Point get(int index)
+	{
+		return(points.get(index));
+	}
+	
+	public boolean isValid()
 	{
 		Unit unit=map.unit(first().x,first().y);
 		for(int i=1;i<points.size();i++)
@@ -119,6 +129,7 @@ public class Path
 		return(image);
 	}
 	
+	private Map map;
 	private BufferedImage image;
 	private MovementType movementType;
 	private ArrayList<Point> points;
