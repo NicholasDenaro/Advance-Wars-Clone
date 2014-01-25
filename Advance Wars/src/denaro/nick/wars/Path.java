@@ -58,10 +58,6 @@ public class Path
 			int diff=Math.abs(prev.x-curr.x)+Math.abs(prev.y-curr.y);
 			if(diff!=1)
 				return(false);
-			if(map.terrain(curr.x,curr.y).movementCost(movementType)==99)
-				return(false);
-			if(map.unit(curr.x,curr.y)!=null&&!Team.sameTeam(unit.team(),map.unit(curr.x,curr.y).team()))
-				return(false);
 		}
 		return(true);
 	}

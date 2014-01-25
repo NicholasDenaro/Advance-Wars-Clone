@@ -36,6 +36,7 @@ public class Unit extends Entity
 		movementType=null;
 		canCapture=false;
 		attackRange=new Point(1,1);
+		cargo=new Unit[0];
 	}
 	
 	public void addUnitListener(UnitListener listener)
@@ -245,7 +246,7 @@ public class Unit extends Entity
 		return(cargo[slot]);
 	}
 	
-	public void addCargo(Unit unit)
+	public int addCargo(Unit unit)
 	{
 		int i=0;
 		boolean added=false;
@@ -255,8 +256,15 @@ public class Unit extends Entity
 			{
 				cargo[i]=unit;
 				added=true;
+				return(i);
 			}
 		}
+		return(-1);
+	}
+	
+	public void setCargo(Unit unit, int slot)
+	{
+		cargo[slot]=unit;
 	}
 	
 	public void dropCargo(int slot)

@@ -26,11 +26,9 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		actionQueue=new LinkedList<BattleAction>();
 		
 		day=0;
-		//turn=-1;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
 		this.addCursorListener(this);
-		//nextTurn();
 	}
 	
 	public void start()
@@ -153,6 +151,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		nextTurn();
 	}
 	
+	public Team myTeam()
+	{
+		return(whosTurn());
+	}
+	
 	public void nextTurn()
 	{
 		turn=++turn%teams.size();
@@ -161,8 +164,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			newDay();
 		}
 		resetFog();
-		clearFogForTeam(whosTurn());
-		enableUnitsForTeam(whosTurn());
+		clearFogForTeam(myTeam());
+		enableUnitsForTeam(myTeam());
 		
 		int count=map.buildingCount(whosTurn());
 		whosTurn().addFunds(count*settings.fundsPerTurn());
@@ -711,15 +714,39 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(!enemiesNextToUnit(unit).isEmpty());
 	}
 	
-	public void loadUnit()
+	public boolean loadUnit()
 	{
-		Unit unit=selectedUnit;
+		final Unit unit=selectedUnit;
 		if(moveUnit())
 		{
-			System.out.println("loaded!?");
-			map.unit(cursor().x,cursor().y).addCargo(unit);
+			BattleAction action=new BattleAction()
+			{
+				@Override
+				public void init()
+				{
+					//empty
+				}
+
+				@Override
+				public void callFunction()
+				{
+					map.unit(cursor().x,cursor().y).addCargo(unit);
+				}
+
+				@Override
+				public boolean shouldEnd()
+				{
+					return(true);
+				}
+				
+			};
+			if(Main.engine()!=null)
+				addAction(action);
+			else
+				action.callFunction();
+			return(true);
 		}
-		//else was trapped
+		return(false);
 	}
 	
 	public boolean[][] moveableArea()
@@ -759,7 +786,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		{
 			if(map.unit(points.get(i).x,points.get(i).y)==null)
 			{
-				clearFog(points.get(i).x,points.get(i).y,unit);
+				if(Team.sameTeam(unit.team(),myTeam()))
+					clearFog(points.get(i).x,points.get(i).y,unit);
 			}
 			else
 			{
@@ -816,14 +844,13 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			if(map.unit(points.get(i).x,points.get(i).y)==null)
 			{
 				map.moveUnit(points.get(0),points.get(i));
-				/*units[points.get(i).x][points.get(i).y]=unit(points.get(0).x,points.get(0).y);
-				units[points.get(0).x][points.get(0).y]=null;*/
 			}
 			else
 			{
 				uniteUnit(points.get(0),points.get(i));
 			}
 		}
+		System.out.println(points.get(i));
 		unit.enabled(false);
 		return(!trap);
 	}
@@ -933,18 +960,46 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(false);
 	}
 	
-	public void unitCaptureBuilding(Unit unit, Point destination)
+	public boolean unitCaptureBuilding(final Unit unit, final Point destination)
 	{
 		if(moveUnit())
 		{
-			Building building=(Building)map.terrain(destination.x,destination.y);
-			building.damage((unit.health()+5)/10);
-			if(building.health()<=0)
+			BattleAction action=new BattleAction()
 			{
-				building.health(20);
-				building.buildingCaptured(unit.team());
-			}
+
+				@Override
+				public void init()
+				{
+
+				}
+
+				@Override
+				public void callFunction()
+				{
+					Building building=(Building)map.terrain(destination.x,destination.y);
+					building.damage((unit.health()+5)/10);
+					if(building.health()<=0)
+					{
+						building.health(20);
+						building.buildingCaptured(unit.team());
+					}
+				}
+
+				@Override
+				public boolean shouldEnd()
+				{
+					return true;
+				}
+				
+			};
+			if(Main.engine()!=null)
+				addAction(action);
+			else
+				action.callFunction();
+			
+			return(true);
 		}
+		return(false);
 		//else was trapped
 	}
 	
@@ -965,12 +1020,37 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 	}
 
-	public void uniteUnit(Point start, Point end)
+	public void uniteUnit(final Point start, final Point end)
 	{
 		if((map.unit(start.x,start.y)!=null)&&(map.unit(end.x,end.y)!=null))
 		{
-			map.unit(end.x,end.y).uniteWith(map.unit(start.x,start.y));
-			map.setUnit(null,start.x,start.y);
+			BattleAction action=new BattleAction()
+			{
+
+				@Override
+				public void init()
+				{
+					//empty
+				}
+
+				@Override
+				public void callFunction()
+				{
+					map.unit(end.x,end.y).uniteWith(map.unit(start.x,start.y));
+					map.setUnit(null,start.x,start.y);
+				}
+
+				@Override
+				public boolean shouldEnd()
+				{
+					return true;
+				}
+				
+			};
+			if(Main.engine()!=null)
+				addAction(action);
+			else
+				action.callFunction();
 		}
 	}
 	
@@ -1007,15 +1087,40 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(points);
 	}
 	
-	public void unloadUnit(int cargoslot, Point point)
+	public boolean unloadUnit(final int cargoslot, final Point point)
 	{
-		Unit selected=selectedUnit;
+		final Unit selected=selectedUnit;
 		if(moveUnit())
 		{
-			map.addUnit(selected.cargo(cargoslot),point.x,point.y);
-			selected.dropCargo(cargoslot);
+			BattleAction action=new BattleAction()
+			{
+				@Override
+				public void init()
+				{
+					//empty
+					
+				}
+
+				@Override
+				public void callFunction()
+				{
+					map.addUnit(selected.cargo(cargoslot),point.x,point.y);
+					selected.dropCargo(cargoslot);
+				}
+
+				@Override
+				public boolean shouldEnd()
+				{
+					return true;
+				}
+			};
+			if(Main.engine()!=null)
+				addAction(action);
+			else
+				action.callFunction();
+			return(true);
 		}
-		//else was trapped
+		return(false);
 	}
 	
 	public void weather(Weather weather)

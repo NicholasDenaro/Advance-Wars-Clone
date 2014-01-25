@@ -153,7 +153,6 @@ public class BattleSession
 			battle.teams(teams);
 			Main.fixTeams(battle);
 			battle.start();
-			System.out.println("turn: "+battle.turn()+"team["+battle.whosTurn().id()+"] funds: "+battle.whosTurn().funds());
 			Message message=new Message(ServerClient.STARTSESSION);
 			message.addInt(commanders.length);
 			for(int i=0;i<commanders.length;i++)
@@ -163,7 +162,6 @@ public class BattleSession
 			}
 			sendMessage(message);
 			playing=true;
-			
 			
 		}
 	}

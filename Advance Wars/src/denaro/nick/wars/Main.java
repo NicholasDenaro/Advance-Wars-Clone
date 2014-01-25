@@ -428,6 +428,7 @@ public class Main
 		weatherMap=new GameMap<Weather>();
 		
 		weatherMap.add(Weather.clear);
+		weatherMap.add(Weather.foggy);
 		weatherMap.add(Weather.rainy);
 		weatherMap.add(Weather.snowy);
 	}
@@ -906,7 +907,6 @@ public class Main
 			return(null);
 		else
 		{
-			//System.out.println("remaining: "+in.remaining());
 			int teamId=in.readInt();
 			Unit unit=Unit.copy((Unit)unitMap.get(id),(Team)teamMap.get(teamId));
 			boolean enabled=in.readBoolean();
@@ -916,6 +916,11 @@ public class Main
 			{
 				int ammo=in.readInt();
 				unit.weapon(i).ammo(ammo);
+			}
+			int cargoCount=in.readInt();
+			for(int i=0;i<cargoCount;i++)
+			{
+				unit.setCargo(readUnit(in),i);
 			}
 			int fuel=in.readInt();
 			unit.enabled(enabled);
@@ -1071,6 +1076,10 @@ public class Main
 		message.addInt(unit.numberOfWeapons());
 		for(int i=0;i<unit.numberOfWeapons();i++)
 			message.addInt(unit.weapon(i).ammo());
+		message.addInt(unit.cargoCount());
+		for(int i=0;i<unit.cargoCount();i++)
+			writeUnit(message,unit.cargo(i));
+		
 		message.addInt(unit.fuel());
 	}
 	

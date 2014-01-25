@@ -31,6 +31,7 @@ public class Weather extends Identifiable
 	private int visionLoss;
 	
 	public static Weather clear=new Weather("Clear",false,0);
+	public static Weather foggy=new Weather("Foggy",true,0);
 	public static Weather rainy=new Weather("Rainy",true,1);
 	public static Weather snowy=new Weather("Snowy",true,0);
 }

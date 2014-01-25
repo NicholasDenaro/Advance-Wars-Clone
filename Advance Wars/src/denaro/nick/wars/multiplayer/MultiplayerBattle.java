@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.BattleSettings;
+import denaro.nick.wars.Building;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.Map;
 import denaro.nick.wars.Team;
@@ -20,11 +21,6 @@ public class MultiplayerBattle extends Battle
 		myTeam=-1;
 	}
 	
-	/*public void returnBoolean(boolean bool)
-	{
-		returnBoolean=bool;
-	}*/
-	
 	public boolean attackUnit(Point attackerPoint, Point defenderPoint)
 	{
 		Message message=new Message(ServerClient.UNITATTACK);
@@ -33,13 +29,32 @@ public class MultiplayerBattle extends Battle
 		message.addInt(defenderPoint.y);
 		Main.client.addMessage(message);
 		Main.client.sendMessages();
-		return(true);//TODO check to see if this is the correct return, or if it even matters
+		return(false);//TODO check to see if this is the correct return, or if it even matters
 	}
 	
 	@Override
-	public void loadUnit()
+	public boolean loadUnit()
 	{
-		
+		Message message=new Message(ServerClient.UNITLOAD);
+		moveMessage(message);
+		message.addInt(cursor().x);
+		message.addInt(cursor().y);
+		Main.client.addMessage(message);
+		Main.client.sendMessages();
+		return(false);
+	}
+	
+	@Override
+	public boolean unloadUnit(int cargoslot, Point point)
+	{
+		Message message=new Message(ServerClient.UNITUNLOAD);
+		moveMessage(message);
+		message.addInt(cargoslot);
+		message.addInt(point.x);
+		message.addInt(point.y);
+		Main.client.addMessage(message);
+		Main.client.sendMessages();
+		return(false);
 	}
 	
 	public void moveMessage(Message message)
@@ -58,6 +73,16 @@ public class MultiplayerBattle extends Battle
 	public boolean moveUnit()
 	{
 		Message message=new Message(ServerClient.UNITMOVE);
+		moveMessage(message);
+		Main.client.addMessage(message);
+		Main.client.sendMessages();
+		return(false);
+	}
+	
+	@Override
+	public boolean unitCaptureBuilding(Unit unit, Point destination)
+	{
+		Message message=new Message(ServerClient.UNITCAPTURE);
 		moveMessage(message);
 		Main.client.addMessage(message);
 		Main.client.sendMessages();
@@ -97,8 +122,6 @@ public class MultiplayerBattle extends Battle
 	@Override
 	public void keyPressed(KeyEvent ke)
 	{
-		
-		//TODO check for actionQueue
 		if(isInputLocked())
 			return;
 		
@@ -120,5 +143,4 @@ public class MultiplayerBattle extends Battle
 	}
 
 	private int myTeam;
-	//private Boolean returnBoolean;
 }
