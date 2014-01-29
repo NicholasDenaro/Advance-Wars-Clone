@@ -14,8 +14,6 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,13 +24,19 @@ import denaro.nick.core.Entity;
 import denaro.nick.core.GameEngineByTick;
 import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
+import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.server.MyOutputStream;
+import denaro.nick.wars.menu.GameModeMenu;
+import denaro.nick.wars.menu.Menu;
 import denaro.nick.wars.multiplayer.GameClient;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
+import denaro.nick.wars.view.BattleView;
+import denaro.nick.wars.view.EditorView;
+import denaro.nick.wars.view.GameModeMenuView;
 
 
 public class Main
@@ -44,20 +48,6 @@ public class Main
 		engine.setFramesPerSecond(60);
 		
 		loadAssets();
-		
-		/*System.out.print("Play map? ");
-		
-		String command=getInput();
-		
-		if(command==null||command.isEmpty())
-		{
-			createEditor();
-		}
-		else
-		{
-			Map map=loadMap(command);
-			createBattle(map);
-		}*/
 		
 		gotoMainMenu();
 		
@@ -124,40 +114,64 @@ public class Main
 		
 		try
 		{
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Path.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Path.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Path.png"));
+			image=ImageIO.read(new FileInputStream("resources/Path.png"));
 			new Sprite("Path",image,16,16,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Arrow.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Arrow.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Arrow.png"));
+			image=ImageIO.read(new FileInputStream("resources/Arrow.png"));
 			new Sprite("Arrow",image,16,16,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Action Menu.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Action Menu.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Action Menu.png"));
+			image=ImageIO.read(new FileInputStream("resources/Action Menu.png"));
 			new Sprite("Action Menu",image,80,16,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buy Menu.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buy Menu.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Buy Menu.png"));
+			image=ImageIO.read(new FileInputStream("resources/Buy Menu.png"));
 			new Sprite("Buy Menu",image,-1,-1,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Player Info.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Player Info.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Player Info.png"));
+			image=ImageIO.read(new FileInputStream("resources/Player Info.png"));
 			new Sprite("Player Info",image,-1,-1,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Terrain.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Terrain.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Terrain.png"));
+			image=ImageIO.read(new FileInputStream("resources/Terrain.png"));
 			new Sprite("Terrain",image,16,16,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buildings.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Buildings.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Buildings.png"));
+			image=ImageIO.read(new FileInputStream("resources/Buildings.png"));
 			new Sprite("Buildings",image,16,32,new Point(0,16));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Units.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Units.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Units.png"));
+			image=ImageIO.read(new FileInputStream("resources/Units.png"));
 			new Sprite("Units",image,16,16,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Cursor.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Cursor.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Cursor.png"));
+			image=ImageIO.read(new FileInputStream("resources/Cursor.png"));
 			new Sprite("Cursor",image,-1,-1,new Point(2,2));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Color Palette.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Color Palette.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Color Palette.png"));
+			image=ImageIO.read(new FileInputStream("resources/Color Palette.png"));
 			new Sprite("Color Palette",image,-1,-1,new Point(0,0));
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Font.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Font.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Font.png"));
+			image=ImageIO.read(new FileInputStream("resources/Font.png"));
 			new GameFont("Map Font",image,8,10);
 			
-			image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Homepage.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("Homepage.png"));
+			//image=ImageIO.read(Thread.currentThread().getContextClassLoader().getResourceAsStream("resources/Homepage.png"));
+			image=ImageIO.read(new FileInputStream("resources/Homepage.png"));
 			new Sprite("Homepage",image,-1,-1,new Point(0,0));//http://retronoob.deviantart.com/art/Retro-War-quot-Advance-Wars-quot-75833354
 		}
 		catch(IOException ex)
@@ -310,6 +324,61 @@ public class Main
 			apc.complete();
 			unitMap.add(apc);
 			stringToUnitID.put("apc",apc.id());
+			
+			bship=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bship.cost(28000);
+			bship.addWeapon(new UnitWeapon(15).ammo(9).complete());
+			bship.defenceID(13);
+			bship.imageIndex(56);
+			bship.movement(5);
+			bship.vision(2);
+			bship.fuel(99);
+			bship.movementType(MovementType.SHIP);
+			bship.attackRange(new Point(2,6));
+			bship.complete();
+			unitMap.add(bship);
+			stringToUnitID.put("bship",bship.id());
+			
+			cruiser=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			cruiser.cost(18000);
+			cruiser.addWeapon(new UnitWeapon(12).ammo(9).complete());
+			cruiser.addWeapon(new UnitWeapon(13).complete());
+			cruiser.defenceID(11);
+			cruiser.imageIndex(60);
+			cruiser.movement(6);
+			cruiser.vision(3);
+			cruiser.fuel(99);
+			cruiser.movementType(MovementType.SHIP);
+			cruiser.complete();
+			unitMap.add(cruiser);
+			stringToUnitID.put("cruiser",cruiser.id());
+			
+			lander=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			lander.cost(12000);
+			lander.defenceID(10);
+			lander.imageIndex(64);
+			lander.movement(6);
+			lander.vision(1);
+			lander.fuel(99);
+			lander.movementType(MovementType.TRANS);
+			lander.cargoCount(2);
+			lander.cargoType(0,1,2,3,4,5,6,7,8,9);
+			lander.complete();
+			unitMap.add(lander);
+			stringToUnitID.put("lander",lander.id());
+			
+			sub=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			sub.cost(20000);
+			sub.addWeapon(new UnitWeapon(14).ammo(6).complete());
+			sub.defenceID(12);
+			sub.imageIndex(68);
+			sub.movement(5);
+			sub.vision(5);
+			sub.fuel(60);
+			sub.canHide(true);
+			sub.movementType(MovementType.SHIP);
+			unitMap.add(sub);
+			stringToUnitID.put("sub",sub.id());
 		}
 		catch(UnitFinalizedException ex)
 		{
@@ -323,39 +392,62 @@ public class Main
 		
 		plain=new Terrain("Plain",new int[]{1,1,1,1,99,99,1});
 		plain.defence(1);
-		plain.imageIndex(9);
+		plain.imageIndex(0);
 		terrainMap.add(plain);
 		
 		mountain=new Terrain("Mtn",new int[]{2,1,99,99,99,99,1});
 		mountain.defence(4);
 		mountain.visionBoost(1);
-		mountain.imageIndex(19);
+		mountain.imageIndex(2);
 		terrainMap.add(mountain);
 		
 		forest=new Terrain("Wood",new int[]{1,1,2,3,99,99,1});
 		forest.defence(3);
 		forest.hiding(true);
-		forest.imageIndex(21);
+		forest.imageIndex(1);
 		terrainMap.add(forest);
 		
 		road=new Terrain("Road",new int[]{1,1,1,1,99,99,1});
 		road.defence(0);
-		road.imageIndex(25);
+		road.imageIndex(9);
+		road.addTileMap(new int[][]{
+				new int[]{8,9,10},
+				new int[]{16,17,18},
+				new int[]{24,25,26}
+		});
 		terrainMap.add(road);
 		
 		river=new Terrain("River",new int[]{2,1,99,99,99,99,1});
 		river.defence(0);
-		river.imageIndex(1);
+		river.imageIndex(12);
+		river.addTileMap(new int[][]{
+				new int[]{11,12,13},
+				new int[]{19,20,21},
+				new int[]{27,28,29}
+		});
+		river.addTileMap(new int[][]{
+				new int[]{35,36,37},
+				new int[]{43,44,45},
+				new int[]{51,52,53}
+		});
 		terrainMap.add(river);
 		
 		bridge=new Terrain("Bridge",new int[]{1,1,1,1,99,99,1});
 		bridge.defence(0);
-		bridge.imageIndex(7);
+		bridge.imageIndex(5);
+		bridge.addTileMap(new int[][]{
+				new int[]{5,6}
+		});
 		terrainMap.add(bridge);
 		
 		shoal=new Terrain("Shoal",new int[]{1,1,1,1,99,1,1});
 		shoal.defence(0);
-		shoal.imageIndex(4);
+		shoal.imageIndex(33);
+		shoal.addTileMap(new int[][]{
+				new int[]{32,33,34},
+				new int[]{40,41,42},
+				new int[]{48,49,50}
+		});
 		terrainMap.add(shoal);
 		
 		sea=new Terrain("Sea",new int[]{99,99,99,99,1,1,1});
@@ -365,7 +457,7 @@ public class Main
 		
 		reef=new Terrain("Reef",new int[]{99,99,99,99,2,2,1});
 		reef.defence(2);
-		reef.imageIndex(5);
+		reef.imageIndex(4);
 		terrainMap.add(reef);
 		
 		city=new Building("City",null,new int[]{1,1,1,1,99,99,1});
@@ -394,6 +486,10 @@ public class Main
 		terrainMap.add(airport);
 		
 		port=new Building("Port",null,new int[]{1,1,1,1,1,1,1});
+		port.addSelling("B ship", unitMap.get(stringToUnitID.get("bship")));
+		port.addSelling("Cruiser", unitMap.get(stringToUnitID.get("cruiser")));
+		port.addSelling("Lander", unitMap.get(stringToUnitID.get("lander")));
+		port.addSelling("Sub", unitMap.get(stringToUnitID.get("sub")));
 		port.defence(3);
 		port.imageIndex(3);
 		terrainMap.add(port);
@@ -468,6 +564,7 @@ public class Main
 		engine.requestFocus(battle);
 		
 		BattleView view=new BattleView(240,160,2,2);
+		Main.currentMode.addCursorListener(view);
 		engine.view(view);
 		
 		System.out.println("battle started!");
@@ -626,7 +723,7 @@ public class Main
 		return(maps);
 	}
 	
-	public static ByteBuffer readFromStream(ObjectInputStream ois) throws IOException
+	public static ByteBuffer readFromStream(FileInputStream ois) throws IOException
 	{
 		ByteBuffer buffer;
 		ArrayList<Byte> bytes=new ArrayList<Byte>();
@@ -634,7 +731,7 @@ public class Main
 		{
 			while(true)
 			{
-				bytes.add(ois.readByte());
+				bytes.add((byte)ois.read());
 			}
 		}
 		catch(EOFException ex)
@@ -859,12 +956,10 @@ public class Main
 	
 	public static Map readMap(MyInputStream in) throws IOException, ClassNotFoundException
 	{
-		//TODO fix this shit for big maps?
 		int id=in.readInt();
 		Map map=new Map(in.readString(),in.readInt(),in.readInt());
-		//System.out.println("map name: "+map.name());
-		//System.out.println("map dims: "+map.width()+","+map.height());
 		
+		//read terrain
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
@@ -874,6 +969,16 @@ public class Main
 				
 			}
 		}
+		//read terrain directions
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				int direction=in.readInt();
+				map.terrainDirections().changeDirection(direction,i,a);
+			}
+		}
+		//read units
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
@@ -923,7 +1028,9 @@ public class Main
 				unit.setCargo(readUnit(in),i);
 			}
 			int fuel=in.readInt();
+			boolean hidden=in.readBoolean();
 			unit.enabled(enabled);
+			unit.hidden(hidden);
 			unit.health(health);
 			unit.fuel(fuel);
 			return(unit);
@@ -1028,6 +1135,7 @@ public class Main
 		message.addInt(map.width());
 		message.addInt(map.height());
 		
+		//write terrain
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
@@ -1035,6 +1143,15 @@ public class Main
 				writeTerrain(message,map.terrain(i, a));
 			}
 		}
+		//write terrain directions
+		for(int a=0;a<map.height();a++)
+		{
+			for(int i=0;i<map.width();i++)
+			{
+				message.addInt(map.terrainDirections().direction(i,a));
+			}
+		}
+		//write units
 		for(int a=0;a<map.height();a++)
 		{
 			for(int i=0;i<map.width();i++)
@@ -1081,6 +1198,7 @@ public class Main
 			writeUnit(message,unit.cargo(i));
 		
 		message.addInt(unit.fuel());
+		message.addBoolean(unit.isHidden());
 	}
 	
 	public static GameEngineByTick engine()
@@ -1116,10 +1234,10 @@ public class Main
 	public static Unit rockets;
 	public static Unit aa;
 	public static Unit missiles;
-	public static Unit fighter;
-	public static Unit bomber;
-	public static Unit bcopter;
-	public static Unit tcopter;
+	public static Unit fighter;//def 16
+	public static Unit bomber;//def 17
+	public static Unit bcopter;//def 15
+	public static Unit tcopter;//def 14
 	public static Unit bship;
 	public static Unit cruiser;
 	public static Unit lander;

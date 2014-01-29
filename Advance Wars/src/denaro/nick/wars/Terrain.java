@@ -4,8 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import denaro.nick.core.Entity;
 import denaro.nick.core.Identifiable;
@@ -27,6 +29,23 @@ public class Terrain extends Entity
 		hiding=false;
 		visionBoost=0;
 		defence=0;
+		imageIndex(7);
+		tileMap=new ArrayList<int[][]>();
+	}
+	
+	public ArrayList<int[][]> tileMap()
+	{
+		return(tileMap);
+	}
+	
+	public boolean isDirectional()
+	{
+		return(!tileMap.isEmpty());
+	}
+	
+	public void addTileMap(int[][] rect)
+	{
+		tileMap.add(rect);
 	}
 	
 	public String name()
@@ -97,6 +116,25 @@ public class Terrain extends Entity
 		}
 	}
 	
+	public Image image()
+	{
+		return(sprite().subimage(imageIndex()));
+	}
+	
+	public Image image(int index)
+	{
+		if(index==-1)
+			index=imageIndex();
+		return(sprite().subimage(index));
+	}
+	
+	public int direction(Map map, int x, int y)
+	{
+		//TODO get the direction
+		
+		return(imageIndex());
+	}
+	
 	private String name;
 	
 	private int[] movementCosts;
@@ -107,12 +145,14 @@ public class Terrain extends Entity
 	
 	private int visionBoost;
 	
+	private ArrayList<int[][]> tileMap;
+	
 	public static final int[] defaultMovementCosts=new int[]{1,1,1,1,1,1,1};
 
 	@Override
 	public void tick()
 	{
-		// TODO Auto-generated method stub
+		// TODO if terrain is animated?
 		
 	}
 }

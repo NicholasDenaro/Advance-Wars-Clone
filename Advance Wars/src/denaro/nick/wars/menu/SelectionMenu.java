@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -16,6 +16,7 @@ import denaro.nick.core.GameMap;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Identifiable;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.Main;
 
 public class SelectionMenu<V extends Identifiable> extends Menu
 {
@@ -31,6 +32,12 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 	public void addSelections(GameMap<V> map)
 	{
 		selectionMap=map;
+		selectionHeight=map.size()/selectionWidth+1;
+	}
+	
+	public void selectionHeight(int selectionHeight)
+	{
+		this.selectionHeight=selectionHeight;
 	}
 	
 	public int getSelection()
@@ -92,20 +99,8 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 		
 	}
 	
-	@Override
-	public Image image()
+	public void drawSelections(BufferedImage image, Graphics2D g)
 	{
-		BufferedImage image=new BufferedImage(((GameView2D)Main.engine().view()).height(),44,BufferedImage.TYPE_INT_ARGB);
-		if(child()!=null)
-			return(image);
-		Graphics2D g=image.createGraphics();
-		
-		g.setColor(Color.black);
-		Composite oldComposite=g.getComposite();
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
-		g.fillRect(0,0,image.getWidth(),image.getHeight());
-		g.setComposite(oldComposite);
-		
 		for(int a=0;a<selectionHeight;a++)
 		{
 			for(int i=0;i<selectionWidth;i++)
@@ -116,7 +111,23 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 		}
 		
 		Main.swapPalette(image, null, 1);
+	}
+	
+	@Override
+	public Image image()
+	{
+		BufferedImage image=new BufferedImage(((GameView2D)Main.engine().view()).height()+4,rows()*20+4,BufferedImage.TYPE_INT_ARGB);
+		if(child()!=null)
+			return(image);
+		Graphics2D g=image.createGraphics();
 		
+		g.setColor(Color.black);
+		Composite oldComposite=g.getComposite();
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.5f));
+		g.fillRect(0,0,image.getWidth()+4,image.getHeight());
+		g.setComposite(oldComposite);
+		
+		drawSelections(image,g);
 		
 		Sprite cursor=Sprite.sprite("Cursor");
 		g.drawImage(cursor.subimage(0),cursor().x*(Main.TILESIZE+4)+4-cursor.anchor().x, cursor().y*(Main.TILESIZE+4)+4-cursor.anchor().y,null);

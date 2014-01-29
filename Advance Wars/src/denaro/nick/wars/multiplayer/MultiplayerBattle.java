@@ -111,6 +111,24 @@ public class MultiplayerBattle extends Battle
 		return(false);
 	}
 	
+	public boolean hideUnit()
+	{
+		Message message=new Message(ServerClient.UNITHIDE);
+		moveMessage(message);
+		Main.client.addMessage(message);
+		Main.client.sendMessages();
+		return(false);
+	}
+	
+	public boolean unHideUnit()
+	{
+		Message message=new Message(ServerClient.UNITUNHIDE);
+		moveMessage(message);
+		Main.client.addMessage(message);
+		Main.client.sendMessages();
+		return(false);
+	}
+	
 	@Override
 	public void endTurn()
 	{

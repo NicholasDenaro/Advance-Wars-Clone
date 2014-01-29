@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -10,6 +10,10 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.Building;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.Unit;
 
 public class BuyMenu extends Menu
 {

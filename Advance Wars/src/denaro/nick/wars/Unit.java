@@ -23,7 +23,6 @@ import denaro.nick.core.Sprite;
 
 public class Unit extends Entity
 {
-
 	public Unit(Sprite sprite, Double point)
 	{
 		super(sprite, point);
@@ -35,8 +34,32 @@ public class Unit extends Entity
 		weapons=new ArrayList<UnitWeapon>();
 		movementType=null;
 		canCapture=false;
+		canHide=false;
+		hidden=false;
 		attackRange=new Point(1,1);
 		cargo=new Unit[0];
+	}
+	
+	public void canHide(boolean canHide) throws UnitFinalizedException
+	{
+		if(finalized)
+			throw new UnitFinalizedException(this);
+		this.canHide=canHide;
+	}
+	
+	public boolean canHide()
+	{
+		return(canHide);
+	}
+	
+	public void hidden(boolean hidden)
+	{
+		this.hidden=hidden;
+	}
+	
+	public boolean isHidden()
+	{
+		return(hidden);
 	}
 	
 	public void addUnitListener(UnitListener listener)
@@ -258,6 +281,7 @@ public class Unit extends Entity
 				added=true;
 				return(i);
 			}
+			i++;
 		}
 		return(-1);
 	}
@@ -335,6 +359,8 @@ public class Unit extends Entity
 		unit.cost=other.cost;
 		unit.team=other.team;
 		unit.canCapture=other.canCapture;
+		unit.canHide=other.canHide;
+		unit.hidden=other.hidden;
 		unit.fuel=other.fuel;
 		unit.maxFuel=other.maxFuel;
 		unit.health=other.health;
@@ -404,29 +430,7 @@ public class Unit extends Entity
 	@Override
 	public void tick()
 	{
-		/*if(path!=null)
-		{
-			if(path.size()==1)
-			{
-				path=null;
-				return;
-			}
-			Point p1=path.points().get(pathpoint-1);
-			Point p2=path.points().get(pathpoint);
-			Point.Double delta=new Point.Double((p2.x-p1.x)*2,(p2.y-p1.y)*2);
-			this.moveDelta(delta);
-			count++;
-			if(count==Main.TILESIZE/2)
-			{
-				count=0;
-				pathpoint++;
-				if(pathpoint==path.points().size())
-				{
-					path=null;
-					finishAnimation();
-				}
-			}
-		}*/
+		//empty
 	}
 	
 	public void complete()
@@ -438,6 +442,8 @@ public class Unit extends Entity
 	private boolean finalized;
 	
 	private boolean canCapture;
+	private boolean canHide;
+	private boolean hidden;
 	private boolean enabled;
 	private Team team;
 	private int fuel, maxFuel;
@@ -464,7 +470,7 @@ public class Unit extends Entity
 		baseAttackChart=new ArrayList<ArrayList<Integer>>();
 		try
 		{
-			BufferedReader in=new BufferedReader(new InputStreamReader(new FileInputStream("Damage Chart.txt")));
+			BufferedReader in=new BufferedReader(new InputStreamReader(new FileInputStream("resources/Damage Chart.txt")));
 			String line;
 			int count=0;
 			while((line=in.readLine())!=null)

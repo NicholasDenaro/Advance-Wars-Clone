@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -11,6 +11,11 @@ import java.util.ArrayList;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.server.Message;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.BattleSettings;
+import denaro.nick.wars.Commander;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.Map;
 import denaro.nick.wars.multiplayer.BattleLobby;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
 import denaro.nick.wars.multiplayer.ServerClient;

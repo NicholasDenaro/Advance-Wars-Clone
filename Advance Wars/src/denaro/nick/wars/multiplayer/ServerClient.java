@@ -345,6 +345,46 @@ public class ServerClient extends Client
 					}
 				}
 			return;
+			case UNITHIDE:
+				path=readPath(in);
+				if(path.isValid())
+				{
+					Unit unit=session.battle().map().unit(path.first().x,path.first().y);
+					if(session.battle().moveUnitAlongPath(unit,path))
+					{
+						unit.hidden(true);
+						mes=new Message(messageid);
+						writePath(mes,path);
+						session.sendMessage(mes);
+					}
+					else
+					{
+						mes=new Message(UNITMOVE);
+						writePath(mes,path);
+						session.sendMessage(mes);
+					}
+				}
+			return;
+			case UNITUNHIDE:
+				path=readPath(in);
+				if(path.isValid())
+				{
+					Unit unit=session.battle().map().unit(path.first().x,path.first().y);
+					if(session.battle().moveUnitAlongPath(unit,path))
+					{
+						unit.hidden(false);
+						mes=new Message(messageid);
+						writePath(mes,path);
+						session.sendMessage(mes);
+					}
+					else
+					{
+						mes=new Message(UNITMOVE);
+						writePath(mes,path);
+						session.sendMessage(mes);
+					}
+				}
+			return;
 		}
 	}
 	
@@ -371,6 +411,8 @@ public class ServerClient extends Client
 	public static final int UNITCAPTURE=23;
 	public static final int UNITLOAD=24;
 	public static final int UNITUNLOAD=25;
+	public static final int UNITHIDE=26;
+	public static final int UNITUNHIDE=27;
 
 	@Override
 	public int maxMessageSize()

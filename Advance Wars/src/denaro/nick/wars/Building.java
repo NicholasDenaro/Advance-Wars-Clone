@@ -135,6 +135,12 @@ public class Building extends Terrain
 		return(image);
 	}
 	
+	@Override
+	public Image image(int index)
+	{
+		return(image());
+	}
+	
 	public static Building copy(Building other, Team team)
 	{
 		Building building=new Building(other.name(),team);

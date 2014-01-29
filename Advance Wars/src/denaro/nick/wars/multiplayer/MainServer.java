@@ -63,7 +63,7 @@ public class MainServer extends Server
 		return(sessions.get(name));
 	}
 	
-	public static final String hostname=null;//loopback!
+	public static final String hostname="localhost";//=null;//loopback!
 	public static final int port=7589;
 	
 	private static HashMap<String,BattleSession> sessions;

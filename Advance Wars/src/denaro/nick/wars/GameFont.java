@@ -39,6 +39,7 @@ public class GameFont
 		letters.put('#', trimImage(characterToImage('#')));
 		letters.put('*', trimImage(characterToImage('*')));
 		letters.put('+', trimImage(characterToImage('+')));
+		letters.put('^', trimImage(characterToImage('^')));
 		
 		fonts.put(name, this);
 	}
@@ -58,6 +59,8 @@ public class GameFont
 			return(image.getSubimage((26*2+9+6)%windex*width, (26*2+9+6)/windex*height, width, height));
 		if(ch=='+')
 			return(image.getSubimage((26*2+9+7)%windex*width, (26*2+9+7)/windex*height, width, height));
+		if(ch=='^')
+			return(image.getSubimage((26*2+9+8)%windex*width, (26*2+9+8)/windex*height, width, height));
 		if(ch>='a'&&ch<='z')
 			return(image.getSubimage(((ch-'a')%windex)*width, ((ch-'a')/windex)*height, width, height));
 		if(ch>='A'&&ch<='Z')

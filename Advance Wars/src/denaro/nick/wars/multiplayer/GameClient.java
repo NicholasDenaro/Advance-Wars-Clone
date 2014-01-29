@@ -13,15 +13,15 @@ import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.BattleAction;
-import denaro.nick.wars.BattleLobbyView;
-import denaro.nick.wars.BattleView;
 import denaro.nick.wars.GameMode;
-import denaro.nick.wars.GameModeMenu;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.Path;
 import denaro.nick.wars.Team;
 import denaro.nick.wars.Terrain;
 import denaro.nick.wars.Unit;
+import denaro.nick.wars.menu.GameModeMenu;
+import denaro.nick.wars.view.BattleLobbyView;
+import denaro.nick.wars.view.BattleView;
 
 public class GameClient extends Client
 {
@@ -141,6 +141,7 @@ public class GameClient extends Client
 				Main.currentMode=mbattle;
 				Main.engine().location(mbattle.map());
 				Main.engine().view(new BattleView(240,160,2,2));
+				Main.currentMode.addCursorListener((BattleView)Main.engine().view());
 				Main.engine().requestFocus(Main.currentMode);
 				mbattle.teams(teams);
 				mbattle.myTeam(lobby.player());
@@ -354,6 +355,30 @@ public class GameClient extends Client
 					
 				};
 				mbattle.addAction(action);
+			return;
+			case ServerClient.UNITHIDE:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				path=readPath(in);
+				unit=mbattle.map().unit(path.first().x,path.first().y);
+				
+				mbattle.moveUnitAlongPath(unit,path);
+				
+				unit.hidden(true);
+				
+				mbattle.clearMovement();
+				Main.closeMenu();
+			return;
+			case ServerClient.UNITUNHIDE:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				path=readPath(in);
+				unit=mbattle.map().unit(path.first().x,path.first().y);
+				
+				mbattle.moveUnitAlongPath(unit,path);
+				
+				unit.hidden(false);
+				
+				mbattle.clearMovement();
+				Main.closeMenu();
 			return;
 		}
 	}

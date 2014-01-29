@@ -1,12 +1,18 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import denaro.nick.server.Message;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.GameMode;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.Map;
 import denaro.nick.wars.multiplayer.GameClient;
+import denaro.nick.wars.multiplayer.MainServer;
 import denaro.nick.wars.multiplayer.ServerClient;
 
 
@@ -134,7 +140,17 @@ public class GameModeMenu extends GameMode
 					actions=multiplayer;
 					try
 					{
-						Main.client=new GameClient();
+						String hostname=MainServer.hostname;
+						int port=MainServer.port;
+						if(hostname==null)
+						{
+							System.out.print("hostname:port| ");
+							hostname=Main.getInput();
+							port=new Integer(hostname.substring(hostname.indexOf(':')+1));
+							hostname=hostname.substring(0,hostname.indexOf(':'));
+						}
+						Socket socket=new Socket(hostname,port);
+						Main.client=new GameClient(socket);
 						Main.client.start();
 					}
 					catch(IOException ex)

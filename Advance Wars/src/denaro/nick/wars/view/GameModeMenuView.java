@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.view;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -6,12 +6,14 @@ import java.awt.Graphics2D;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
-import denaro.nick.wars.multiplayer.BattleLobby;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.menu.GameModeMenu;
+import denaro.nick.wars.menu.Menu;
 
-public class BattleLobbyView extends GameView2D
+public class GameModeMenuView extends GameView2D
 {
 
-	public BattleLobbyView(int width,int height,double hscale,double vscale)
+	public GameModeMenuView(int width,int height,double hscale,double vscale)
 	{
 		super(width,height,hscale,vscale);
 	}
@@ -21,7 +23,7 @@ public class BattleLobbyView extends GameView2D
 		g.drawImage(location.entityList().get(0).image(),0,0,null);
 	}
 	
-	public void drawActions(BattleLobby lobby, Graphics2D g)
+	public void drawActions(GameModeMenu modemenu, Graphics2D g)
 	{
 		g.setColor(Color.black);
 		
@@ -29,21 +31,12 @@ public class BattleLobbyView extends GameView2D
 		
 		String action;
 		
-		for(int i=0;i<lobby.size();i++)
+		for(int i=-1;i<=1;i++)
 		{
-			action=lobby.players(i);
-			if(action==null)
-				action="Emtpy";
-			if(lobby.isLocked(i))
-				action="+"+action+"+";
-			else
-				action="-"+action+"-";
-			g.drawString(action,width()/2-fm.stringWidth(action)/2,2*height()/3+(i-1)*fm.getHeight());
-			if(i==lobby.player())
-			{
-				action=">"+Main.commanderMap.get(lobby.commander()).name()+"<";
-				g.drawString(action,width()/2-fm.stringWidth(action)/2,height()/2+(i-1)*fm.getHeight());
-			}
+			action=modemenu.action((modemenu.cursor().y+i));
+			if(i==0)
+				action=">"+action+"<";
+			g.drawString(action,width()/2-fm.stringWidth(action)/2,height()/2-(-i-1)*fm.getHeight());
 		}
 	}
 	
@@ -61,14 +54,14 @@ public class BattleLobbyView extends GameView2D
 	@Override
 	public void drawLocation(Location currentLocation, Graphics2D g)
 	{
-		if(Main.currentMode instanceof BattleLobby)
+		if(Main.currentMode instanceof GameModeMenu)
 		{
-			BattleLobby lobby=(BattleLobby)Main.currentMode;
+			GameModeMenu modemenu=(GameModeMenu)Main.currentMode;
 			
 			drawBackground(currentLocation,g);
 			
 			if(Main.menu==null)
-				drawActions(lobby,g);
+				drawActions(modemenu,g);
 			
 			drawMenus(g);
 		}

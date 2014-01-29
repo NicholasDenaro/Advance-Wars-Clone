@@ -9,7 +9,10 @@ import java.util.LinkedList;
 import denaro.nick.core.Focusable;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.menu.ActionMenu;
+import denaro.nick.wars.menu.BuyMenu;
 import denaro.nick.wars.multiplayer.MainServer;
+import denaro.nick.wars.view.BattleView;
 
 public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
 {
@@ -19,12 +22,10 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		createListeners();
 		this.teams=teams;
 		this.settings=settings;
-		if(teams!=null)
-			for(int i=0;i<teams.size();i++)
-				teams.get(i).addFunds(settings.startingFunds());
 		
 		actionQueue=new LinkedList<BattleAction>();
 		
+		turn=-1;
 		day=0;
 		cursor(new Point(0,0));
 		fog=new boolean[map.width()][map.height()];
@@ -33,8 +34,12 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public void start()
 	{
-		turn=-1;
-		nextTurn();
+		if(turn==-1)
+		{
+			for(int i=0;i<teams.size();i++)
+				teams.get(i).addFunds(settings.startingFunds());
+			nextTurn();
+		}
 		started=true;
 	}
 	
@@ -451,6 +456,16 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(false);
 	}
 	
+	public boolean canUnitHide()
+	{
+		return(canUnitMove()&&selectedUnit.canHide()&&!selectedUnit.isHidden());
+	}
+	
+	public boolean canUnitUnHide()
+	{
+		return(canUnitMove()&&selectedUnit.canHide()&&selectedUnit.isHidden());
+	}
+	
 	public boolean canUnitLoad()
 	{
 		if(path.first().equals(path.last()))
@@ -555,7 +570,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				if(map.terrain(i,a) instanceof Building)
 				{
 					Building building=(Building)map.terrain(i,a);
-					if(building.team()==team)
+					if(Team.sameTeam(building.team(),team))
 						fog[i][a]=true;
 				}
 				if(map.unit(i,a)!=null)
@@ -625,7 +640,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public void createMoveableArea(int x, int y, Unit unit, int count)
 	{
 		
-		if(fog(x,y)||(map.unit(x,y)==null)||(Team.sameTeam(map.unit(x,y).team(),unit.team())))
+		if(fog(x,y)||(unitIfVisible(x,y)==null)||(Team.sameTeam(map.unit(x,y).team(),unit.team())))
 		{
 			if(count>=0)
 			{
@@ -702,11 +717,48 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(points);
 	}
 	
+	public ArrayList<Point> enemiesNextToUnit(Point p)
+	{
+		ArrayList<Point> points=new ArrayList<Point>();
+		Unit unit=map.unit(p.x,p.y);
+		if(p.x-1>=0)
+			if(unitIfVisible(p.x-1,p.y)!=null&&!Team.sameTeam(map.unit(p.x-1,p.y).team(),unit.team()))
+				points.add(new Point(path.last().x-1,path.last().y));
+		if(p.x+1<map.width())
+			if(unitIfVisible(p.x+1,p.y)!=null&&!Team.sameTeam(map.unit(p.x+1,p.y).team(),unit.team()))
+				points.add(new Point(p.x+1,p.y));
+		if(p.y-1>=0)
+			if(unitIfVisible(p.x,p.y-1)!=null&&!Team.sameTeam(map.unit(p.x,p.y-1).team(),unit.team()))
+				points.add(new Point(p.x,p.y-1));
+		if(p.y+1<map.height())
+			if(unitIfVisible(p.x,p.y+1)!=null&&!Team.sameTeam(map.unit(p.x,p.y+1).team(),unit.team()))
+				points.add(new Point(p.x,p.y+1));
+		return(points);
+	}
+	
 	public boolean fog(int x, int y)
 	{
 		if(!settings.fogOfWar())
 			return(false);
 		return(!fog[x][y]);
+	}
+	
+	public boolean hideUnit()
+	{
+		Unit unit=selectedUnit;
+		boolean notTrap=moveUnit();
+		if(notTrap)
+			unit.hidden(true);
+		return(notTrap);
+	}
+	
+	public boolean unHideUnit()
+	{
+		Unit unit=selectedUnit;
+		boolean notTrap=moveUnit();
+		if(notTrap)
+			unit.hidden(false);
+		return(notTrap);
 	}
 	
 	public boolean isEnemyNextToUnit(Unit unit)
@@ -1056,8 +1108,15 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public Unit unitIfVisible(int x, int y)
 	{
+		if(map.unit(x,y)==null)
+			return(null);
+		
+		if(map.unit(x,y).isHidden()&&!Team.sameTeam(map.unit(x,y).team(),myTeam()))
+			return(null);
+		
 		if(!settings.fogOfWar())
 			return(map.unit(x,y));
+		
 		if(Main.weatherMap.get(settings.weather()).fog())
 		{
 			if(!fog(x,y))
@@ -1184,7 +1243,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					Building building=(Building)map.terrain(cursor.x,cursor.y);
 					if(building.canSpawnUnits()&&Team.sameTeam(building.team(),whosTurn()))
 					{
-						Main.menu=new BuyMenu(null,new Point(0,((GameView2D)Main.engine().view()).height()-Sprite.sprite("Buy Menu").height()),building);
+						Main.menu=new BuyMenu(null,new Point(((BattleView)Main.engine().view()).view().x*Main.TILESIZE,((BattleView)Main.engine().view()).view().y*Main.TILESIZE-Main.TILESIZE+((GameView2D)Main.engine().view()).height()-Sprite.sprite("Buy Menu").height()),building);
 						Main.engine().requestFocus(Main.menu);
 					}
 				}
@@ -1198,6 +1257,10 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					options.add("Attack");
 				if(canUnitMove())
 					options.add("Move");
+				if(canUnitHide())
+					options.add("Hide");
+				if(canUnitUnHide())
+					options.add("UnHide");
 				if(canUnitUnite())
 					options.add("Unite");
 				if(canUnitLoad())

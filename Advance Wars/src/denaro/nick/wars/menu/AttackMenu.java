@@ -1,8 +1,7 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
@@ -10,28 +9,28 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import denaro.nick.core.Sprite;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.Main;
 
-public class UnloadMenu extends Menu
+public class AttackMenu extends Menu
 {
 
-	public UnloadMenu(Menu child, Point point, int cargoSlot)
+	public AttackMenu(Menu child, Point point, ArrayList<Point> enemies)
 	{
 		super(child, point);
-		this.cargoSlot=cargoSlot;
-		this.points=((Battle)Main.currentMode).unloadablePoints(((Battle)Main.currentMode).selectedUnit().cargo(cargoSlot),((Battle)Main.currentMode).path().last());
+		this.enemies=enemies;
 		cursor(new Point(0,0));
-		Main.currentMode.cursor(points.get(cursor().y));
+		Main.currentMode.cursor(enemies.get(cursor().y));
 	}
 	
-	public ArrayList<Point> points()
+	public ArrayList<Point> enemies()
 	{
-		return(points);
+		return(enemies);
 	}
 	
 	public int rows()
 	{
-		return(points.size());
+		return(enemies.size());
 	}
 	
 	public int columns()
@@ -44,19 +43,20 @@ public class UnloadMenu extends Menu
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
 		{
+			//cursor=(--cursor+enemies.size())%enemies.size();
 			moveCursorUp();
-			Main.currentMode.cursor(points.get(cursor().y));
+			Main.currentMode.cursor(enemies.get(cursor().y));
 		}
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 		{
+			//cursor=++cursor%enemies.size();
 			moveCursorDown();
-			Main.currentMode.cursor(points.get(cursor().y));
+			Main.currentMode.cursor(enemies.get(cursor().y));
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			((Battle)Main.currentMode).unloadUnit(cargoSlot,points.get(cursor().y));
-			Main.closeMenu();
+			((Battle)Main.currentMode).attackUnit(((Battle)Main.currentMode).path().first(),enemies.get(cursor().y));
 			Main.closeMenu();
 			Main.closeMenu();
 		}
@@ -79,16 +79,17 @@ public class UnloadMenu extends Menu
 		
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 		
-		g.setColor(Color.cyan);
+		g.setColor(Color.red);
 		
-		for(int i=0;i<points.size();i++)
+		for(int i=0;i<enemies.size();i++)
 		{
-			g.fillRect(points.get(i).x*Main.TILESIZE, points.get(i).y*Main.TILESIZE, Main.TILESIZE, Main.TILESIZE);
+			g.fillRect(enemies.get(i).x*Main.TILESIZE, enemies.get(i).y*Main.TILESIZE, Main.TILESIZE, Main.TILESIZE);
 		}
+		
+
 		
 		return(image);
 	}
 
-	private int cargoSlot;
-	private ArrayList<Point> points;
+	private ArrayList<Point> enemies;
 }

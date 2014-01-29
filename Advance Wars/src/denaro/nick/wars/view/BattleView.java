@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.view;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -12,6 +12,11 @@ import java.awt.image.BufferedImage;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.GameFont;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.Map;
+import denaro.nick.wars.Path;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
 
 public class BattleView extends MapView
@@ -122,7 +127,10 @@ public class BattleView extends MapView
 	{
 		if(currentLocation instanceof Map==false)
 			return;
-		if(Main.currentMode instanceof MultiplayerBattle)
+		
+		offsetGraphics(g,true);
+		
+		/*if(Main.currentMode instanceof MultiplayerBattle)
 		{
 			Map map=(Map)currentLocation;
 			MultiplayerBattle battle=(MultiplayerBattle)Main.currentMode;
@@ -131,6 +139,8 @@ public class BattleView extends MapView
 			
 			if(battle.started())
 			{
+				g.translate(0,Main.TILESIZE);
+				
 				drawAttackSpaces(battle,g);
 				
 				drawUnits(map,g);
@@ -144,6 +154,10 @@ public class BattleView extends MapView
 				
 				drawMenus(g);
 				
+				offsetGraphics(g,false);
+				
+				g.translate(0,-Main.TILESIZE);
+				
 				drawInfo(map,g);
 				
 				drawPlayerInfo(battle,g);
@@ -151,14 +165,16 @@ public class BattleView extends MapView
 			else
 			{
 				GameView2D view=(GameView2D)Main.engine().view();
-				Image image=GameFont.fonts.get("Map Font").stringToImage("Waiting for Players");
+				Image image=GameFont.fonts.get("Map Font").stringToImage("Waiting...");
 				g.drawImage(image,view.width()/2-image.getWidth(null)/2,view.height()/2,null);
 			}
 		}
-		else if(Main.currentMode instanceof Battle)
+		else */if(Main.currentMode instanceof Battle)
 		{
 			Map map=(Map)currentLocation;
 			Battle battle=(Battle)Main.currentMode;
+			
+			g.translate(0,Main.TILESIZE);
 			
 			drawTerrain(map,g);
 			
@@ -175,9 +191,20 @@ public class BattleView extends MapView
 			
 			drawMenus(g);
 			
+			offsetGraphics(g,false);
+			
+			g.translate(0,-Main.TILESIZE);
+			
 			drawInfo(map,g);
 			
 			drawPlayerInfo(battle,g);
+			
+			if(battle.whosTurn()!=battle.myTeam())
+			{
+				GameView2D view=(GameView2D)Main.engine().view();
+				Image image=GameFont.fonts.get("Map Font").stringToImage("Waiting For Turn");
+				g.drawImage(image,view.width()/2-image.getWidth(null)/2,view.height()/2,null);
+			}
 		}
 	}
 	

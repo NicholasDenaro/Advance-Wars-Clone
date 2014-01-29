@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.menu;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.Battle;
+import denaro.nick.wars.Main;
 
 public class ActionMenu extends Menu
 {
@@ -53,6 +55,16 @@ public class ActionMenu extends Menu
 			if(actions[cursor().y].equals("Move"))
 			{
 				battle.moveUnit();
+				Main.closeMenu();
+			}
+			else if(actions[cursor().y].equals("Hide"))
+			{
+				battle.hideUnit();
+				Main.closeMenu();
+			}
+			else if(actions[cursor().y].equals("UnHide"))
+			{
+				battle.unHideUnit();
 				Main.closeMenu();
 			}
 			else if(actions[cursor().y].equals("Capture"))

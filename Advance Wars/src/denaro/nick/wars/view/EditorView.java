@@ -1,10 +1,12 @@
-package denaro.nick.wars;
+package denaro.nick.wars.view;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 import denaro.nick.core.GameView;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.Main;
+import denaro.nick.wars.MapEditor;
 
 public class EditorView extends MapView
 {

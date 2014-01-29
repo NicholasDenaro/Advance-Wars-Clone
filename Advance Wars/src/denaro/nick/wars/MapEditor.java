@@ -7,6 +7,10 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
 import denaro.nick.core.Focusable;
+import denaro.nick.wars.menu.Menu;
+import denaro.nick.wars.menu.SelectionMenu;
+import denaro.nick.wars.menu.TerrainDirectionSelectionMenu;
+import denaro.nick.wars.view.MapView;
 
 public class MapEditor extends GameMode implements MenuListener
 {
@@ -15,6 +19,7 @@ public class MapEditor extends GameMode implements MenuListener
 		cursor(new Point(0,0));
 		selectedType=SelectedType.UNIT;
 		selected=0;
+		selectionModifier=-1;
 	}
 	
 	public int rows()
@@ -42,7 +47,7 @@ public class MapEditor extends GameMode implements MenuListener
 		if(selectedType==SelectedType.TERRAIN)
 		{
 			if(Main.terrainMap.get(selected)!=null)
-				return(Main.terrainMap.get(selected).image());
+				return(Main.terrainMap.get(selected).image(selectionModifier));
 		}
 		if(selectedType==SelectedType.UNIT)
 		{
@@ -114,6 +119,16 @@ public class MapEditor extends GameMode implements MenuListener
 			Main.openMenu(menu);
 		}
 		
+		if(ke.getKeyCode()==KeyEvent.VK_D)
+		{
+			if(Main.terrainMap.get(selected).isDirectional())
+			{
+				TerrainDirectionSelectionMenu menu=new TerrainDirectionSelectionMenu(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE),Main.terrainMap.get(selected));
+				menu.addMenuListener(this);
+				Main.openMenu(menu);
+			}
+		}
+		
 		if(ke.getKeyCode()==KeyEvent.VK_ENTER)
 		{
 			Main.saveMap(map);
@@ -126,7 +141,11 @@ public class MapEditor extends GameMode implements MenuListener
 				if(Main.terrainMap.get(selected)!=null)
 				{
 					if(Main.terrainMap.get(selected) instanceof Building==false)
+					{
 						map.setTerrain(Main.terrainMap.get(selected), cursor().x, cursor().y);
+						//if(map.terrain(cursor().x, cursor().y).isDirectional())
+							map.terrainDirections().changeDirection(selectionModifier,cursor().x, cursor().y);
+					}
 					else
 						map.setTerrain(Building.copy((Building)Main.terrainMap.get(selected),Main.teamMap.get(selectedTeam)), cursor().x, cursor().y);
 				}
@@ -143,6 +162,7 @@ public class MapEditor extends GameMode implements MenuListener
 			if(selectedType==SelectedType.TERRAIN)
 			{
 				map.setTerrain(Main.terrainMap.get(0), cursor().x, cursor().y);
+				map.terrainDirections().changeDirection(-1,cursor().x, cursor().y);
 			}
 			if(selectedType==SelectedType.UNIT)
 			{
@@ -167,10 +187,16 @@ public class MapEditor extends GameMode implements MenuListener
 	@Override
 	public void buttonPressed(Menu menu)
 	{
-		if(menu instanceof SelectionMenu)
+		if(menu instanceof TerrainDirectionSelectionMenu)
+		{
+			TerrainDirectionSelectionMenu selectionMenu=(TerrainDirectionSelectionMenu)menu;
+			selectionModifier=selectionMenu.getSelection();
+		}
+		else if(menu instanceof SelectionMenu)
 		{
 			SelectionMenu selectionMenu=(SelectionMenu)menu;
 			selected=selectionMenu.getSelection();
+			selectionModifier=-1;
 			if(selectionMenu.type().isAssignableFrom(Unit.class))
 			{
 				selectedType=SelectedType.UNIT;
@@ -190,6 +216,8 @@ public class MapEditor extends GameMode implements MenuListener
 	}
 	
 	private int selected;
+	
+	private int selectionModifier;
 	
 	private SelectedType selectedType;
 	

@@ -20,6 +20,12 @@ public class Map extends Location
 		this.height=height;
 		units=new Unit[width][height];
 		terrain=new Terrain[width][height];
+		terrainDirections=new TerrainDirections(this);
+	}
+	
+	public TerrainDirections terrainDirections()
+	{
+		return(terrainDirections);
 	}
 	
 	@Override
@@ -63,9 +69,13 @@ public class Map extends Location
 	{
 		if(Main.engine()!=null)
 		{
-			if(unit==null&&units[x][y]!=null)
+			if(units[x][y]!=null)
 				Main.engine().removeEntity(units[x][y],this);
-			Main.engine().addEntity(unit,this);
+			if(unit!=null)
+			{
+				Main.engine().addEntity(unit,this);
+				unit.move(x*Main.TILESIZE,y*Main.TILESIZE);
+			}
 		}
 		units[x][y]=unit;
 	}
@@ -242,6 +252,6 @@ public class Map extends Location
 	
 	private Terrain[][] terrain;
 	
-	//private ArrayList<Point> attackableUnits;
+	private TerrainDirections terrainDirections;
 
 }
