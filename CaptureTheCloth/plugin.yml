@@ -1,0 +1,88 @@
+name: CaptureTheCloth
+main: CaptureTheCloth.CaptureTheCloth
+version: 0.1
+
+commands:
+   LoadSettings:
+      description: loads the settings.
+      usage: /<command> [mapname]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   RestrictRegion:
+      description: Restricts a region.
+      usage: /<command>
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+            
+   EnableEnderPearls:
+      description: Enables ender pearls.
+      usage: /<command> [true/false]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   SetMapBottom:
+      description: Sets the map's bottom.
+      usage: /<command>
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   SetMapTop:
+      description: Sets the map's top.
+      usage: /<command>
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+
+   SetSpawnTime:
+      description: Sets the spawn time.
+      usage: /<command> [time(sec)]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   SetSpawn:
+      description: Sets the spawn location.
+      usage: /<command>
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   NewAltSpawn:
+      description: Creates a new alt spawn.
+      usage: /<command> [spawn name]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   NewTeam:
+      description: Creates a new team.
+      usage: /<command> [team name]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   SetTeam:
+      description: Set Player's team.
+      usage: /<command> [team] [player|Default is you]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+
+   SetLoadout:
+      description: Set Player's loadout.
+      usage: /<command> [player] [loadout]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+
+   KillAll:
+      description: Kills all the players.
+      usage: /<command> [1:0]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+
+   SetBuild:
+      description: Turns on building.
+      usage: /<command> [on/op/off]
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
+      
+   ResetMap:
+      description: Resets the map's Blocks.
+      usage: /<command>
+      permission: CaptureTheCloth.op
+      permission-message: You don't have <permission>
