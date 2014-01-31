@@ -30,7 +30,6 @@ import denaro.nick.core.Sprite;
 import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.server.MyOutputStream;
-import denaro.nick.wars.menu.GameModeMenu;
 import denaro.nick.wars.menu.Menu;
 import denaro.nick.wars.multiplayer.GameClient;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
@@ -66,18 +65,20 @@ public class Main
 	{
 		createSprites();
 		
+		createTeams();
+		
 		createUnits();
 		
 		createTerrain();
 		
-		createTeams();
+		
 		
 		createWeather();
 	}
 	
 	public static void gotoMainMenu()
 	{
-		currentMode=new GameModeMenu();
+		currentMode=new GameModeSelector();
 		Location location=new Location();
 		Entity entity=new Entity(Sprite.sprite("Homepage"),new Point.Double(0,0))
 		{
@@ -319,11 +320,65 @@ public class Main
 			apc.vision(1);
 			apc.fuel(70);
 			apc.movementType(MovementType.TREAD);
-			apc.cargoCount(1);
+			apc.maxCargo(1);
 			apc.cargoType(0,1);
 			apc.complete();
 			unitMap.add(apc);
 			stringToUnitID.put("apc",apc.id());
+			
+			fighter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			fighter.cost(20000);
+			fighter.addWeapon(new UnitWeapon(18).ammo(9).complete());
+			fighter.defenceID(16);
+			fighter.imageIndex(40);
+			fighter.movement(9);
+			fighter.vision(2);
+			fighter.fuel(99);
+			fighter.movementType(MovementType.AIR);
+			fighter.complete();
+			unitMap.add(fighter);
+			stringToUnitID.put("fighter",fighter.id());
+			
+			bomber=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bomber.cost(22000);
+			bomber.addWeapon(new UnitWeapon(18).complete());
+			bomber.defenceID(17);
+			bomber.imageIndex(44);
+			bomber.movement(7);
+			bomber.vision(2);
+			bomber.fuel(99);
+			bomber.movementType(MovementType.AIR);
+			bomber.complete();
+			unitMap.add(bomber);
+			stringToUnitID.put("bomber",bomber.id());
+			
+			bcopter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bcopter.cost(9000);
+			bcopter.addWeapon(new UnitWeapon(16).ammo(6).complete());
+			bcopter.addWeapon(new UnitWeapon(17).complete());
+			bcopter.defenceID(15);
+			bcopter.imageIndex(48);
+			bcopter.movement(6);
+			bcopter.vision(3);
+			bcopter.fuel(99);
+			bcopter.movementType(MovementType.AIR);
+			bcopter.complete();
+			unitMap.add(bcopter);
+			stringToUnitID.put("bcopter",bcopter.id());
+			
+			tcopter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			tcopter.cost(5000);
+			tcopter.defenceID(14);
+			tcopter.imageIndex(52);
+			tcopter.movement(6);
+			tcopter.vision(2);
+			tcopter.fuel(99);
+			tcopter.movementType(MovementType.AIR);
+			tcopter.maxCargo(2);
+			tcopter.cargoType(0,1);
+			tcopter.complete();
+			unitMap.add(tcopter);
+			stringToUnitID.put("tcopter",tcopter.id());
 			
 			bship=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
 			bship.cost(28000);
@@ -349,6 +404,8 @@ public class Main
 			cruiser.vision(3);
 			cruiser.fuel(99);
 			cruiser.movementType(MovementType.SHIP);
+			cruiser.maxCargo(2);
+			cruiser.cargoType(stringToUnitID.get("fighter"),stringToUnitID.get("bomber"),stringToUnitID.get("bcopter"));
 			cruiser.complete();
 			unitMap.add(cruiser);
 			stringToUnitID.put("cruiser",cruiser.id());
@@ -361,7 +418,7 @@ public class Main
 			lander.vision(1);
 			lander.fuel(99);
 			lander.movementType(MovementType.TRANS);
-			lander.cargoCount(2);
+			lander.maxCargo(2);
 			lander.cargoType(0,1,2,3,4,5,6,7,8,9);
 			lander.complete();
 			unitMap.add(lander);
@@ -393,18 +450,21 @@ public class Main
 		plain=new Terrain("Plain",new int[]{1,1,1,1,99,99,1});
 		plain.defence(1);
 		plain.imageIndex(0);
+		plain.color(new Color(0,150,0));
 		terrainMap.add(plain);
 		
 		mountain=new Terrain("Mtn",new int[]{2,1,99,99,99,99,1});
 		mountain.defence(4);
 		mountain.visionBoost(1);
 		mountain.imageIndex(2);
+		mountain.color(new Color(75,30,0));
 		terrainMap.add(mountain);
 		
 		forest=new Terrain("Wood",new int[]{1,1,2,3,99,99,1});
 		forest.defence(3);
 		forest.hiding(true);
 		forest.imageIndex(1);
+		forest.color(new Color(0,75,0));
 		terrainMap.add(forest);
 		
 		road=new Terrain("Road",new int[]{1,1,1,1,99,99,1});
@@ -415,6 +475,7 @@ public class Main
 				new int[]{16,17,18},
 				new int[]{24,25,26}
 		});
+		road.color(new Color(150,150,150));
 		terrainMap.add(road);
 		
 		river=new Terrain("River",new int[]{2,1,99,99,99,99,1});
@@ -430,6 +491,7 @@ public class Main
 				new int[]{43,44,45},
 				new int[]{51,52,53}
 		});
+		river.color(new Color(0,60,150));
 		terrainMap.add(river);
 		
 		bridge=new Terrain("Bridge",new int[]{1,1,1,1,99,99,1});
@@ -438,6 +500,7 @@ public class Main
 		bridge.addTileMap(new int[][]{
 				new int[]{5,6}
 		});
+		bridge.color(new Color(150,150,150));
 		terrainMap.add(bridge);
 		
 		shoal=new Terrain("Shoal",new int[]{1,1,1,1,99,1,1});
@@ -448,16 +511,19 @@ public class Main
 				new int[]{40,41,42},
 				new int[]{48,49,50}
 		});
+		shoal.color(new Color(255,200,0));
 		terrainMap.add(shoal);
 		
 		sea=new Terrain("Sea",new int[]{99,99,99,99,1,1,1});
 		sea.defence(0);
 		sea.imageIndex(3);
+		sea.color(new Color(0,0,150));
 		terrainMap.add(sea);
 		
 		reef=new Terrain("Reef",new int[]{99,99,99,99,2,2,1});
 		reef.defence(2);
 		reef.imageIndex(4);
+		reef.color(new Color(0,0,75));
 		terrainMap.add(reef);
 		
 		city=new Building("City",null,new int[]{1,1,1,1,99,99,1});
@@ -481,12 +547,16 @@ public class Main
 		terrainMap.add(base);
 		
 		airport=new Building("Airport",null,new int[]{1,1,1,1,99,99,1});
+		airport.addSelling("Fighter", unitMap.get(stringToUnitID.get("fighter")));
+		airport.addSelling("Bomber", unitMap.get(stringToUnitID.get("bomber")));
+		airport.addSelling("B Copter", unitMap.get(stringToUnitID.get("bcopter")));
+		airport.addSelling("T Copter", unitMap.get(stringToUnitID.get("tcopter")));
 		airport.defence(3);
 		airport.imageIndex(2);
 		terrainMap.add(airport);
 		
 		port=new Building("Port",null,new int[]{1,1,1,1,1,1,1});
-		port.addSelling("B ship", unitMap.get(stringToUnitID.get("bship")));
+		port.addSelling("B Ship", unitMap.get(stringToUnitID.get("bship")));
 		port.addSelling("Cruiser", unitMap.get(stringToUnitID.get("cruiser")));
 		port.addSelling("Lander", unitMap.get(stringToUnitID.get("lander")));
 		port.addSelling("Sub", unitMap.get(stringToUnitID.get("sub")));
@@ -672,8 +742,8 @@ public class Main
 			{
 				Color color=new Color(image.getRGB(i,a),true);
 				g.setColor(colorPalette.swapColor(color, team==null?0:team.color(),base));
-				color=null;
 				g.fillRect(i, a, 1, 1);
+				color=null;
 			}
 		}
 		g.dispose();
@@ -930,6 +1000,8 @@ public class Main
 	
 	public static Map loadMap(String mapName)
 	{
+		if(Main.stringToMapID.get(mapName)!=null)
+			return(Main.mapMap.get(Main.stringToMapID.get(mapName)));
 		try
 		{
 			MyInputStream in=new MyInputStream(new FileInputStream("maps/"+mapName+".mp"));
@@ -937,6 +1009,8 @@ public class Main
 			//System.out.println("remaining bytes:"+in.remaining());
 			Map map=Main.readMap(in);
 			in.close();
+			Main.mapMap.add(map);
+			Main.stringToMapID.put(mapName,map.id());
 			return(map);
 		}
 		catch(ClassNotFoundException ex)
@@ -1193,8 +1267,8 @@ public class Main
 		message.addInt(unit.numberOfWeapons());
 		for(int i=0;i<unit.numberOfWeapons();i++)
 			message.addInt(unit.weapon(i).ammo());
-		message.addInt(unit.cargoCount());
-		for(int i=0;i<unit.cargoCount();i++)
+		message.addInt(unit.maxCargo());
+		for(int i=0;i<unit.maxCargo();i++)
 			writeUnit(message,unit.cargo(i));
 		
 		message.addInt(unit.fuel());
@@ -1214,6 +1288,7 @@ public class Main
 	
 	private static GameEngineByTick engine;
 	public static final int TILESIZE=16;
+	public static final int MINIMAPSIZE=4;
 	
 	
 	public static GameMap<Unit> unitMap;
@@ -1221,8 +1296,10 @@ public class Main
 	public static GameMap<Team> teamMap;
 	public static GameMap<Weather> weatherMap;
 	public static GameMap<Commander> commanderMap;
+	public static GameMap<Map> mapMap=new GameMap<Map>();
 	
 	public static HashMap<String,Integer> stringToUnitID;
+	public static HashMap<String,Integer> stringToMapID=new HashMap<String,Integer>();
 	
 	public static Unit infantry;
 	public static Unit mech;

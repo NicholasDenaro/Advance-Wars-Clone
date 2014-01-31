@@ -230,14 +230,25 @@ public class Unit extends Entity
 		return(true);//TODO make this an actual upkeep, costing fuel
 	}
 	
-	public void cargoCount(int cargoCount)
+	public void maxCargo(int cargoCount)
 	{
 		cargo=new Unit[cargoCount];
 	}
 	
-	public int cargoCount()
+	public int maxCargo()
 	{
 		return(cargo.length);
+	}
+	
+	public int cargoCount()
+	{
+		int count=0;
+		for(int i=0;i<maxCargo();i++)
+		{
+			if(cargo[i]!=null)
+				count++;
+		}
+		return(count);
 	}
 	
 	public void cargoType(ArrayList<Integer> cargoType) throws UnitFinalizedException
@@ -414,13 +425,13 @@ public class Unit extends Entity
 			Graphics2D g=image.createGraphics();
 			g.drawImage(super.image(), 0, 0, null);
 			Composite oldComposite=g.getComposite();
-			if(team!=null)
+			if(team==null)
 			{
-				Main.swapPalette(image,team,1);
+				Main.swapPalette(image,null,1);
 			}
 			else
 			{
-				Main.swapPalette(image,null,1);
+				Main.swapPalette(image,team,1);
 			}
 			g.dispose();
 		}
@@ -437,6 +448,7 @@ public class Unit extends Entity
 	{
 		finalized=true;
 		maxFuel=fuel;
+		image();
 	}
 
 	private boolean finalized;

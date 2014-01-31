@@ -90,7 +90,7 @@ public class ActionMenu extends Menu
 			else if(actions[cursor().y].equals("Unload"))
 			{
 				ArrayList<String> unloads=new ArrayList<String>();
-				for(int i=0;i<((Battle)Main.currentMode).selectedUnit().cargoCount();i++)
+				for(int i=0;i<((Battle)Main.currentMode).selectedUnit().maxCargo();i++)
 					if(((Battle)Main.currentMode).selectedUnit().cargo(i)!=null)
 						unloads.add("Unit "+i);
 				Main.openMenu(new ActionMenu(null,point(),unloads));

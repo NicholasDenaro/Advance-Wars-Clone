@@ -1,4 +1,4 @@
-package denaro.nick.wars.menu;
+package denaro.nick.wars;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
@@ -7,18 +7,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import denaro.nick.server.Message;
-import denaro.nick.wars.Battle;
-import denaro.nick.wars.GameMode;
-import denaro.nick.wars.Main;
-import denaro.nick.wars.Map;
+import denaro.nick.wars.menu.MapOptionsMenu;
+import denaro.nick.wars.menu.MinimapMenu;
 import denaro.nick.wars.multiplayer.GameClient;
 import denaro.nick.wars.multiplayer.MainServer;
 import denaro.nick.wars.multiplayer.ServerClient;
+import denaro.nick.wars.view.GameModeMenuView;
 
 
-public class GameModeMenu extends GameMode
+public class GameModeSelector extends GameMode
 {
-	public GameModeMenu()
+	public GameModeSelector()
 	{
 		main=new ArrayList<String>();
 		main.add("New Battle");
@@ -114,6 +113,9 @@ public class GameModeMenu extends GameMode
 					changeState(SelectionState.NEW);
 					actions=Main.getMapList();
 					cursor(new Point(0,0));
+					GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+					Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+					Main.engine().requestFocus(this);
 				}
 				else if(actions.get(cursor().y).equals("Load Battle"))
 				{
@@ -126,6 +128,9 @@ public class GameModeMenu extends GameMode
 					changeState(SelectionState.EDIT);
 					actions=Main.getMapList();
 					cursor(new Point(0,0));
+					GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+					Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+					Main.engine().requestFocus(this);
 				}
 				else if(actions.get(cursor().y).equals("Create Map"))
 				{
@@ -166,6 +171,7 @@ public class GameModeMenu extends GameMode
 			else if(state==SelectionState.NEW)
 			{
 				MapOptionsMenu menu=new MapOptionsMenu(null,new Point(0,0),actions.get(cursor().y));
+				Main.closeMenu();
 				Main.openMenu(menu);
 				Main.engine().requestFocus(menu);
 			}
@@ -176,6 +182,7 @@ public class GameModeMenu extends GameMode
 			}
 			else if(state==SelectionState.EDIT)
 			{
+				Main.closeMenu();
 				Map map=Main.loadMap(actions.get(cursor().y));
 				Main.createEditor(map);
 			}
@@ -213,6 +220,7 @@ public class GameModeMenu extends GameMode
 		{
 			changeState(SelectionState.MAIN);
 			actions=main;
+			Main.closeAllMenus();
 		}
 	}
 	

@@ -23,14 +23,14 @@ public class BuyMenu extends Menu
 		super(child, point);
 		
 		actions=new String[building.spawnListNames().size()];
-		units=new Unit[building.spawnListNames().size()];
+		units=new int[building.spawnListNames().size()];
 		prices=new int[building.spawnListNames().size()];
 		
 		for(int i=0;i<building.spawnListNames().size();i++)
 		{
 			actions[i]=building.spawnListNames().get(i);
-			units[i]=building.spawnListUnits().get(i);
-			prices[i]=units[i].cost();
+			units[i]=building.spawnListUnits().get(i).id();
+			prices[i]=Main.unitMap.get(units[i]).cost();
 		}
 		
 		cursor(new Point(0,0));
@@ -53,6 +53,7 @@ public class BuyMenu extends Menu
 		super.moveCursorUp();
 		if(cursor().y<show)
 			show=cursor().y;
+		image=null;
 	}
 	
 	@Override
@@ -61,6 +62,7 @@ public class BuyMenu extends Menu
 		super.moveCursorDown();
 		if(cursor().y>=show+6)
 			show++;
+		image=null;
 	}
 	
 	@Override
@@ -74,7 +76,7 @@ public class BuyMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
 			Battle battle=(Battle)Main.currentMode;
-			if(battle.purchaseUnit(Unit.copy(units[cursor().y],battle.whosTurn())))
+			if(battle.purchaseUnit(Unit.copy(Main.unitMap.get(units[cursor().y]),battle.whosTurn())))
 			{
 				Main.closeMenu();
 			}
@@ -89,16 +91,20 @@ public class BuyMenu extends Menu
 	@Override
 	public Image image()
 	{
+		if(image!=null)
+			return(image);
+		
+		
 		Battle battle=(Battle)Main.currentMode;
 		
 		Sprite sprite=Sprite.sprite("Buy Menu");
 		
-		BufferedImage image=new BufferedImage(sprite.width(),sprite.height(),BufferedImage.TYPE_INT_ARGB);
+		image=new BufferedImage(sprite.width(),sprite.height(),BufferedImage.TYPE_INT_ARGB);
 		if(child()!=null)
-			return(image);
+			return(null);
 		Graphics2D g=image.createGraphics();
 		g.drawImage(sprite.subimage(0), 0, 0, null);
-		Main.swapPalette(image, battle.whosTurn(), 0);
+		//Main.swapPalette(image, battle.whosTurn(), 0);
 		g.setFont(new Font(g.getFont().getName(),Font.BOLD,13));
 		
 		FontMetrics fm=g.getFontMetrics();
@@ -107,16 +113,7 @@ public class BuyMenu extends Menu
 
 		for(int i=show;i<Math.min(show+6,actions.length);i++)
 		{
-			g.drawImage(units[i].image(), 4, 10+(i-show)*18, null);
-			
-			if(battle.whosTurn().funds()<prices[i])
-			{
-				Main.swapPalette(image, null, 1);
-			}
-			else
-			{
-				Main.swapPalette(image, battle.whosTurn(), 1);
-			}
+			g.drawImage(Main.unitMap.get(units[i]).image(), 4, 10+(i-show)*18, null);
 			
 			if(battle.whosTurn().funds()<prices[i])
 				g.setColor(Color.gray);
@@ -127,14 +124,18 @@ public class BuyMenu extends Menu
 			
 		}
 		
+		Main.swapPalette(image, battle.whosTurn(), 0);
+		
 		g.setColor(Color.black);
 		g.drawRect(0, 10+(cursor().y-show)*18-1, sprite.width()-1, 18);
 		
+		g.dispose();
 		return(image);
 	}
 	
 	private int show;
 	private String[] actions;
-	private Unit[] units;
+	private int[] units;
 	private int[] prices;
+	private BufferedImage image;
 }

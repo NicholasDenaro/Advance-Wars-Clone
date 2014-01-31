@@ -294,12 +294,15 @@ public class ServerClient extends Client
 				{
 					Unit unit=session.battle().map().unit(path.first().x,path.first().y);
 					Unit holder=session.battle().map().unit(path.last().x,path.last().y);
+					boolean holderenabled=holder.enabled();
 					session.battle().selectedUnit(unit);
 					session.battle().path(path);
 					int cargoslot=-1;
 					if(session.battle().moveUnit())
 					{
 						cargoslot=holder.addCargo(unit);
+						if(holderenabled)
+							unit.enabled(true);
 						mes=new Message(messageid);
 						mes.addInt(path.first().x);
 						mes.addInt(path.first().y);

@@ -14,12 +14,13 @@ import denaro.nick.server.MyInputStream;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.BattleAction;
 import denaro.nick.wars.GameMode;
+import denaro.nick.wars.GameModeSelector;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.Path;
 import denaro.nick.wars.Team;
 import denaro.nick.wars.Terrain;
 import denaro.nick.wars.Unit;
-import denaro.nick.wars.menu.GameModeMenu;
+import denaro.nick.wars.menu.ActionMenu;
 import denaro.nick.wars.view.BattleLobbyView;
 import denaro.nick.wars.view.BattleView;
 
@@ -59,7 +60,7 @@ public class GameClient extends Client
 			case ServerClient.SESSIONS:
 				int size=in.readInt();
 				for(int i=0;i<size;i++)
-					((GameModeMenu)Main.currentMode).addAction(in.readString());
+					((GameModeSelector)Main.currentMode).addAction(in.readString());
 				
 			return;
 			case ServerClient.NEWSESSION:
@@ -181,26 +182,11 @@ public class GameClient extends Client
 				final Terrain terrain=Main.readTerrain(in);
 				BattleAction action=new BattleAction()
 				{
-
-					@Override
-					public void init()
-					{
-						// TODO Auto-generated method stub
-						
-					}
-
 					@Override
 					public void callFunction()
 					{
 						((MultiplayerBattle)finalGameMode).map().setTerrain(terrain,finalx,finaly);
 					}
-
-					@Override
-					public boolean shouldEnd()
-					{
-						return true;
-					}
-					
 				};
 				mbattle.addAction(action);
 			return;
@@ -244,13 +230,6 @@ public class GameClient extends Client
 				final Unit defender=Main.readUnit(in);
 				action=new BattleAction()
 				{
-
-					@Override
-					public void init()
-					{
-						//empty
-					}
-
 					@Override
 					public void callFunction()
 					{
@@ -287,12 +266,6 @@ public class GameClient extends Client
 						};
 						Main.engine().addAction(engineAction);
 					}
-
-					@Override
-					public boolean shouldEnd()
-					{
-						return true;
-					}
 				};
 				((MultiplayerBattle)finalGameMode).addAction(action);
 			return;
@@ -301,58 +274,62 @@ public class GameClient extends Client
 				final Unit finalUnitCargo=mbattle.map().unit(in.readInt(),in.readInt());
 				final int cargoslot=in.readInt();
 				final Unit finalUnit=mbattle.map().unit(in.readInt(),in.readInt());
+				final boolean loaderenabled=finalUnit.enabled();
 				action=new BattleAction()
 				{
-
-					@Override
-					public void init()
-					{
-						//empty
-					}
-
 					@Override
 					public void callFunction()
 					{
 						finalUnit.setCargo(finalUnitCargo,cargoslot);
+						System.out.println("loader: "+loaderenabled);
+						if(loaderenabled)
+						{
+							finalUnit.enabled(true);
+						}
 					}
-
-					@Override
-					public boolean shouldEnd()
-					{
-						return true;
-					}
-					
 				};
 				mbattle.addAction(action);
 			return;
 			case ServerClient.UNITUNLOAD:
 				mbattle=((MultiplayerBattle)Main.currentMode);
-				final Unit unitholder=mbattle.map().unit(in.readInt(),in.readInt());
+				final Point unloader=new Point(in.readInt(),in.readInt());
+				final Unit unitholder=mbattle.map().unit(unloader.x,unloader.y);
 				final int finalcargoslot=in.readInt();
 				final Unit finalunit=unitholder.cargo(finalcargoslot);
 				final Point finalpoint=new Point(in.readInt(),in.readInt());
 				action=new BattleAction()
 				{
-
-					@Override
-					public void init()
-					{
-						//empty
-					}
-
 					@Override
 					public void callFunction()
 					{
-						((MultiplayerBattle)finalGameMode).map().addUnit(finalunit,finalpoint.x,finalpoint.y);
+						MultiplayerBattle battle=((MultiplayerBattle)finalGameMode);
+						battle.map().addUnit(finalunit,finalpoint.x,finalpoint.y);
 						unitholder.setCargo(null,finalcargoslot);
-					}
+						if(Team.sameTeam(battle.whosTurn(),battle.myTeam()))
+						{
+							System.out.println("checking for additional unload");
+							ArrayList<String> actions=new ArrayList<String>();
 
-					@Override
-					public boolean shouldEnd()
-					{
-						return true;
+							boolean canUnload=battle.canUnitUnload(unitholder,unloader);
+							System.out.println("can unload: "+canUnload);
+							System.out.println("units in unloader: "+unitholder.cargoCount());
+							if(canUnload)
+							{
+								actions.add("Unload");
+								actions.add("Cancel");
+							}
+							if(!actions.isEmpty())
+							{
+								battle.selectedUnit(unitholder);
+								Path path=new Path(battle.map(),unitholder.movementType(),unitholder.movement());
+								path.start(unloader.x,unloader.y);
+								battle.path(path);
+								System.out.println("additional unload!");
+								Main.closeAllMenus();
+								Main.openMenu(new ActionMenu(null,new Point(unloader.x*Main.TILESIZE,unloader.y*Main.TILESIZE),actions));
+							}
+						}
 					}
-					
 				};
 				mbattle.addAction(action);
 			return;

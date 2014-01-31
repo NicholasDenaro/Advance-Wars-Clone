@@ -6,9 +6,10 @@ import java.awt.Graphics2D;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
+import denaro.nick.wars.GameModeSelector;
 import denaro.nick.wars.Main;
-import denaro.nick.wars.menu.GameModeMenu;
 import denaro.nick.wars.menu.Menu;
+import denaro.nick.wars.menu.MinimapMenu;
 
 public class GameModeMenuView extends GameView2D
 {
@@ -23,7 +24,7 @@ public class GameModeMenuView extends GameView2D
 		g.drawImage(location.entityList().get(0).image(),0,0,null);
 	}
 	
-	public void drawActions(GameModeMenu modemenu, Graphics2D g)
+	public void drawActions(GameModeSelector modemenu, Graphics2D g)
 	{
 		g.setColor(Color.black);
 		
@@ -31,12 +32,17 @@ public class GameModeMenuView extends GameView2D
 		
 		String action;
 		
+		int yOffset=0;
+		
+		if(Main.menu instanceof MinimapMenu)
+			yOffset=32;
+		
 		for(int i=-1;i<=1;i++)
 		{
 			action=modemenu.action((modemenu.cursor().y+i));
 			if(i==0)
 				action=">"+action+"<";
-			g.drawString(action,width()/2-fm.stringWidth(action)/2,height()/2-(-i-1)*fm.getHeight());
+			g.drawString(action,width()/2-fm.stringWidth(action)/2,yOffset+height()/2-(-i-1)*fm.getHeight());
 		}
 	}
 	
@@ -54,13 +60,13 @@ public class GameModeMenuView extends GameView2D
 	@Override
 	public void drawLocation(Location currentLocation, Graphics2D g)
 	{
-		if(Main.currentMode instanceof GameModeMenu)
+		if(Main.currentMode instanceof GameModeSelector)
 		{
-			GameModeMenu modemenu=(GameModeMenu)Main.currentMode;
+			GameModeSelector modemenu=(GameModeSelector)Main.currentMode;
 			
 			drawBackground(currentLocation,g);
 			
-			if(Main.menu==null)
+			if(Main.menu==null||Main.menu instanceof MinimapMenu)
 				drawActions(modemenu,g);
 			
 			drawMenus(g);

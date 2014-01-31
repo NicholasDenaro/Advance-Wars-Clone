@@ -2,9 +2,22 @@ package denaro.nick.wars;
 
 public abstract class BattleAction
 {
-	public abstract void init();
+	/**
+	 * initialize nothing
+	 */
+	public void init()
+	{
+		
+	}
 	
 	public abstract void callFunction();
 	
-	public abstract boolean shouldEnd();
+	/**
+	 * Returns true
+	 * @return - default true
+	 */
+	public boolean shouldEnd()
+	{
+		return(true);
+	}
 }

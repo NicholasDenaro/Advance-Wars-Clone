@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import denaro.nick.core.GameView2D;
 import denaro.nick.server.Message;
 import denaro.nick.wars.BattleSettings;
+import denaro.nick.wars.GameModeSelector;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.Map;
-import denaro.nick.wars.menu.GameModeMenu.SelectionState;
+import denaro.nick.wars.GameModeSelector.SelectionState;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
 import denaro.nick.wars.multiplayer.ServerClient;
+import denaro.nick.wars.view.GameModeMenuView;
 
 public class MapOptionsMenu extends Menu
 {
@@ -97,10 +99,13 @@ public class MapOptionsMenu extends Menu
 			if(cursor().y==4)
 			{
 				Main.closeMenu();
+				GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+				Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+				Main.engine().requestFocus(Main.currentMode);
 			}
 			if(cursor().y==5)
 			{
-				if(((GameModeMenu)Main.currentMode).previousState()==GameModeMenu.SelectionState.MULTIPLAYER)
+				if(((GameModeSelector)Main.currentMode).previousState()==GameModeSelector.SelectionState.MULTIPLAYER)
 				{
 					MultiplayerBattle battle=Main.createMultiplayerBattle(map,settings);
 					Message mes=new Message(ServerClient.NEWSESSION);
@@ -124,6 +129,9 @@ public class MapOptionsMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_Z)
 		{
 			Main.closeMenu();
+			GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+			Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+			Main.engine().requestFocus(Main.currentMode);
 		}
 	}
 	

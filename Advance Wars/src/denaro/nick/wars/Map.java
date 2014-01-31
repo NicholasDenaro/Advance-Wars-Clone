@@ -1,9 +1,12 @@
 package denaro.nick.wars;
 
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import denaro.nick.core.Focusable;
@@ -21,6 +24,53 @@ public class Map extends Location
 		units=new Unit[width][height];
 		terrain=new Terrain[width][height];
 		terrainDirections=new TerrainDirections(this);
+	}
+	
+	public BufferedImage minimap()
+	{
+		BufferedImage image=new BufferedImage(width*Main.MINIMAPSIZE,height*Main.MINIMAPSIZE,BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g=image.createGraphics();
+		
+		for(int a=0;a<height;a++)
+		{
+			for(int i=0;i<width;i++)
+			{
+				Terrain terrain=terrain(i,a);
+				g.setColor(terrain.color());
+				if(terrain instanceof Building)
+				{
+					Building building=(Building)terrain;
+					if(building.team()!=null)
+						g.setColor(Main.colorPalette.getColor(1+building.team().id()));
+					else
+						g.setColor(Main.colorPalette.getColor(0));
+				}
+				g.fillRect(i*Main.MINIMAPSIZE,a*Main.MINIMAPSIZE,Main.MINIMAPSIZE,Main.MINIMAPSIZE);
+				if(terrain instanceof Building)
+				{
+					g.setColor(Color.black);
+					g.drawRect(i*Main.MINIMAPSIZE,a*Main.MINIMAPSIZE,Main.MINIMAPSIZE-1,Main.MINIMAPSIZE-1);
+				}
+			}
+		}
+		
+		for(int a=0;a<height;a++)
+		{
+			for(int i=0;i<width;i++)
+			{
+				Unit unit=unit(i,a);
+				if(unit!=null)
+				{
+					g.setColor(Main.colorPalette.getColor(unit.team().id()+1));
+					g.fillOval(i*Main.MINIMAPSIZE,a*Main.MINIMAPSIZE,Main.MINIMAPSIZE,Main.MINIMAPSIZE);
+					g.setColor(Color.black);
+					g.drawOval(i*Main.MINIMAPSIZE,a*Main.MINIMAPSIZE,Main.MINIMAPSIZE-1,Main.MINIMAPSIZE-1);
+				}
+			}
+		}
+		
+		g.dispose();
+		return(image);
 	}
 	
 	public TerrainDirections terrainDirections()

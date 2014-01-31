@@ -31,6 +31,7 @@ public class Terrain extends Entity
 		defence=0;
 		imageIndex(7);
 		tileMap=new ArrayList<int[][]>();
+		color=new Color(255,255,255);
 	}
 	
 	public ArrayList<int[][]> tileMap()
@@ -135,6 +136,16 @@ public class Terrain extends Entity
 		return(imageIndex());
 	}
 	
+	public void color(Color color)
+	{
+		this.color=color;
+	}
+	
+	public Color color()
+	{
+		return(color);
+	}
+	
 	private String name;
 	
 	private int[] movementCosts;
@@ -144,6 +155,8 @@ public class Terrain extends Entity
 	private boolean hiding;
 	
 	private int visionBoost;
+	
+	private Color color;
 	
 	private ArrayList<int[][]> tileMap;
 	

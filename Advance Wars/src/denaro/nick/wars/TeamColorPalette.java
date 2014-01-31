@@ -30,5 +30,10 @@ public class TeamColorPalette
 		return(color);
 	}
 	
+	public Color getColor(int value)
+	{
+		return(colors[value][colors[value].length/2]);
+	}
+	
 	private Color[][] colors;
 }

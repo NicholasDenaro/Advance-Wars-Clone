@@ -81,7 +81,7 @@ public class UnloadMenu extends Menu
 		
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 		
-		g.setColor(Color.cyan);
+		g.setColor(new Color(0,200,0));
 		
 		for(int i=0;i<points.size();i++)
 		{

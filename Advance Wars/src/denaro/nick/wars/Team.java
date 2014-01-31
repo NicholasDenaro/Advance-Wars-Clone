@@ -56,8 +56,6 @@ public class Team extends Identifiable
 			return(null);
 		Team team=new Team(other.name,other.color);
 		team.id(other.id());
-		//System.out.println("name: "+other.name);
-		//System.out.println("commander: "+commander.name());
 		team.commander=commander;
 		team.funds=other.funds;
 		

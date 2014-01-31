@@ -3,6 +3,7 @@ package denaro.nick.wars.view;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Location;
@@ -71,6 +72,9 @@ public class BattleLobbyView extends GameView2D
 			BattleLobby lobby=(BattleLobby)Main.currentMode;
 			
 			drawBackground(currentLocation,g);
+			
+			BufferedImage img=lobby.battle().map().minimap();
+			g.drawImage(img,width()/2-img.getWidth()/2,8,null);
 			
 			if(Main.menu==null)
 				drawActions(lobby,g);
