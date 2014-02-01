@@ -15,17 +15,7 @@ public class TerrainDirectionSelectionMenu extends SelectionMenu
 	public TerrainDirectionSelectionMenu(Menu child, Point point,Terrain terrain)
 	{
 		super(child,point);
-		directions=new ArrayList<Integer>();
-		for(int e=0;e<terrain.tileMap().size();e++)
-		{
-			for(int a=0;a<terrain.tileMap().get(e)[0].length;a++)
-			{
-				for(int i=0;i<terrain.tileMap().get(e).length;i++)
-				{
-					directions.add(terrain.tileMap().get(e)[i][a]);
-				}
-			}
-		}
+		directions=terrain.tiles();
 		cursor(new Point(0,0));
 		selectionHeight(directions.size()/columns()+1);
 	}

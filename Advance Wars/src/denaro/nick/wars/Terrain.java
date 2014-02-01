@@ -30,23 +30,24 @@ public class Terrain extends Entity
 		visionBoost=0;
 		defence=0;
 		imageIndex(7);
-		tileMap=new ArrayList<int[][]>();
+		tiles=new ArrayList<Integer>();
 		color=new Color(255,255,255);
 	}
 	
-	public ArrayList<int[][]> tileMap()
+	public void addTiles(int... tiles)
 	{
-		return(tileMap);
+		for(int t:tiles)
+			this.tiles.add(t);
+	}
+	
+	public ArrayList<Integer> tiles()
+	{
+		return(tiles);
 	}
 	
 	public boolean isDirectional()
 	{
-		return(!tileMap.isEmpty());
-	}
-	
-	public void addTileMap(int[][] rect)
-	{
-		tileMap.add(rect);
+		return(!tiles.isEmpty());
 	}
 	
 	public String name()
@@ -158,7 +159,9 @@ public class Terrain extends Entity
 	
 	private Color color;
 	
-	private ArrayList<int[][]> tileMap;
+	private ArrayList<Integer> tiles;
+	
+	//private ArrayList<int[][]> tileMap;
 	
 	public static final int[] defaultMovementCosts=new int[]{1,1,1,1,1,1,1};
 

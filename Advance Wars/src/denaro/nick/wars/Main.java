@@ -470,47 +470,30 @@ public class Main
 		road=new Terrain("Road",new int[]{1,1,1,1,99,99,1});
 		road.defence(0);
 		road.imageIndex(9);
-		road.addTileMap(new int[][]{
-				new int[]{8,9,10},
-				new int[]{16,17,18},
-				new int[]{24,25,26}
-		});
+		road.addTiles(8,9,10,16,18,24,25,26);
 		road.color(new Color(150,150,150));
 		terrainMap.add(road);
 		
 		river=new Terrain("River",new int[]{2,1,99,99,99,99,1});
 		river.defence(0);
 		river.imageIndex(12);
-		river.addTileMap(new int[][]{
-				new int[]{11,12,13},
-				new int[]{19,20,21},
-				new int[]{27,28,29}
-		});
-		river.addTileMap(new int[][]{
-				new int[]{35,36,37},
-				new int[]{43,44,45},
-				new int[]{51,52,53}
-		});
+		river.addTiles(11,12,13,19,21,27,28,29,36,43,45,52);
+
 		river.color(new Color(0,60,150));
 		terrainMap.add(river);
 		
 		bridge=new Terrain("Bridge",new int[]{1,1,1,1,99,99,1});
 		bridge.defence(0);
 		bridge.imageIndex(5);
-		bridge.addTileMap(new int[][]{
-				new int[]{5,6}
-		});
+		bridge.addTiles(5,6);
 		bridge.color(new Color(150,150,150));
 		terrainMap.add(bridge);
 		
 		shoal=new Terrain("Shoal",new int[]{1,1,1,1,99,1,1});
 		shoal.defence(0);
 		shoal.imageIndex(33);
-		shoal.addTileMap(new int[][]{
-				new int[]{32,33,34},
-				new int[]{40,41,42},
-				new int[]{48,49,50}
-		});
+		shoal.addTiles(32,33,34,40,42,48,49,50);
+
 		shoal.color(new Color(255,200,0));
 		terrainMap.add(shoal);
 		
@@ -518,6 +501,7 @@ public class Main
 		sea.defence(0);
 		sea.imageIndex(3);
 		sea.color(new Color(0,0,150));
+		sea.addTiles(3,56,57,58,64,66,72,73,74,65,14,15,22,23,30,31,35,37,51,53,38,39,46,47);
 		terrainMap.add(sea);
 		
 		reef=new Terrain("Reef",new int[]{99,99,99,99,2,2,1});

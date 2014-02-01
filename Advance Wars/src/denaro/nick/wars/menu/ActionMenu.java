@@ -49,9 +49,10 @@ public class ActionMenu extends Menu
 		if(ke.getKeyCode()==KeyEvent.VK_DOWN)
 			moveCursorDown();
 		
+		Battle battle=(Battle)Main.currentMode;
+		
 		if(ke.getKeyCode()==KeyEvent.VK_X)
 		{
-			Battle battle=(Battle)Main.currentMode;
 			if(actions[cursor().y].equals("Move"))
 			{
 				battle.moveUnit();
@@ -79,7 +80,7 @@ public class ActionMenu extends Menu
 			}
 			else if(actions[cursor().y].equals("Attack"))
 			{
-				AttackMenu menu=new AttackMenu(null,new Point(0,0),((Battle)Main.currentMode).attackableUnits());
+				AttackMenu menu=new AttackMenu(null,new Point(0,0),battle.attackableUnits());
 				Main.openMenu(menu);
 			}
 			else if(actions[cursor().y].equals("Load"))
@@ -90,8 +91,8 @@ public class ActionMenu extends Menu
 			else if(actions[cursor().y].equals("Unload"))
 			{
 				ArrayList<String> unloads=new ArrayList<String>();
-				for(int i=0;i<((Battle)Main.currentMode).selectedUnit().maxCargo();i++)
-					if(((Battle)Main.currentMode).selectedUnit().cargo(i)!=null)
+				for(int i=0;i<battle.selectedUnit().maxCargo();i++)
+					if(battle.selectedUnit().cargo(i)!=null)
 						unloads.add("Unit "+i);
 				Main.openMenu(new ActionMenu(null,point(),unloads));
 			}
@@ -103,12 +104,22 @@ public class ActionMenu extends Menu
 			else if(actions[cursor().y].equals("Cancel"))
 			{
 				Main.closeMenu();
+				if(battle.moveableArea()==null)
+				{
+					battle.selectedUnit(null);
+					battle.path(null);
+				}
 			}
 		}
 		
 		if(ke.getKeyCode()==KeyEvent.VK_Z)
 		{
 			Main.closeMenu();
+			if(battle.moveableArea()==null)
+			{
+				battle.selectedUnit(null);
+				battle.path(null);
+			}
 		}
 	}
 
