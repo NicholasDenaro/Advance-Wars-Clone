@@ -3,6 +3,8 @@ package denaro.nick.wars;
 import java.awt.Point;
 import java.util.ArrayList;
 
+import denaro.nick.wars.listener.CursorListener;
+
 public abstract class CursorUser
 {
 	public abstract int columns();

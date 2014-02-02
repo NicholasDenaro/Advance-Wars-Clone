@@ -1,27 +1,32 @@
 package denaro.nick.wars;
 
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import denaro.nick.core.Focusable;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.listener.BuildingListener;
+import denaro.nick.wars.listener.CursorListener;
+import denaro.nick.wars.listener.UnitListener;
 import denaro.nick.wars.menu.ActionMenu;
 import denaro.nick.wars.menu.BuyMenu;
-import denaro.nick.wars.multiplayer.MainServer;
+import denaro.nick.wars.menu.Menu;
 import denaro.nick.wars.view.BattleView;
+import denaro.nick.wars.view.MapView;
 
 public class Battle extends GameMode implements CursorListener, BuildingListener, UnitListener
 {
-	public Battle(Map map, ArrayList<Team> teams, BattleSettings settings)
+	public Battle(Map map, Team[] teams/*ArrayList<Team> teams*/, BattleSettings settings)
 	{	
 		this.map=map;
-		createListeners();
 		this.teams=teams;
 		this.settings=settings;
+		
+		statistics=new BattleStatistics(null,new Point(0,0),teams);
+		createListeners();
 		
 		actionQueue=new LinkedList<BattleAction>();
 		
@@ -32,12 +37,51 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		this.addCursorListener(this);
 	}
 	
+	public void addBattleListener(BattleListener listener)
+	{
+		if(battleListeners==null)
+			battleListeners=new ArrayList<BattleListener>();
+		
+		if(!battleListeners.contains(listener))
+			battleListeners.add(listener);
+	}
+	
+	public void removeBattleListener(BattleListener listener)
+	{
+		if(battleListeners==null)
+			battleListeners=new ArrayList<BattleListener>();
+		
+		battleListeners.remove(listener);
+	}
+	
+	public void battleEnd()
+	{
+		if(battleListeners==null)
+			battleListeners=new ArrayList<BattleListener>();
+		
+		for(BattleListener listener:battleListeners)
+			listener.battleEnd();
+		
+		if(battleListeners.isEmpty())
+		{
+			final Battle battle=this;
+			BattleAction action=new BattleAction()
+			{
+				@Override
+				public void callFunction()
+				{
+					Main.endBattle(battle);
+				}
+			};
+			addAction(action);
+		}
+	}
 	public void start()
 	{
 		if(turn==-1)
 		{
-			for(int i=0;i<teams.size();i++)
-				teams.get(i).addFunds(settings.startingFunds());
+			for(int i=0;i<teams.length;i++)
+				teams[i].addFunds(settings.startingFunds());
 			nextTurn();
 		}
 		started=true;
@@ -46,6 +90,11 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public boolean started()
 	{
 		return(started);
+	}
+	
+	public BattleStatistics statistics()
+	{
+		return(statistics);
 	}
 	
 	public void pushAction(BattleAction action)
@@ -94,10 +143,12 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				{
 					Building building=(Building)map.terrain(i,a);
 					building.addBuildingListener(this);
+					building.addBuildingListener(statistics);
 				}
 				if(map.unit(i,a)!=null)
 				{
 					map.unit(i,a).addUnitListener(this);
+					map.unit(i,a).addUnitListener(statistics);
 				}
 			}
 		}
@@ -120,7 +171,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public Team whosTurn()
 	{
-		return(teams.get(turn));
+		return(teams[turn]);
 	}
 	
 	public int turn()
@@ -128,19 +179,25 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(turn);
 	}
 	
-	public void teams(ArrayList<Team> teams)
+	public void teams(Team[] teams)
 	{
 		this.teams=teams;
+		statistics.teams(teams);
 	}
 	
+	/**
+	 * Acessor for specific team
+	 * @param team - the team to compare
+	 * @return - the team that is in the list
+	 */
 	public Team team(Team team)
 	{
 		if(team==null)
 			return(null);
-		for(int i=0;i<teams.size();i++)
+		for(int i=0;i<teams.length;i++)
 		{
-			if(Team.sameTeam(teams.get(i),team))
-				return(teams.get(i));
+			if(Team.sameTeam(teams[i],team))
+				return(teams[i]);
 		}
 		System.out.println("ERROR: should have returned a team.");
 		return(null);
@@ -163,7 +220,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public void nextTurn()
 	{
-		turn=++turn%teams.size();
+		turn=++turn%teams.length;
 		if(turn==0)
 		{
 			newDay();
@@ -309,12 +366,14 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 							attacker.damage((int)damage);
 							if(attacker.health()<=0)
 							{
+								defender.getKill();
 								destroyUnit(attackerPoint);
 							}
 						}
 					}
 					else
 					{
+						attacker.getKill();
 						destroyUnit(defenderPoint);
 					}
 				}
@@ -333,8 +392,8 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	{
 		if(building.hq())
 		{
+			this.replaceTeam(oldTeam,newTeam);
 			teamLoses(oldTeam);
-			
 			//check if newTeam has won;
 			if(map.teams().size()==1)
 			{
@@ -343,6 +402,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 		else
 		{
+			
 			building.team(newTeam);
 			if(oldTeam!=null&&checkLoseConditions(oldTeam))
 			{
@@ -935,6 +995,15 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		return(false);
 	}
 	
+	public void removeTeam(Team team)
+	{
+		for(int i=0;i<teams.length;i++)
+		{
+			if(teams[i]==team)
+				teams[i]=null;
+		}
+	}
+	
 	public void replaceTeam(Team oldTeam, Team newTeam)
 	{
 		for(int a=0;a<map.height();a++)
@@ -945,7 +1014,13 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 				{
 					Building building=(Building)map.terrain(i,a);
 					if(Team.sameTeam(building.team(),oldTeam))
+					{
 						building.team(newTeam);
+						if(building.hq())
+						{
+							map.setTerrain(Building.copy(Main.city,newTeam),i,a);
+						}
+					}
 				}
 			}
 		}
@@ -979,26 +1054,111 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	public void spawnUnit(Unit unit, Point spawnLocation)
 	{
 		unit.addUnitListener(this);
+		unit.addUnitListener(statistics);
 		map.addUnit(unit,spawnLocation.x,spawnLocation.y);
+		unit.spawnUnit();
 		clearFog(spawnLocation.x, spawnLocation.y, unit);
 	}
 	
-	public ArrayList<Team> teams()
+	public Team[] teams()
 	{
 		return(teams);
 	}
 	
+	public int teamsLeft()
+	{
+		int count=0;
+		for(int i=0;i<teams.length;i++)
+		{
+			if(teams[i]!=null)
+				count++;
+		}
+		return(count);
+	}
+	
 	public void teamLoses(Team team)
 	{
-		System.out.println("The "+team.name()+" army has been defeated!");
+		final String text="The "+team.name()+" army has been defeated";
+		System.out.println(text);
 		replaceTeam(team,null);
-		teams.remove(team);
+		removeTeam(team);
+		
+		if(Main.engine()!=null)
+		{
+			final Battle battle=this;
+			MapView view=(MapView)Main.engine().view();
+			final Menu banner=new Menu(null,new Point(view.width()/2,0))
+			{
+	
+				@Override
+				public Image image()
+				{
+					return(img);
+				}
+				
+				Image img=GameFont.fonts.get("Map Font").stringToImage(text);
+	
+				@Override
+				public int columns()
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+	
+				@Override
+				public int rows()
+				{
+					// TODO Auto-generated method stub
+					return 0;
+				}
+			};
+			banner.point().x-=banner.image().getWidth(null)/2;
+			BattleAction action=new BattleAction()
+			{
+				@Override
+				public void init()
+				{
+					count=60*5;
+				}
+				
+				@Override
+				public void callFunction()
+				{
+					MapView view=(MapView)Main.engine().view();
+					if(banner.point().y<view.height()/3)
+						banner.point().y+=3;
+					count--;
+					if(count<=1)
+						Main.closeMenu();
+					else if(Main.menu==null)
+						Main.openMenu(banner);
+				}
+				
+				@Override
+				public boolean shouldEnd()
+				{
+					return(count<=0);
+				}
+				
+				int count;
+			};
+			addAction(action);
+		}
+		
+		if(battleListeners==null)
+			battleListeners=new ArrayList<BattleListener>();
+		
+		for(BattleListener listener:battleListeners)
+			listener.teamLoses(team);
+		
+		if(teamsLeft()==1)
+			battleEnd();
 	}
 	
 	@Override
 	public void unitAttacked(Unit unit, int damage)
 	{
-
+		//TODO UnitListener requirement
 	}
 	
 	public boolean unitCanBePlaced(Unit unit, Point center)
@@ -1108,6 +1268,18 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 		}
 		else
 			return(map.unit(x,y));
+	}
+	
+	@Override
+	public void unitKilled(Unit unit)
+	{
+		//EMPTY
+	}
+	
+	@Override
+	public void unitSpawned(Unit unit)
+	{
+		//EMPTY
 	}
 	
 	public ArrayList<Point> unloadablePoints(Unit unit, Point center)
@@ -1333,7 +1505,12 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	private BattleSettings settings;
 	
-	private ArrayList<Team> teams;
+	//private ArrayList<Team> teams;
+	private Team[] teams;
 	
 	private boolean started;
+	
+	private ArrayList<BattleListener> battleListeners;
+	
+	private BattleStatistics statistics;
 }

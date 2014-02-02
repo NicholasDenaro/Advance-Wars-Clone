@@ -592,14 +592,16 @@ public class Main
 	public static Battle createBattle(Map map, BattleSettings settings, ArrayList<Commander> commanders)
 	{
 		ArrayList<Integer> teamsId=map.teams();
-		ArrayList<Team> teams=new ArrayList<Team>();
+		Team[] teams=new Team[teamsId.size()];
 		
 		System.out.println("creating battle...");
 		System.out.println("commanders: "+commanders);
 		
-		for(Integer id:teamsId)
-			teams.add(Team.copy(teamMap.get(id),commanders.get(id)));
-		
+		for(int i=0;i<teams.length;i++)
+		{
+			
+			teams[i]=Team.copy(teamMap.get(teamsId.get(i)),commanders.get(teamsId.get(i)));
+		}
 		
 		Battle battle=new Battle(map,teams,settings);
 		return(battle);
@@ -622,6 +624,13 @@ public class Main
 		engine.view(view);
 		
 		System.out.println("battle started!");
+	}
+	
+	public static void endBattle(Battle battle)
+	{
+		Main.closeAllMenus();
+		Main.gotoMainMenu();
+		Main.openMenu(battle.statistics());
 	}
 	
 	public static void createEditor(Map map)
@@ -918,9 +927,11 @@ public class Main
 			
 			int turn=in.readInt();
 			
-			ArrayList<Team> teams=new ArrayList<Team>();
+			
 			
 			int size=in.readInt();
+			Team[] teams=new Team[size];
+			
 			for(int i=0;i<size;i++)
 			{
 				int teamid=in.readInt();
@@ -928,7 +939,7 @@ public class Main
 				int comid=in.readInt();
 				Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
 				team.funds(funds);
-				teams.add(team);
+				teams[i]=team;
 			}
 			
 			BattleSettings settings=new BattleSettings();
@@ -961,9 +972,8 @@ public class Main
 			Battle battle=new Battle(map,teams,settings);
 			battle.turn(turn);
 			battle.fog(fog);
-			if(!teams.isEmpty())
-				fixTeams(battle);
-			//TODO remember to fix the teams later
+			/*if(!teams.isEmpty())
+				fixTeams(battle);*/
 			
 			return(battle);
 		}
@@ -1104,13 +1114,13 @@ public class Main
 			
 			//message.addInt(battle.whosTurn().id());
 			message.addInt(battle.turn());
-			ArrayList<Team> teams=battle.teams();
+			Team[] teams=battle.teams();
 			if(teams!=null)
 			{
-				message.addInt(teams.size());
-				for(int i=0;i<teams.size();i++)
+				message.addInt(teams.length);
+				for(int i=0;i<teams.length;i++)
 				{
-					Team team=teams.get(i);
+					Team team=teams[i];
 					//System.out.println("team: "+team.id()+", "+team.name());
 					message.addInt(team.id());
 					message.addInt(team.funds());

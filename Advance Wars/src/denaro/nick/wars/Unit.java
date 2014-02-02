@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import denaro.nick.core.Entity;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.listener.UnitListener;
 
 public class Unit extends Entity
 {
@@ -86,6 +87,24 @@ public class Unit extends Entity
 		
 		for(UnitListener listener:unitListeners)
 			listener.unitDestroyed(this);
+	}
+	
+	public void spawnUnit()
+	{
+		if(unitListeners==null)
+			unitListeners=new ArrayList<UnitListener>();
+		
+		for(UnitListener listener:unitListeners)
+			listener.unitSpawned(this);
+	}
+	
+	public void getKill()
+	{
+		if(unitListeners==null)
+			unitListeners=new ArrayList<UnitListener>();
+		
+		for(UnitListener listener:unitListeners)
+			listener.unitKilled(this);
 	}
 	
 	public int cost()

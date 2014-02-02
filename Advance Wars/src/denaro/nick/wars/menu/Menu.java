@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import denaro.nick.core.Focusable;
 import denaro.nick.wars.CursorUser;
-import denaro.nick.wars.MenuListener;
+import denaro.nick.wars.listener.MenuListener;
 
 public abstract class Menu extends CursorUser implements Focusable, KeyListener
 {

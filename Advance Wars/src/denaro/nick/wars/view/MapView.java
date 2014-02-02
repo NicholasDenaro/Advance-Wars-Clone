@@ -14,14 +14,14 @@ import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.Building;
-import denaro.nick.wars.CursorListener;
 import denaro.nick.wars.GameFont;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.Map;
-import denaro.nick.wars.MapViewListener;
 import denaro.nick.wars.Team;
 import denaro.nick.wars.Terrain;
 import denaro.nick.wars.Unit;
+import denaro.nick.wars.listener.CursorListener;
+import denaro.nick.wars.listener.MapViewListener;
 import denaro.nick.wars.menu.Menu;
 
 public class MapView extends GameView2D implements CursorListener

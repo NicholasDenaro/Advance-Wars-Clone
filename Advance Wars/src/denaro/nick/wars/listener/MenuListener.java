@@ -1,4 +1,4 @@
-package denaro.nick.wars;
+package denaro.nick.wars.listener;
 
 import denaro.nick.wars.menu.Menu;
 

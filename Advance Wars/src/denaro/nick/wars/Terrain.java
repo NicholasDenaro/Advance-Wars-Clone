@@ -34,6 +34,11 @@ public class Terrain extends Entity
 		color=new Color(255,255,255);
 	}
 	
+	public void update(Terrain other)
+	{
+		//TODO maybe something?
+	}
+	
 	public void addTiles(int... tiles)
 	{
 		for(int t:tiles)

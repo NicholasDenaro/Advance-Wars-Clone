@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import denaro.nick.core.Pair;
 import denaro.nick.core.Sprite;
+import denaro.nick.wars.listener.BuildingListener;
 
 
 public class Building extends Terrain
@@ -32,6 +33,12 @@ public class Building extends Terrain
 	
 	public Building addBuildingListener(BuildingListener listener)
 	{
+		if(listener==null)
+		{
+			System.out.println("ERROR!!!");
+			new Exception().printStackTrace();
+			
+		}
 		if(buildingListeners==null)
 			buildingListeners=new ArrayList<BuildingListener>();
 		
@@ -94,6 +101,7 @@ public class Building extends Terrain
 	{
 		this.team=team;
 		image=null;
+		image();
 	}
 	
 	public void addSelling(String name, Unit unit)
@@ -139,6 +147,15 @@ public class Building extends Terrain
 	public Image image(int index)
 	{
 		return(image());
+	}
+	
+	public void update(Terrain terrain)
+	{
+		super.update(terrain);
+		Building other=(Building)terrain;
+		this.team=other.team;
+		this.health=other.health;
+		this.image=null;
 	}
 	
 	public static Building copy(Building other, Team team)

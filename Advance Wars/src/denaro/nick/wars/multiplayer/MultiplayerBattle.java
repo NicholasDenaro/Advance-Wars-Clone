@@ -96,7 +96,7 @@ public class MultiplayerBattle extends Battle
 	
 	public Team myTeam()
 	{
-		return(teams().get(myTeam));
+		return(teams()[myTeam]);
 	}
 	
 	public boolean purchaseUnit(Unit unit)

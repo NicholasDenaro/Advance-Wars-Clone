@@ -104,12 +104,13 @@ public class BattleView extends MapView
 		{
 			
 			gimg.drawImage(GameFont.fonts.get("Map Font").stringToImage("G"),5,6,null);
-			Image txt;
+			Image txt=null;
 			if(battle instanceof MultiplayerBattle==false)
 				txt=GameFont.fonts.get("Map Font").stringToImage(""+battle.whosTurn().funds());
-			else
+			else if(((MultiplayerBattle)battle).myTeam()!=null)
 				txt=GameFont.fonts.get("Map Font").stringToImage(""+((MultiplayerBattle)battle).myTeam().funds());
-			gimg.drawImage(txt,66-txt.getWidth(null),6,null);
+			if(txt!=null)
+				gimg.drawImage(txt,66-txt.getWidth(null),6,null);
 		}
 		
 		//draw img
@@ -129,47 +130,7 @@ public class BattleView extends MapView
 			return;
 		
 		offsetGraphics(g,true);
-		
-		/*if(Main.currentMode instanceof MultiplayerBattle)
-		{
-			Map map=(Map)currentLocation;
-			MultiplayerBattle battle=(MultiplayerBattle)Main.currentMode;
-			
-			drawTerrain(map,g);
-			
-			if(battle.started())
-			{
-				g.translate(0,Main.TILESIZE);
-				
-				drawAttackSpaces(battle,g);
-				
-				drawUnits(map,g);
-		
-				drawMoveableArea(battle,g);
-				drawPath(battle,g);
-		
-				drawGrid(map,g);
-				
-				drawCursor(g);
-				
-				drawMenus(g);
-				
-				offsetGraphics(g,false);
-				
-				g.translate(0,-Main.TILESIZE);
-				
-				drawInfo(map,g);
-				
-				drawPlayerInfo(battle,g);
-			}
-			else
-			{
-				GameView2D view=(GameView2D)Main.engine().view();
-				Image image=GameFont.fonts.get("Map Font").stringToImage("Waiting...");
-				g.drawImage(image,view.width()/2-image.getWidth(null)/2,view.height()/2,null);
-			}
-		}
-		else */if(Main.currentMode instanceof Battle)
+		if(Main.currentMode instanceof Battle)
 		{
 			Map map=(Map)currentLocation;
 			Battle battle=(Battle)Main.currentMode;

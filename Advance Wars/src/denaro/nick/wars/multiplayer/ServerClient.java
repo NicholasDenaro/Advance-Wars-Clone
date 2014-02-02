@@ -172,7 +172,8 @@ public class ServerClient extends Client
 				session.sendMessage(mes);
 				
 				mes=new Message(UPDATETEAM);
-				mes.addInt(battle.teams().get(session.playerIndex(session.whosTurnClient())).funds());
+				mes.addInt(session.playerIndex(session.whosTurnClient()));
+				mes.addInt(battle.teams()[session.playerIndex(session.whosTurnClient())].funds());
 				session.whosTurnClient().addMessage(mes);
 				session.whosTurnClient().sendMessages();
 			return;
@@ -205,6 +206,11 @@ public class ServerClient extends Client
 						spawnmes.addInt(spawnLocation.y);
 						Main.writeUnit(spawnmes,unit);
 						session.sendMessage(spawnmes);
+						
+						mes=new Message(UPDATETEAM);
+						mes.addInt(team.id());
+						mes.addInt(team.funds());
+						session.sendMessage(mes);
 					}
 				}
 				else
@@ -416,6 +422,9 @@ public class ServerClient extends Client
 	public static final int UNITUNLOAD=25;
 	public static final int UNITHIDE=26;
 	public static final int UNITUNHIDE=27;
+	
+	public static final int ENDBATTLE=30;
+	public static final int TEAMLOSES=31;
 
 	@Override
 	public int maxMessageSize()

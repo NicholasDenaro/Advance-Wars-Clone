@@ -129,13 +129,13 @@ public class GameClient extends Client
 			return;
 			case ServerClient.STARTSESSION:
 				int teamsize=in.readInt();
-				ArrayList<Team> teams=new ArrayList<Team>();
+				Team[] teams=new Team[teamsize];
 				for(int i=0;i<teamsize;i++)
 				{
 					int teamid=in.readInt();
 					int comid=in.readInt();
 					Team team=Team.copy(Main.teamMap.get(teamid),Main.commanderMap.get(comid));
-					teams.add(team);
+					teams[i]=team;
 				}
 				lobby=((BattleLobby)Main.currentMode);
 				MultiplayerBattle mbattle=lobby.battle();
@@ -150,9 +150,10 @@ public class GameClient extends Client
 				System.out.println("Started: "+((MultiplayerBattle)Main.currentMode).started());
 			return;
 			case ServerClient.UPDATETEAM:
+				int teamid=in.readInt();
 				int funds=in.readInt();
 				mbattle=((MultiplayerBattle)Main.currentMode);
-				mbattle.myTeam().funds(funds);
+				mbattle.teams()[teamid].funds(funds);
 			return;
 			case ServerClient.UPDATEMAP:
 				mbattle=((MultiplayerBattle)Main.currentMode);
@@ -185,7 +186,7 @@ public class GameClient extends Client
 					@Override
 					public void callFunction()
 					{
-						((MultiplayerBattle)finalGameMode).map().setTerrain(terrain,finalx,finaly);
+						((MultiplayerBattle)finalGameMode).map().terrain(finalx,finaly).update(terrain);
 					}
 				};
 				mbattle.addAction(action);
@@ -356,6 +357,23 @@ public class GameClient extends Client
 				
 				mbattle.clearMovement();
 				Main.closeMenu();
+			return;
+			case ServerClient.TEAMLOSES:
+				teamid=in.readInt();
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				mbattle.teamLoses(mbattle.team(Main.teamMap.get(teamid)));
+			return;
+			case ServerClient.ENDBATTLE:
+				mbattle=((MultiplayerBattle)Main.currentMode);
+				action=new BattleAction()
+				{
+					@Override
+					public void callFunction()
+					{
+						Main.endBattle(((MultiplayerBattle)finalGameMode));
+					}
+				};
+				mbattle.addAction(action);
 			return;
 		}
 	}
