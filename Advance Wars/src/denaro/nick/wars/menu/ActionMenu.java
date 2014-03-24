@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.Main;
@@ -42,6 +43,95 @@ public class ActionMenu extends Menu
 	}
 
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			
+			Battle battle=(Battle)Main.currentMode;
+			
+			if(event.code()==Main.ACTION)
+			{
+				if(actions[cursor().y].equals("Move"))
+				{
+					battle.moveUnit();
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("Hide"))
+				{
+					battle.hideUnit();
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("UnHide"))
+				{
+					battle.unHideUnit();
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("Capture"))
+				{
+					battle.unitCaptureBuilding(battle.selectedUnit(),battle.path().last());
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("Unite"))
+				{
+					battle.moveUnit();
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("Attack"))
+				{
+					AttackMenu menu=new AttackMenu(null,new Point(0,0),battle.attackableUnits());
+					Main.openMenu(menu);
+				}
+				else if(actions[cursor().y].equals("Load"))
+				{
+					((Battle)Main.currentMode).loadUnit();
+					Main.closeMenu();
+				}
+				else if(actions[cursor().y].equals("Unload"))
+				{
+					ArrayList<String> unloads=new ArrayList<String>();
+					for(int i=0;i<battle.selectedUnit().maxCargo();i++)
+						if(battle.selectedUnit().cargo(i)!=null)
+							unloads.add("Unit "+i);
+					Main.openMenu(new ActionMenu(null,point(),unloads));
+				}
+				else if(actions[cursor().y].contains("Unit "))
+				{
+					int slot=new Integer(actions[cursor().y].substring(5));
+					Main.openMenu(new UnloadMenu(null,new Point(0,0),slot));
+				}
+				else if(actions[cursor().y].equals("Cancel"))
+				{
+					Main.closeMenu();
+					if(battle.moveableArea()==null)
+					{
+						battle.selectedUnit(null);
+						battle.path(null);
+					}
+				}
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+				if(battle.moveableArea()==null)
+				{
+					battle.selectedUnit(null);
+					battle.path(null);
+				}
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{	
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -121,7 +211,7 @@ public class ActionMenu extends Menu
 				battle.path(null);
 			}
 		}
-	}
+	}*/
 
 	@Override
 	public Image image()

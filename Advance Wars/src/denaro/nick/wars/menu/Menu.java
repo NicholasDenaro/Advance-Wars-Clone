@@ -6,11 +6,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.ControllerListener;
 import denaro.nick.core.Focusable;
 import denaro.nick.wars.CursorUser;
 import denaro.nick.wars.listener.MenuListener;
 
-public abstract class Menu extends CursorUser implements Focusable, KeyListener
+public abstract class Menu extends CursorUser implements Focusable, ControllerListener//KeyListener
 {
 	public Menu(Menu child, Point point)
 	{
@@ -74,6 +76,12 @@ public abstract class Menu extends CursorUser implements Focusable, KeyListener
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		
+	}
+	
+	/*@Override
 	public void keyTyped(KeyEvent ke)
 	{
 		// TODO Auto-generated method stub
@@ -92,7 +100,7 @@ public abstract class Menu extends CursorUser implements Focusable, KeyListener
 	{
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 	
 	private Point point;
 	

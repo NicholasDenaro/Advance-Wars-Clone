@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.GameView2D;
 import denaro.nick.server.Message;
 import denaro.nick.wars.BattleSettings;
@@ -83,6 +84,66 @@ public class MapOptionsMenu extends Menu
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			
+			if(event.code()==Main.ACTION)
+			{
+				if(cursor().y==4)
+				{
+					Main.closeMenu();
+					GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+					Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+					Main.engine().requestFocus(Main.currentMode);
+				}
+				if(cursor().y==5)
+				{
+					if(((GameModeSelector)Main.currentMode).previousState()==GameModeSelector.SelectionState.MULTIPLAYER)
+					{
+						MultiplayerBattle battle=Main.createMultiplayerBattle(map,settings);
+						Message mes=new Message(ServerClient.NEWSESSION);
+						System.out.print("Name the session: ");
+						String ses=Main.getInput();
+						mes.addString(ses);
+						Message bat=Main.saveBattle(battle);
+						mes.addInt(bat.size());
+						mes.addMessage(bat);
+						Main.client.addMessage(mes);
+						Main.client.sendMessages();
+					}
+					else
+					{
+						CommanderSelectionMenu comMenu=new CommanderSelectionMenu(null,new Point(0,0),map,settings);
+						Main.openMenu(comMenu);
+					}
+				}
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+				GameModeMenuView view=(GameModeMenuView)Main.engine().view();
+				Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
+				Main.engine().requestFocus(Main.currentMode);
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -133,7 +194,7 @@ public class MapOptionsMenu extends Menu
 			Main.openMenu(new MinimapMenu(null,new Point(view.width()/2,view.height()/3)));
 			Main.engine().requestFocus(Main.currentMode);
 		}
-	}
+	}*/
 	
 	@Override
 	public int columns()

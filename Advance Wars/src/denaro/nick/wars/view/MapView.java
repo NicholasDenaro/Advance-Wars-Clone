@@ -140,8 +140,8 @@ public class MapView extends GameView2D implements CursorListener
 				int y=a;
 				if(unit!=null)
 				{
-					x=(int)(unit.point().x/Main.TILESIZE);
-					y=(int)(unit.point().y/Main.TILESIZE);
+					x=(int)(unit.x()/Main.TILESIZE);
+					y=(int)(unit.y()/Main.TILESIZE);
 				}
 				if((Main.currentMode instanceof Battle==false)||((!((Battle)Main.currentMode).weather().fog())||(!((Battle)Main.currentMode).fog(x,y))))
 				{
@@ -166,12 +166,12 @@ public class MapView extends GameView2D implements CursorListener
 								gimg.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
 								gimg.fillRect(0, 0, image.getWidth(), image.getHeight());
 								//g.drawImage(image,i*Main.TILESIZE,a*Main.TILESIZE,null);
-								g.drawImage(image,(int)unit.point().x,(int)unit.point().y,null);
+								g.drawImage(image,(int)unit.x(),(int)unit.y(),null);
 							}
 							else
 							{
 								//g.drawImage(map.unit(i, a).image(),i*Main.TILESIZE,a*Main.TILESIZE,null);
-								g.drawImage(unit.image(),(int)unit.point().x,(int)unit.point().y,null);
+								g.drawImage(unit.image(),(int)unit.x(),(int)unit.y(),null);
 							}
 							if(map.terrain(i, a) instanceof Building)
 							{

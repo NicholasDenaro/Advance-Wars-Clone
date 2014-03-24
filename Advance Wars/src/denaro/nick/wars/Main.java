@@ -20,6 +20,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import denaro.nick.core.Controller;
 import denaro.nick.core.Entity;
 import denaro.nick.core.GameEngineByTick;
 import denaro.nick.core.GameFrame;
@@ -30,6 +31,8 @@ import denaro.nick.core.Sprite;
 import denaro.nick.server.Message;
 import denaro.nick.server.MyInputStream;
 import denaro.nick.server.MyOutputStream;
+import denaro.nick.wars.controller.GamePadController;
+import denaro.nick.wars.controller.KeyController;
 import denaro.nick.wars.menu.Menu;
 import denaro.nick.wars.multiplayer.GameClient;
 import denaro.nick.wars.multiplayer.MultiplayerBattle;
@@ -58,7 +61,13 @@ public class Main
 		frame.setLocation(screen.width/2-frame.getWidth()/2,screen.height/2-frame.getHeight()/2);
 		engine.addGameViewListener(frame);
 		
+		//KeyController controller=new KeyController();
+		GamePadController controller=new GamePadController();
+		controller.init(engine);
+		
 		engine.start();
+		
+		
 	}
 	
 	public static void loadAssets()
@@ -80,7 +89,7 @@ public class Main
 	{
 		currentMode=new GameModeSelector();
 		Location location=new Location();
-		Entity entity=new Entity(Sprite.sprite("Homepage"),new Point.Double(0,0))
+		Entity entity=new Entity(Sprite.sprite("Homepage"),0,0)
 		{
 			@Override
 			public void tick()
@@ -188,7 +197,7 @@ public class Main
 		
 		try
 		{
-			infantry=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			infantry=new Unit(Sprite.sprite("Units"),0,0);
 			infantry.cost(1000);
 			infantry.addWeapon(new UnitWeapon(0).complete());
 			infantry.defenceID(0);
@@ -202,7 +211,7 @@ public class Main
 			unitMap.add(infantry);
 			stringToUnitID.put("infantry",infantry.id());
 			
-			mech=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			mech=new Unit(Sprite.sprite("Units"),0,0);
 			mech.cost(3000);
 			mech.addWeapon(new UnitWeapon(2).ammo(3).complete());
 			mech.addWeapon(new UnitWeapon(1).complete());
@@ -217,7 +226,7 @@ public class Main
 			unitMap.add(mech);
 			stringToUnitID.put("mech",mech.id());
 			
-			tank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			tank=new Unit(Sprite.sprite("Units"),0,0);
 			tank.cost(7000);
 			tank.addWeapon(new UnitWeapon(3).ammo(9).complete());
 			tank.addWeapon(new UnitWeapon(4).complete());
@@ -231,7 +240,7 @@ public class Main
 			unitMap.add(tank);
 			stringToUnitID.put("tank",tank.id());
 			
-			mdTank=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			mdTank=new Unit(Sprite.sprite("Units"),0,0);
 			mdTank.cost(16000);
 			mdTank.addWeapon(new UnitWeapon(5).ammo(8).complete());
 			mdTank.addWeapon(new UnitWeapon(6).complete());
@@ -245,7 +254,7 @@ public class Main
 			unitMap.add(mdTank);
 			stringToUnitID.put("mdTank",mdTank.id());
 			
-			recon=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			recon=new Unit(Sprite.sprite("Units"),0,0);
 			recon.cost(4000);
 			recon.addWeapon(new UnitWeapon(7).complete());
 			recon.defenceID(4);
@@ -258,7 +267,7 @@ public class Main
 			unitMap.add(recon);
 			stringToUnitID.put("recon",recon.id());
 			
-			aa=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			aa=new Unit(Sprite.sprite("Units"),0,0);
 			aa.cost(8000);
 			aa.addWeapon(new UnitWeapon(8).ammo(9).complete());
 			aa.defenceID(5);
@@ -271,7 +280,7 @@ public class Main
 			unitMap.add(aa);
 			stringToUnitID.put("aa",aa.id());
 			
-			missiles=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			missiles=new Unit(Sprite.sprite("Units"),0,0);
 			missiles.cost(12000);
 			missiles.addWeapon(new UnitWeapon(8).ammo(6).complete());
 			missiles.defenceID(6);
@@ -284,7 +293,7 @@ public class Main
 			unitMap.add(missiles);
 			stringToUnitID.put("missiles",missiles.id());
 			
-			artillery=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			artillery=new Unit(Sprite.sprite("Units"),0,0);
 			artillery.cost(6000);
 			artillery.addWeapon(new UnitWeapon(10).ammo(9).complete());
 			artillery.defenceID(7);
@@ -298,7 +307,7 @@ public class Main
 			unitMap.add(artillery);
 			stringToUnitID.put("artillery",artillery.id());
 			
-			rockets=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			rockets=new Unit(Sprite.sprite("Units"),0,0);
 			rockets.cost(18000);
 			rockets.addWeapon(new UnitWeapon(10).ammo(6).complete());
 			rockets.defenceID(8);
@@ -312,7 +321,7 @@ public class Main
 			unitMap.add(rockets);
 			stringToUnitID.put("rockets",rockets.id());
 			
-			apc=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			apc=new Unit(Sprite.sprite("Units"),0,0);
 			apc.cost(5000);
 			apc.defenceID(9);
 			apc.imageIndex(20);
@@ -326,7 +335,7 @@ public class Main
 			unitMap.add(apc);
 			stringToUnitID.put("apc",apc.id());
 			
-			fighter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			fighter=new Unit(Sprite.sprite("Units"),0,0);
 			fighter.cost(20000);
 			fighter.addWeapon(new UnitWeapon(18).ammo(9).complete());
 			fighter.defenceID(16);
@@ -339,7 +348,7 @@ public class Main
 			unitMap.add(fighter);
 			stringToUnitID.put("fighter",fighter.id());
 			
-			bomber=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bomber=new Unit(Sprite.sprite("Units"),0,0);
 			bomber.cost(22000);
 			bomber.addWeapon(new UnitWeapon(18).complete());
 			bomber.defenceID(17);
@@ -352,7 +361,7 @@ public class Main
 			unitMap.add(bomber);
 			stringToUnitID.put("bomber",bomber.id());
 			
-			bcopter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bcopter=new Unit(Sprite.sprite("Units"),0,0);
 			bcopter.cost(9000);
 			bcopter.addWeapon(new UnitWeapon(16).ammo(6).complete());
 			bcopter.addWeapon(new UnitWeapon(17).complete());
@@ -366,7 +375,7 @@ public class Main
 			unitMap.add(bcopter);
 			stringToUnitID.put("bcopter",bcopter.id());
 			
-			tcopter=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			tcopter=new Unit(Sprite.sprite("Units"),0,0);
 			tcopter.cost(5000);
 			tcopter.defenceID(14);
 			tcopter.imageIndex(52);
@@ -380,7 +389,7 @@ public class Main
 			unitMap.add(tcopter);
 			stringToUnitID.put("tcopter",tcopter.id());
 			
-			bship=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			bship=new Unit(Sprite.sprite("Units"),0,0);
 			bship.cost(28000);
 			bship.addWeapon(new UnitWeapon(15).ammo(9).complete());
 			bship.defenceID(13);
@@ -394,7 +403,7 @@ public class Main
 			unitMap.add(bship);
 			stringToUnitID.put("bship",bship.id());
 			
-			cruiser=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			cruiser=new Unit(Sprite.sprite("Units"),0,0);
 			cruiser.cost(18000);
 			cruiser.addWeapon(new UnitWeapon(12).ammo(9).complete());
 			cruiser.addWeapon(new UnitWeapon(13).complete());
@@ -410,7 +419,7 @@ public class Main
 			unitMap.add(cruiser);
 			stringToUnitID.put("cruiser",cruiser.id());
 			
-			lander=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			lander=new Unit(Sprite.sprite("Units"),0,0);
 			lander.cost(12000);
 			lander.defenceID(10);
 			lander.imageIndex(64);
@@ -424,7 +433,7 @@ public class Main
 			unitMap.add(lander);
 			stringToUnitID.put("lander",lander.id());
 			
-			sub=new Unit(Sprite.sprite("Units"),new Point.Double(0,0));
+			sub=new Unit(Sprite.sprite("Units"),0,0);
 			sub.cost(20000);
 			sub.addWeapon(new UnitWeapon(14).ammo(6).complete());
 			sub.defenceID(12);
@@ -616,7 +625,8 @@ public class Main
 		
 		engine.location(battle.map());
 		
-		engine.addKeyListener(battle);
+		//engine.addKeyListener(battle);
+		engine.addControllerListener(battle);
 		engine.requestFocus(battle);
 		
 		BattleView view=new BattleView(240,160,2,2);
@@ -655,7 +665,8 @@ public class Main
 		engine.location(editor.map());
 		currentMode=editor;
 		
-		engine.addKeyListener(editor);
+		//engine.addKeyListener(editor);
+		engine.addControllerListener(editor);
 		engine.requestFocus(editor);
 		
 		EditorView view=new EditorView(240,160,2,2);
@@ -1335,6 +1346,20 @@ public class Main
 	public static Team teamGreenEarth;
 	
 	public static GameClient client;
+	
+	public static final int UP=0;
+	public static final int DOWN=1;
+	public static final int LEFT=2;
+	public static final int RIGHT=3;
+	public static final int ACTION=4;
+	public static final int BACK=5;
+	public static final int START=6;
+	public static final int SELECT=7;
+	public static final int ACTION2=8;
+	public static final int ACTION3=9;
+	public static final int ACTION4=10;
+	
+	public static final int LAST_KEY=10;
 	
 	//public static Map testMap;
 }

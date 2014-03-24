@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Scanner;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.GameView2D;
 import denaro.nick.wars.listener.BuildingListener;
 import denaro.nick.wars.listener.UnitListener;
@@ -248,6 +249,31 @@ public class BattleStatistics extends Menu implements UnitListener, BuildingList
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			
+			if(event.code()==Main.ACTION)
+			{
+				
+			}
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+			}
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -267,7 +293,7 @@ public class BattleStatistics extends Menu implements UnitListener, BuildingList
 		{
 			Main.closeMenu();
 		}
-	}
+	}*/
 	
 	private Team[] teams;
 	

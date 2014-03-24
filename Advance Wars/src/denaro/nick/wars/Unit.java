@@ -24,9 +24,9 @@ import denaro.nick.wars.listener.UnitListener;
 
 public class Unit extends Entity
 {
-	public Unit(Sprite sprite, Double point)
+	public Unit(Sprite sprite, double x, double y)
 	{
-		super(sprite, point);
+		super(sprite,x,y);
 		enabled=false;
 		fuel=99;
 		health=100;
@@ -384,7 +384,7 @@ public class Unit extends Entity
 	
 	public static Unit copy(Unit other)
 	{
-		Unit unit=new Unit(other.sprite(),other.point());
+		Unit unit=new Unit(other.sprite(),other.x(),other.y());
 		unit.id(other.id());
 		unit.cost=other.cost;
 		unit.team=other.team;

@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.Building;
@@ -66,6 +67,36 @@ public class BuyMenu extends Menu
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			
+			if(event.code()==Main.ACTION)
+			{
+				Battle battle=(Battle)Main.currentMode;
+				if(battle.purchaseUnit(Unit.copy(Main.unitMap.get(units[cursor().y]),battle.whosTurn())))
+				{
+					Main.closeMenu();
+				}
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -86,7 +117,7 @@ public class BuyMenu extends Menu
 		{
 			Main.closeMenu();
 		}
-	}
+	}*/
 	
 	@Override
 	public Image image()

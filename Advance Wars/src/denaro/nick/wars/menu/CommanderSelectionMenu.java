@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.GameView2D;
 import denaro.nick.server.Message;
 import denaro.nick.wars.Battle;
@@ -33,6 +34,56 @@ public class CommanderSelectionMenu extends Menu
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			if(event.code()==Main.LEFT)
+			{
+				commanders[cursor().y]=(commanders[cursor().y]-1+Main.commanderMap.size())%Main.commanderMap.size();
+			}
+			if(event.code()==Main.RIGHT)
+			{
+				commanders[cursor().y]=(commanders[cursor().y]+1+Main.commanderMap.size())%Main.commanderMap.size();
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+			}
+			
+			if(event.code()==Main.START)
+			{
+				Main.closeMenu();
+				Main.closeMenu();
+				ArrayList<Commander> coms=new ArrayList<Commander>();
+				for(int i=0;i<commanders.length;i++)
+				{
+					coms.add(Main.commanderMap.get(commanders[i]));
+				}
+				
+				if(Main.currentMode instanceof BattleLobby)
+				{
+					//TODO send message to lock in commander
+				}
+				else
+				{
+					Battle battle=Main.createBattle(map,settings,coms);
+					Main.startBattle(battle);
+				}
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -73,7 +124,7 @@ public class CommanderSelectionMenu extends Menu
 				Main.startBattle(battle);
 			}
 		}
-	}
+	}*/
 
 	@Override
 	public int columns()

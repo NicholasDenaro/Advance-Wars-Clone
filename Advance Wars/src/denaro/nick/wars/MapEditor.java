@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.Focusable;
 import denaro.nick.wars.listener.MenuListener;
 import denaro.nick.wars.menu.Menu;
@@ -86,13 +87,100 @@ public class MapEditor extends GameMode implements MenuListener
 	}
 	
 	@Override
-	public void keyTyped(KeyEvent e)
+	public void actionPerformed(ControllerEvent event)
 	{
-		// TODO Auto-generated method stub
-		
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			
+			if(event.code()==Main.ACTION2)
+			{
+				SelectionMenu<Unit> menu=new SelectionMenu<Unit>(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE));
+				menu.addSelections(Main.unitMap);
+				menu.addMenuListener(this);
+				Main.openMenu(menu);
+			}
+			
+			if(event.code()==Main.ACTION3)
+			{
+				SelectionMenu<Terrain> menu=new SelectionMenu<Terrain>(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE));
+				menu.addSelections(Main.terrainMap);
+				menu.addMenuListener(this);
+				Main.openMenu(menu);
+			}
+			
+			if(event.code()==Main.ACTION4)
+			{
+				if(Main.terrainMap.get(selected).isDirectional())
+				{
+					TerrainDirectionSelectionMenu menu=new TerrainDirectionSelectionMenu(null,new Point(0,((MapView)Main.engine().view()).view().y*Main.TILESIZE),Main.terrainMap.get(selected));
+					menu.addMenuListener(this);
+					Main.openMenu(menu);
+				}
+			}
+			
+			if(event.code()==Main.START)
+			{
+				Main.saveMap(map);
+			}
+			
+			if(event.code()==Main.ACTION)
+			{
+				if(selectedType==SelectedType.TERRAIN)
+				{
+					if(Main.terrainMap.get(selected)!=null)
+					{
+						if(Main.terrainMap.get(selected) instanceof Building==false)
+						{
+							map.setTerrain(Main.terrainMap.get(selected), cursor().x, cursor().y);
+							//if(map.terrain(cursor().x, cursor().y).isDirectional())
+								map.terrainDirections().changeDirection(selectionModifier,cursor().x, cursor().y);
+						}
+						else
+							map.setTerrain(Building.copy((Building)Main.terrainMap.get(selected),Main.teamMap.get(selectedTeam)), cursor().x, cursor().y);
+					}
+				}
+				if(selectedType==SelectedType.UNIT)
+				{
+					if(Main.unitMap.get(selected)!=null)
+						map.setUnit(Unit.copy(Main.unitMap.get(selected),Main.teamMap.get(selectedTeam),true),cursor().x,cursor().y);
+				}
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				if(selectedType==SelectedType.TERRAIN)
+				{
+					map.setTerrain(Main.terrainMap.get(0), cursor().x, cursor().y);
+					map.terrainDirections().changeDirection(-1,cursor().x, cursor().y);
+				}
+				if(selectedType==SelectedType.UNIT)
+				{
+					map.setUnit(null,cursor().x,cursor().y);
+				}
+			}
+			
+			//TODO FIX!!! FOR NEW BUTTONS
+			if(event.code()>=KeyEvent.VK_1&&event.code()<=KeyEvent.VK_1+Main.teamMap.size())
+			{
+				selectedTeam=event.code()-KeyEvent.VK_1;
+				System.out.println("team: "+selectedTeam);
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
 	}
 
-	@Override
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
@@ -183,7 +271,7 @@ public class MapEditor extends GameMode implements MenuListener
 	{
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 	
 	@Override
 	public void buttonPressed(Menu menu)

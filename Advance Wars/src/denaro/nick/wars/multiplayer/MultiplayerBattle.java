@@ -3,6 +3,7 @@ package denaro.nick.wars.multiplayer;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.BattleSettings;
@@ -138,6 +139,36 @@ public class MultiplayerBattle extends Battle
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(isInputLocked())
+				return;
+			
+			if(myTeam!=whosTurn().id())
+			{
+				if(event.code()==Main.LEFT)
+					moveCursorLeft();
+				if(event.code()==Main.RIGHT)
+					moveCursorRight();
+				if(event.code()==Main.UP)
+					moveCursorUp();
+				if(event.code()==Main.DOWN)
+					moveCursorDown();
+			}
+			else
+			{
+				super.actionPerformed(event);
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(isInputLocked())
@@ -158,7 +189,7 @@ public class MultiplayerBattle extends Battle
 		{
 			super.keyPressed(ke);
 		}
-	}
+	}*/
 
 	private int myTeam;
 }

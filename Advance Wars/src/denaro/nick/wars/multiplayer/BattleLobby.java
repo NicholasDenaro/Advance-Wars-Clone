@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.GameMode;
 import denaro.nick.wars.Main;
@@ -87,6 +88,46 @@ public class BattleLobby extends GameMode
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			
+			if(event.code()==Main.ACTION||event.code()==Main.START)
+			{
+				locked=true;
+				Main.client.addMessage(new Message(ServerClient.PLAYERREADY).addInt(commander));
+				Main.client.sendMessages();
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				if(!locked)
+				{
+					Main.gotoMainMenu();
+					Message message=new Message(ServerClient.LEAVESESSION);
+					Main.client.addMessage(message);
+					Main.client.sendMessages();
+				}
+				else
+				{
+					locked=false;
+					Main.client.addMessage(new Message(ServerClient.PLAYERREADY).addInt(-1));
+					Main.client.sendMessages();
+				}
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{	
 		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
@@ -122,12 +163,7 @@ public class BattleLobby extends GameMode
 	@Override
 	public void keyReleased(KeyEvent ke)
 	{
-	}
-
-	@Override
-	public void keyTyped(KeyEvent ke)
-	{
-	}
+	}*/
 
 	@Override
 	public int columns()

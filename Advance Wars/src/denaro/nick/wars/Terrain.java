@@ -23,7 +23,7 @@ public class Terrain extends Entity
 	
 	public Terrain(String name)
 	{
-		super(Sprite.sprite("Terrain"),null);
+		super(Sprite.sprite("Terrain"),0,0);
 		this.name=name;
 		this.movementCosts=defaultMovementCosts;
 		hiding=false;

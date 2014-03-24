@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.Main;
@@ -42,6 +43,41 @@ public class UnloadMenu extends Menu
 	}
 	
 	@Override
+	public void actionPerformed(ControllerEvent event)
+	{
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.UP)
+			{
+				moveCursorUp();
+				Main.currentMode.cursor(points.get(cursor().y));
+			}
+			if(event.code()==Main.DOWN)
+			{
+				moveCursorDown();
+				Main.currentMode.cursor(points.get(cursor().y));
+			}
+			
+			if(event.code()==Main.ACTION)
+			{
+				((Battle)Main.currentMode).unloadUnit(cargoSlot,points.get(cursor().y));
+				Main.closeMenu();
+				Main.closeMenu();
+				Main.closeMenu();
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
+	}
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_UP)
@@ -67,7 +103,7 @@ public class UnloadMenu extends Menu
 		{
 			Main.closeMenu();
 		}
-	}
+	}*/
 	
 	
 	@Override

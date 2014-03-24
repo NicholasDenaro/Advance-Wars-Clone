@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.GameView2D;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.listener.BuildingListener;
@@ -346,10 +347,12 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	
 	public boolean attackUnit(final Point attackerPoint, final Point defenderPoint)
 	{
+		final Point endPosition=path.last();
 		final Unit attacker=map.unit(attackerPoint.x,attackerPoint.y);
 		final Unit defender=map.unit(defenderPoint.x,defenderPoint.y);
 		if(moveUnit())
 		{
+			
 			BattleAction action=new BattleAction()
 			{
 				@Override
@@ -367,7 +370,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 							if(attacker.health()<=0)
 							{
 								defender.getKill();
-								destroyUnit(attackerPoint);
+								destroyUnit(endPosition);
 							}
 						}
 					}
@@ -917,8 +920,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 					int speed=settings.animationSpeed();
 					Point start=unitpath.get(pathindex);
 					Point end=unitpath.get(pathindex+1);
-					Point.Double delta=new Point.Double(speed*(end.x-start.x),speed*(end.y-start.y));
-					unit.moveDelta(delta);
+					unit.moveDelta(speed*(end.x-start.x),speed*(end.y-start.y));
 					count++;
 					if(count>=Main.TILESIZE/speed)
 					{
@@ -1360,12 +1362,125 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 	}
 	
 	@Override
-	public void keyTyped(KeyEvent ke)
+	public void actionPerformed(ControllerEvent event)
 	{
-		//empty
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(isInputLocked())
+				return;
+			
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			
+			Point cursor=cursor();
+			
+			if(event.code()==Main.SELECT)
+			{
+				//TODO make this part of a menu
+				Main.saveBattle(this);
+			}
+			
+			if(event.code()==Main.ACTION)
+			{
+				if(selectedUnit==null)
+				{
+					if((map.unit(cursor.x,cursor.y)!=null)&&(map.unit(cursor.x,cursor.y).enabled())&&Team.sameTeam(map.unit(cursor.x,cursor.y).team(),whosTurn()))
+					{
+						selectedUnit=map.unit(cursor.x,cursor.y);
+						moveableArea=new boolean[map.width()][map.height()];
+						createMoveableArea(cursor.x,cursor.y,map.unit(cursor.x,cursor.y),map.unit(cursor.x,cursor.y).movement());
+						path=new Path(map,map.unit(cursor.x,cursor.y).movementType(),map.unit(cursor.x,cursor.y).movement());
+						path.start(cursor.x,cursor.y);
+					}
+					else if(unitIfVisible(cursor.x,cursor.y)!=null)
+					{
+						moveableArea=new boolean[map.width()][map.height()];
+						createMoveableArea(cursor.x,cursor.y,map.unit(cursor.x,cursor.y),map.unit(cursor.x,cursor.y).movement());
+					}
+					else if(map.terrain(cursor.x,cursor.y) instanceof Building)
+					{
+						Building building=(Building)map.terrain(cursor.x,cursor.y);
+						if(building.canSpawnUnits()&&Team.sameTeam(building.team(),whosTurn()))
+						{
+							Main.menu=new BuyMenu(null,new Point(((BattleView)Main.engine().view()).view().x*Main.TILESIZE,((BattleView)Main.engine().view()).view().y*Main.TILESIZE-Main.TILESIZE+((GameView2D)Main.engine().view()).height()-Sprite.sprite("Buy Menu").height()),building);
+							Main.engine().requestFocus(Main.menu);
+						}
+					}
+				}
+				else if(cursor.equals(path.last()))
+				{
+					ArrayList<String> options=new ArrayList<String>();
+					if(canUnitCapture())
+						options.add("Capture");
+					if(canUnitAttack())
+						options.add("Attack");
+					if(canUnitMove())
+						options.add("Move");
+					if(canUnitHide())
+						options.add("Hide");
+					if(canUnitUnHide())
+						options.add("UnHide");
+					if(canUnitUnite())
+						options.add("Unite");
+					if(canUnitLoad())
+						options.add("Load");
+					if(canUnitUnload(selectedUnit,cursor()))
+						options.add("Unload");
+					options.add("Cancel");
+					//show menu
+					if(options.size()>1)
+					{
+						Main.openMenu(new ActionMenu(null,new Point(cursor.x*Main.TILESIZE,cursor.y*Main.TILESIZE),options));
+					}
+				}
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				if(selectedUnit==null)
+				{
+					if((unitIfVisible(cursor.x,cursor.y)!=null))
+					{
+						if(attackableArea==null)
+							createAttackableArea(cursor.x,cursor.y,map.unit(cursor.x,cursor.y));
+					}
+				}
+				else
+				{
+					selectedUnit=null;
+					path=null;
+					moveableArea=new boolean[map.width()][map.height()];
+				}
+			}
+			
+			if(event.code()==Main.START)
+			{
+				//TODO make this part of a menu
+				endTurn();
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			if(event.code()==Main.ACTION)
+			{
+				if(moveableArea!=null&&path==null)
+					moveableArea=null;
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				attackableArea=null;
+			}
+		}
 	}
 	
-	@Override
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(isInputLocked())
@@ -1482,7 +1597,7 @@ public class Battle extends GameMode implements CursorListener, BuildingListener
 			attackableArea=null;
 		}
 		
-	}
+	}*/
 	
 	//-------------------------------------------------------------------------------
 	private LinkedList<BattleAction> actionQueue;

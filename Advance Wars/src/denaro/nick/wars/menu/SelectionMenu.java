@@ -11,6 +11,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
+import denaro.nick.core.ControllerEvent;
 import denaro.nick.core.Entity;
 import denaro.nick.core.GameMap;
 import denaro.nick.core.GameView2D;
@@ -61,13 +62,38 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 	}
 	
 	@Override
-	public void keyTyped(KeyEvent ke)
+	public void actionPerformed(ControllerEvent event)
 	{
-		// TODO Auto-generated method stub
-		
+		if(event.action()==ControllerEvent.PRESSED)
+		{
+			if(event.code()==Main.LEFT)
+				moveCursorLeft();
+			if(event.code()==Main.RIGHT)
+				moveCursorRight();
+			if(event.code()==Main.UP)
+				moveCursorUp();
+			if(event.code()==Main.DOWN)
+				moveCursorDown();
+			
+			
+			if(event.code()==Main.ACTION)
+			{
+				buttonPressed(this);
+				Main.closeMenu();
+			}
+			
+			if(event.code()==Main.BACK)
+			{
+				Main.closeMenu();
+			}
+		}
+		else if(event.action()==ControllerEvent.RELEASED)
+		{
+			
+		}
 	}
-
-	@Override
+	
+	/*@Override
 	public void keyPressed(KeyEvent ke)
 	{
 		if(ke.getKeyCode()==KeyEvent.VK_LEFT)
@@ -90,14 +116,7 @@ public class SelectionMenu<V extends Identifiable> extends Menu
 		{
 			Main.closeMenu();
 		}
-	}
-
-	@Override
-	public void keyReleased(KeyEvent ke)
-	{
-		// TODO Auto-generated method stub
-		
-	}
+	}*/
 	
 	public void drawSelections(BufferedImage image, Graphics2D g)
 	{
