@@ -10,12 +10,12 @@ import denaro.nick.controllertest.XBoxAnalogEvent;
 import denaro.nick.controllertest.XBoxController;
 import denaro.nick.controllertest.XBoxControllerListener;
 import denaro.nick.controllertest.XBoxButtonEvent;
-import denaro.nick.core.Controller;
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.ControllerListener;
+import denaro.nick.core.controller.Controller;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.controller.ControllerListener;
 import denaro.nick.core.GameEngine;
-import denaro.nick.core.GameView;
-import denaro.nick.core.GameViewListener;
+import denaro.nick.core.view.GameView;
+import denaro.nick.core.view.GameViewListener;
 import denaro.nick.wars.Main;
 
 public class GamePadController  extends Controller implements XBoxControllerListener

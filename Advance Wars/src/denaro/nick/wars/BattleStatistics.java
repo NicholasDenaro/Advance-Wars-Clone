@@ -9,8 +9,8 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Scanner;
 
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.wars.listener.BuildingListener;
 import denaro.nick.wars.listener.UnitListener;
 import denaro.nick.wars.menu.Menu;

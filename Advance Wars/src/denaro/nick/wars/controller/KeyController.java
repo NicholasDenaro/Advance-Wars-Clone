@@ -4,12 +4,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
 
-import denaro.nick.core.Controller;
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.ControllerListener;
+import denaro.nick.core.controller.Controller;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.controller.ControllerListener;
 import denaro.nick.core.GameEngine;
-import denaro.nick.core.GameView;
-import denaro.nick.core.GameViewListener;
+import denaro.nick.core.view.GameView;
+import denaro.nick.core.view.GameViewListener;
 import denaro.nick.wars.Main;
 
 public class KeyController extends Controller implements KeyListener, GameViewListener
@@ -70,7 +70,7 @@ public class KeyController extends Controller implements KeyListener, GameViewLi
 	@Override
 	public void keyTyped(KeyEvent event)
 	{
-		System.out.println("key typed!");
+		//System.out.println("key typed!");
 	}
 	
 	private HashMap<Integer,Integer> keymap;

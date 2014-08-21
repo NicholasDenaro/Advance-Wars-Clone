@@ -10,8 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.server.Message;
 import denaro.nick.wars.BattleSettings;
 import denaro.nick.wars.GameModeSelector;

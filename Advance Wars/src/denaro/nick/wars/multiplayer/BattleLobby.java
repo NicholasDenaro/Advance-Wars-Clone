@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.controller.ControllerEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.GameMode;
 import denaro.nick.wars.Main;

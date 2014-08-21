@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.controller.ControllerEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.menu.MapOptionsMenu;
 import denaro.nick.wars.menu.MinimapMenu;

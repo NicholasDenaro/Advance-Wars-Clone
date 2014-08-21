@@ -9,7 +9,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;

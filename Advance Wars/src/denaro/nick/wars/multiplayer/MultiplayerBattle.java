@@ -3,7 +3,7 @@ package denaro.nick.wars.multiplayer;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 
-import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.controller.ControllerEvent;
 import denaro.nick.server.Message;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.BattleSettings;

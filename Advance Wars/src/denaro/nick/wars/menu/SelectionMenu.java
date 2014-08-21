@@ -11,10 +11,10 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.Entity;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.entity.Entity;
 import denaro.nick.core.GameMap;
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Identifiable;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Main;

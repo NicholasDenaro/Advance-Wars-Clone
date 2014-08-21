@@ -6,8 +6,8 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.listener.BuildingListener;
 import denaro.nick.wars.listener.CursorListener;

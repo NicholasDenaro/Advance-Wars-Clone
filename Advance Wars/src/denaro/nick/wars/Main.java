@@ -20,12 +20,12 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
-import denaro.nick.core.Controller;
-import denaro.nick.core.Entity;
-import denaro.nick.core.GameEngineByTick;
+import denaro.nick.core.controller.Controller;
+import denaro.nick.core.entity.Entity;
+import denaro.nick.core.GameEngineFixedTick;
 import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
 import denaro.nick.server.Message;
@@ -45,9 +45,17 @@ public class Main
 {
 	public static void main(String[] args)
 	{
-		engine=(GameEngineByTick)GameEngineByTick.instance();
-		engine.setTicksPerSecond(60);
-		engine.setFramesPerSecond(60);
+		engine=(GameEngineFixedTick)GameEngineFixedTick.instance();
+		try
+		{
+			engine.setTicksPerSecond(60);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			System.exit(1);
+		}
+		//engine.setFramesPerSecond(60);
 		
 		loadAssets();
 		
@@ -61,8 +69,8 @@ public class Main
 		frame.setLocation(screen.width/2-frame.getWidth()/2,screen.height/2-frame.getHeight()/2);
 		engine.addGameViewListener(frame);
 		
-		//KeyController controller=new KeyController();
-		GamePadController controller=new GamePadController();
+		KeyController controller=new KeyController();
+		//GamePadController controller=new GamePadController();
 		controller.init(engine);
 		
 		engine.start();
@@ -1280,7 +1288,7 @@ public class Main
 		message.addBoolean(unit.isHidden());
 	}
 	
-	public static GameEngineByTick engine()
+	public static GameEngineFixedTick engine()
 	{
 		return(engine);
 	}
@@ -1291,7 +1299,7 @@ public class Main
 	
 	public static TeamColorPalette colorPalette;
 	
-	private static GameEngineByTick engine;
+	private static GameEngineFixedTick engine;
 	public static final int TILESIZE=16;
 	public static final int MINIMAPSIZE=4;
 	

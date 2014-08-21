@@ -6,7 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
-import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.controller.ControllerEvent;
 import denaro.nick.core.Focusable;
 import denaro.nick.wars.listener.MenuListener;
 import denaro.nick.wars.menu.Menu;

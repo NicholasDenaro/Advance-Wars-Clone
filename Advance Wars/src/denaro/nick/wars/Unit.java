@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
-import denaro.nick.core.Entity;
+import denaro.nick.core.entity.Entity;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.listener.UnitListener;
 

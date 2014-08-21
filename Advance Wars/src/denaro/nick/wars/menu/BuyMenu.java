@@ -9,7 +9,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
-import denaro.nick.core.ControllerEvent;
+import denaro.nick.core.controller.ControllerEvent;
 import denaro.nick.core.Sprite;
 import denaro.nick.wars.Battle;
 import denaro.nick.wars.Building;

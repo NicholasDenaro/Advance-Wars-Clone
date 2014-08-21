@@ -5,7 +5,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.wars.Main;
 import denaro.nick.wars.menu.Menu;

@@ -6,8 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
-import denaro.nick.core.ControllerEvent;
-import denaro.nick.core.ControllerListener;
+import denaro.nick.core.controller.ControllerEvent;
+import denaro.nick.core.controller.ControllerListener;
 import denaro.nick.core.Focusable;
 import denaro.nick.wars.CursorUser;
 import denaro.nick.wars.listener.MenuListener;

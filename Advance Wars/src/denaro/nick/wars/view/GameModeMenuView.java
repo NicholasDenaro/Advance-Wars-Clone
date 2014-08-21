@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
-import denaro.nick.core.GameView2D;
+import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.wars.GameModeSelector;
 import denaro.nick.wars.Main;

@@ -9,7 +9,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-import denaro.nick.core.Entity;
+import denaro.nick.core.entity.Entity;
 import denaro.nick.core.Identifiable;
 import denaro.nick.core.Sprite;
 
