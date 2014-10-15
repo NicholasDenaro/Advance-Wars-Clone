@@ -20,10 +20,10 @@ public class KeyController extends Controller implements KeyListener, GameViewLi
 		super();
 		if(defaultKeymap==null)
 			createDefaultKeymap();
-		keymap=defaultKeymap;
+		keymap(defaultKeymap);
 	}
 	
-	private void createDefaultKeymap()
+	protected void createDefaultKeymap()
 	{
 		defaultKeymap=new HashMap<Integer,Integer>();
 		defaultKeymap.put(KeyEvent.VK_UP,Main.UP);
@@ -37,12 +37,13 @@ public class KeyController extends Controller implements KeyListener, GameViewLi
 	}
 	
 	@Override
-	public void init(GameEngine engine)
+	public boolean init(GameEngine engine)
 	{
 		//System.out.println("adding...");
 		engine.view().addKeyListener(this);
 		engine.addGameViewListener(this);
 		this.addControllerListener(engine);
+		return(true);
 		//System.out.println("added...?");
 	}
 	
@@ -57,14 +58,14 @@ public class KeyController extends Controller implements KeyListener, GameViewLi
 	{
 		//System.out.println("key pressed!");
 		for(ControllerListener listener:listeners())
-			listener.actionPerformed(new ControllerEvent(ControllerEvent.PRESSED,keymap.get(event.getKeyCode())));
+			listener.actionPerformed(new ControllerEvent(ControllerEvent.PRESSED,keymap().get(event.getKeyCode())));
 	}
 
 	@Override
 	public void keyReleased(KeyEvent event)
 	{
 		for(ControllerListener listener:listeners())
-			listener.actionPerformed(new ControllerEvent(ControllerEvent.RELEASED,keymap.get(event.getKeyCode())));
+			listener.actionPerformed(new ControllerEvent(ControllerEvent.RELEASED,keymap().get(event.getKeyCode())));
 	}
 
 	@Override
@@ -73,7 +74,7 @@ public class KeyController extends Controller implements KeyListener, GameViewLi
 		//System.out.println("key typed!");
 	}
 	
-	private HashMap<Integer,Integer> keymap;
+	//private HashMap<Integer,Integer> keymap;
 	
-	public HashMap<Integer,Integer> defaultKeymap;
+	//public HashMap<Integer,Integer> defaultKeymap;
 }

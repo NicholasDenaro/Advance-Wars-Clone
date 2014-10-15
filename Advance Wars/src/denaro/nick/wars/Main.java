@@ -22,9 +22,12 @@ import javax.imageio.ImageIO;
 
 import denaro.nick.core.controller.Controller;
 import denaro.nick.core.entity.Entity;
-import denaro.nick.core.GameEngineFixedTick;
+import denaro.nick.core.FixedTickType;
+import denaro.nick.core.GameEngine;
+import denaro.nick.core.GameEngineException;
 import denaro.nick.core.GameFrame;
 import denaro.nick.core.GameMap;
+import denaro.nick.core.LocationAddEntityException;
 import denaro.nick.core.view.GameView2D;
 import denaro.nick.core.Location;
 import denaro.nick.core.Sprite;
@@ -45,15 +48,13 @@ public class Main
 {
 	public static void main(String[] args)
 	{
-		engine=(GameEngineFixedTick)GameEngineFixedTick.instance();
 		try
 		{
-			engine.setTicksPerSecond(60);
+			engine=GameEngine.instance(new FixedTickType(60),false);
 		}
-		catch(Exception ex)
+		catch(GameEngineException e)
 		{
-			ex.printStackTrace();
-			System.exit(1);
+			e.printStackTrace();
 		}
 		//engine.setFramesPerSecond(60);
 		
@@ -69,13 +70,15 @@ public class Main
 		frame.setLocation(screen.width/2-frame.getWidth()/2,screen.height/2-frame.getHeight()/2);
 		engine.addGameViewListener(frame);
 		
-		KeyController controller=new KeyController();
-		//GamePadController controller=new GamePadController();
-		controller.init(engine);
+		GamePadController gpcontroller=new GamePadController();
+		
+		if(!gpcontroller.init(engine))
+		{
+			KeyController kcontroller=new KeyController();
+			kcontroller.init(engine);
+		}
 		
 		engine.start();
-		
-		
 	}
 	
 	public static void loadAssets()
@@ -104,6 +107,7 @@ public class Main
 			{
 			}
 		};
+
 		engine.addEntity(entity,location);
 		engine.location(location);
 		engine.requestFocus(currentMode);
@@ -1288,7 +1292,7 @@ public class Main
 		message.addBoolean(unit.isHidden());
 	}
 	
-	public static GameEngineFixedTick engine()
+	public static GameEngine engine()
 	{
 		return(engine);
 	}
@@ -1299,7 +1303,7 @@ public class Main
 	
 	public static TeamColorPalette colorPalette;
 	
-	private static GameEngineFixedTick engine;
+	private static GameEngine engine;
 	public static final int TILESIZE=16;
 	public static final int MINIMAPSIZE=4;
 	

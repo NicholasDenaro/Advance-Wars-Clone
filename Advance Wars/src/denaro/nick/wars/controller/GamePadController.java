@@ -18,20 +18,20 @@ import denaro.nick.core.view.GameView;
 import denaro.nick.core.view.GameViewListener;
 import denaro.nick.wars.Main;
 
-public class GamePadController  extends Controller implements XBoxControllerListener
+public class GamePadController extends Controller implements XBoxControllerListener
 {
 	public GamePadController()
 	{
 		super();
 		if(defaultKeymap==null)
 			createDefaultKeymap();
-		keymap=defaultKeymap;
+		keymap(defaultKeymap);
 		
 		wait=-1;
 		waitTime=defaultWaitTime;
 	}
 	
-	private void createDefaultKeymap()
+	protected void createDefaultKeymap()
 	{
 		defaultKeymap=new HashMap<Integer,Integer>();
 		defaultKeymap.put(XBoxController.DPAD,-1);
@@ -45,25 +45,26 @@ public class GamePadController  extends Controller implements XBoxControllerList
 	}
 	
 	@Override
-	public void init(GameEngine engine)
+	public boolean init(GameEngine engine)
 	{
 		//System.out.println("adding...");
 		XBoxController controller=new XBoxController();
 		controller.addXBoxControllerListener(this);
 		this.addControllerListener(engine);
+		return(controller.isConnected());
 		//System.out.println("added...?");
 	}
 	
-	private HashMap<Integer,Integer> keymap;
+	//private HashMap<Integer,Integer> keymap;
 	
-	public HashMap<Integer,Integer> defaultKeymap;
+	//public HashMap<Integer,Integer> defaultKeymap;
 
 	@Override
 	public void buttonPressed(XBoxButtonEvent event)
 	{
-		if(!keymap.containsKey(event.getButtonCode()))
+		if(!keymap().containsKey(event.getButtonCode()))
 			return;
-		int key=keymap.get(event.getButtonCode());
+		int key=keymap().get(event.getButtonCode());
 		if(event.getButtonCode()==XBoxController.DPAD)
 		{
 			if(event.pollData()==XBoxController.DPAD_UP)
@@ -82,9 +83,9 @@ public class GamePadController  extends Controller implements XBoxControllerList
 	@Override
 	public void buttonReleased(XBoxButtonEvent event)
 	{
-		if(!keymap.containsKey(event.getButtonCode()))
+		if(!keymap().containsKey(event.getButtonCode()))
 			return;
-		int key=keymap.get(event.getButtonCode());
+		int key=keymap().get(event.getButtonCode());
 		if(event.getButtonCode()==XBoxController.DPAD)
 		{
 			if(event.pollData()==0.25)
